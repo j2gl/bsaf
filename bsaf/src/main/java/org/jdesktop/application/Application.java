@@ -5,26 +5,15 @@
 
 package org.jdesktop.application;
 
-import java.awt.ActiveEvent;
-import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.PaintEvent;
-import java.beans.Beans;
-import java.lang.reflect.Constructor;
 import java.util.EventListener;
 import java.util.EventObject;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.EventListenerList;
-
 
 /**
  * The base class for Swing applications.
@@ -156,6 +145,22 @@ public abstract class Application extends AbstractBean {
         initialize(args);
         startup();
     }
+    
+    /**
+     * A convenience method for launching an application. <br/>
+     * Required for compatibility with previous public release. <br/>
+     * It calls:<br/>
+     *
+     * {@code Launcher.getInstance().launch(final Class<? extends Application> appClass, final String[] args);}
+     *
+     * @param aClass an application class
+     * @param args application's arguments
+     * @since 1.9
+     * @see Launcher
+     */
+	 public static void launch(Class<? extends Application> aClass, String[] args) {
+        Launcher.getInstance().launch(aClass, args);
+	}
 
     /* Defines the default value for the platform resource, 
      * either "osx" or "default".
@@ -242,6 +247,7 @@ public abstract class Application extends AbstractBean {
      * @see #launch
      * @see #startup
      * @see #shutdown
+     * @deprecated since 1.9 this method is never called.
      */
     protected void ready() {
     }
