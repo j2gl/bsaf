@@ -34,21 +34,22 @@ public class WaitForStartupSFA extends SingleFrameApplication {
      * (wait) until it's startup() method has run.
      */
     public static void launchAndWait(Class<? extends WaitForStartupSFA> applicationClass) {
+        Launcher.getInstance().launch(applicationClass, new String[]{});
         synchronized (lock) {
-            Launcher.getInstance().launch(applicationClass, new String[]{});
             while (true) {
-                try {
-                    lock.wait();
-                }
-                catch (InterruptedException e) {
-                    System.err.println("launchAndWait interrupted!");
-                    break;
-                }
+
                 Application app = Application.getInstance(WaitForStartupSFA.class);
                 if (app instanceof WaitForStartupSFA) {
                     if (((WaitForStartupSFA) app).isStarted()) {
                         break;
                     }
+                }
+				try {
+                    lock.wait();
+                }
+                catch (InterruptedException e) {
+                    System.err.println("launchAndWait interrupted!");
+                    break;
                 }
             }
         }

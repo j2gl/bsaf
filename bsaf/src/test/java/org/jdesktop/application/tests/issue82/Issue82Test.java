@@ -53,7 +53,7 @@ public class Issue82Test extends TestCase {
         assertTrue(context.getActionMap(target).get("pause").isEnabled());
     }
 
-    private static class MyApplication extends Application {
+    public static class MyApplication extends Application {
         @Override
         protected void startup() {
         }

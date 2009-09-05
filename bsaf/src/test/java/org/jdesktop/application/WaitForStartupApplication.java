@@ -16,11 +16,9 @@ public class WaitForStartupApplication extends Application {
     /**
      * Unblock the launchAndWait() method.
      */
-    @Override
     protected void startup() {
         synchronized (lock) {
             started = true;
-            System.out.println("about to notify");
             lock.notifyAll();
         }
     }
@@ -34,23 +32,23 @@ public class WaitForStartupApplication extends Application {
      * (wait) until it's startup() method has run.
      */
     public static void launchAndWait(Class<? extends WaitForStartupApplication> applicationClass) {
-        System.out.println("launchAndWait");
+		Launcher.getInstance().launch(applicationClass, new String[]{});
         synchronized (lock) {
-            Launcher.getInstance().launch(applicationClass, new String[]{});
             while (true) {
-                try {
-                    System.out.println("about to wait");
-                    lock.wait();
-                }
-                catch (InterruptedException e) {
-                    System.err.println("launchAndWait interrupted!");
-                    break;
-                }
+
                 Application app = Application.getInstance(WaitForStartupApplication.class);
                 if (app instanceof WaitForStartupApplication) {
                     if (((WaitForStartupApplication) app).isStarted()) {
                         break;
                     }
+                }
+				
+				try {
+                    lock.wait();
+                }
+                catch (InterruptedException e) {
+                    System.err.println("launchAndWait interrupted!");
+                    break;
                 }
             }
         }

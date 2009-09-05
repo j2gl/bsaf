@@ -148,6 +148,11 @@ public abstract class Application extends AbstractBean {
      * @param args {@code main} method arguments
      */
     public void launch(String[] args) {
+		if (applicationProperty.get() == null) {
+			applicationProperty.set(this);
+		} else {
+			logger.severe("Application is already launched.");
+		}
         initialize(args);
         startup();
     }

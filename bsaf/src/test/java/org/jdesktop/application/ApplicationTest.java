@@ -284,19 +284,24 @@ public class ApplicationTest extends TestCase {
         ApplicationContext ac = getApplicationContext();
         List<Reference<ActionMapObject>> refs = new ArrayList<Reference<ActionMapObject>>();
         for (int i = 0; i < 256; i++) {
-            ActionMapObject amo = new ActionMapObject(i);
-            refs.add(new WeakReference<ActionMapObject>(amo));
-            ApplicationActionMap appAM = ac.getActionMap(amo);
-            assertNotNull(appAM);
-            assertNotNull(appAM.get("anAction"));
-            assertSame(amo, appAM.getActionsObject());
-            assertEquals(i, amo.n);
+			ActionMapObject amo = new ActionMapObject(i);
+			refs.add(new WeakReference<ActionMapObject>(amo));
+			ApplicationActionMap appAM = ac.getActionMap(amo);
+			assertNotNull(appAM);
+			assertNotNull(appAM.get("anAction"));
+			assertSame(amo, appAM.getActionsObject());
+			assertEquals(i, amo.n);
+
+			// With new API we need to Remove reference explicitly
+			ac.removeActionMap(amo);
+
         }
         /* GC should clear all of the references to ActionMapObjects because
           * they're no longer strongly reachable, i.e. the framework isn't
           * hanging on to them.
           */
         System.gc();
+
         for (Reference ref : refs) {
             assertNull("Reference to ApplictionActionMap actionsObject", ref.get());
         }
