@@ -64,6 +64,7 @@ public final class FileSystemStorage implements LocalStorage {
         this.directory = directory;
     }
 
+    @Override
     public InputStream openInputStream(String name) throws IOException {
         try {
             return new BufferedInputStream(new FileInputStream(getFile(name)));
@@ -93,6 +94,7 @@ public final class FileSystemStorage implements LocalStorage {
         }
     }
 
+    @Override
     public void deleteEntry(String name) throws IOException {
         try {
             getFile(name).delete();
