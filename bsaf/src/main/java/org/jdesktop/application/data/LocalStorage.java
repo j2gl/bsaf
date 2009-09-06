@@ -24,12 +24,14 @@ public interface LocalStorage {
      */
     InputStream openInputStream(String name) throws IOException;
 
+
     /**
      * Opens an output stream to write to the entry
      * specified by the {@code name} parameter.
      * If the named entry cannot be opened for writing
      * then a {@code IOException} is thrown.
      * If the named entry does not exist it can be created.
+     * The entry will be recreated if already exists.
      *
      * @param name  the storage-dependent name
      * @return an {@code OutputStream} object
@@ -37,6 +39,24 @@ public interface LocalStorage {
      *                     or an output stream cannot be opened
      */
     OutputStream openOutputStream(String name) throws IOException;
+
+    /**
+     * Opens an output stream to write to the entry
+     * specified by the {@code name} parameter.
+     * If the named entry cannot be opened for writing
+     * then a {@code IOException} is thrown.
+     * If the named entry does not exist it can be created.
+     * You can decide whether data will be appended via append parameter.
+     *
+     * @param name  the storage-dependent name
+     * @param append if <code>true</code>, then bytes will be written
+     *                   to the end of the output entry rather than the beginning
+     * @return an {@code OutputStream} object
+     * @throws IOException if the specified name is invalid,
+     *                     or an output stream cannot be opened
+     */
+    OutputStream openOutputStream(String name, boolean append) throws IOException;
+
 
     /**
      * Deletes the entry specified by the {@code name} parameter.

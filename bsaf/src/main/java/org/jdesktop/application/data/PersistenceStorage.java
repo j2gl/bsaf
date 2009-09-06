@@ -40,12 +40,18 @@ public final class PersistenceStorage implements LocalStorage {
         return new BufferedInputStream(ps.get(getURL(name)).getInputStream());
     }
 
+    @Override
     public OutputStream openOutputStream(String name) throws IOException {
+        return openOutputStream(name, false);
+    }
+
+    @Override
+    public OutputStream openOutputStream(String name, boolean append) throws IOException {
         URL url = getURL(name);
         if (size > ps.create(url, size)) {
             throw new IOException("unable to create entry: " + name);
         }
-        return new BufferedOutputStream(ps.get(url).getOutputStream(true));
+        return new BufferedOutputStream(ps.get(url).getOutputStream(append));
     }
 
     public void deleteEntry(String name) throws IOException {

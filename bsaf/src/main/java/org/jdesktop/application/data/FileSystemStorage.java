@@ -73,14 +73,20 @@ public final class FileSystemStorage implements LocalStorage {
         }
     }
 
+    @Override
     public OutputStream openOutputStream(String name) throws IOException {
+        return openOutputStream(name, false);
+    }
+
+    @Override
+    public OutputStream openOutputStream(String name, boolean append) throws IOException {
         try {
             File file = getFile(name);
             File dir = file.getParentFile();
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 throw new IOException("couldn't create directory " + dir);
             }
-            return new BufferedOutputStream(new FileOutputStream(file));
+            return new BufferedOutputStream(new FileOutputStream(file, append));
         }
         catch (SecurityException exception) {
             throw new IOException("could not write to entry: " + name, exception);
@@ -146,4 +152,5 @@ public final class FileSystemStorage implements LocalStorage {
         }
         return null;
     }
+
 }
