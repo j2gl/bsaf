@@ -62,12 +62,5 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <repositories>
-    <repository>
-      <id>aduna-software</id>
-      <url>http://repository.aduna-software.org/maven2</url>
-    </repository>
-  </repositories>
-
 </project>
 
