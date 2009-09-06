@@ -38,6 +38,9 @@ import javax.swing.event.MouseInputListener;
 
 final class DefaultInputBlocker extends Task.InputBlocker {
     private static final Logger logger = Logger.getLogger(DefaultInputBlocker.class.getName());
+
+    private static final String PB_STRING_FORMAT_KEY = "progressBarStringFormat";
+
     private JDialog modalDialog = null;
     private int actionEnabledCount;
 
@@ -187,6 +190,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             progressBar.setName("BlockingDialog.progressBar");
             progressBar.setIndeterminate(true);
             PropertyChangeListener taskPCL = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     if ("progress".equals(e.getPropertyName())) {
                         progressBar.setIndeterminate(false);
@@ -200,6 +204,21 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             getTask().addPropertyChangeListener(taskPCL);
             panel.add(progressBar, BorderLayout.SOUTH);
             injectBlockingDialogComponents(panel);
+
+             /* The initial value of the progressBar string is the format.
+             * We save the format string in a client property.  The format
+             * String will be applied four values (see below).  The default
+             * format String is in resources/Application.properties, it's:
+             * "%02d:%02d, %02d:%02d remaining"
+             * FIXED: BSAF-12
+             */
+
+            if (progressBar.getClientProperty(PB_STRING_FORMAT_KEY) == null) {
+                progressBar.putClientProperty(PB_STRING_FORMAT_KEY, progressBar.getString());
+                System.out.println("fmt:"+progressBar.getString());
+            }
+            progressBar.setString("");
+
             optionPane.setMessage(panel);
         }
     }
@@ -208,17 +227,9 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         if (!progressBar.isStringPainted()) {
             return;
         }
-        /* The initial value of the progressBar string is the format.
-         * We save the format string in a client property.  The format
-         * String will be applied four values (see below).  The default 
-         * format String is in resources/Application.properties, it's:
-         * "%02d:%02d, %02d:%02d remaining"
-         */
-        String key = "progressBarStringFormat";
-        if (progressBar.getClientProperty(key) == null) {
-            progressBar.putClientProperty(key, progressBar.getString());
-        }
-        String fmt = (String) progressBar.getClientProperty(key);
+        final String fmt = (String) progressBar.getClientProperty(PB_STRING_FORMAT_KEY);
+        System.out.println("* str:"+progressBar.getString());
+        System.out.println("* fmt:"+fmt);
         if (progressBar.getValue() <= 0) {
             progressBar.setString("");
         } else if (fmt == null) {
