@@ -8,6 +8,7 @@ package org.jdesktop.application;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
@@ -15,6 +16,8 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  * The {@link javax.swing.Action} class used to implement the
@@ -311,6 +314,7 @@ public class ApplicationAction extends AbstractAction {
      * then set this action's longDescription.
      * </ul>
      *
+     * @param proxy
      * @see #setProxy
      * @see #setProxySource
      * @see #actionPerformed
@@ -385,6 +389,7 @@ public class ApplicationAction extends AbstractAction {
      * mirror the description properties if they're non-null.
      */
     private class ProxyPCL implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ((propertyName == null) ||
@@ -468,7 +473,7 @@ public class ApplicationAction extends AbstractAction {
     }
 
     private String propertyMethodName(String prefix, String propertyName) {
-        return prefix + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+        return prefix + propertyName.substring(0, 1).toUpperCase(ENGLISH) + propertyName.substring(1);
     }
 
     private Method propertyGetMethod(String propertyName) {
@@ -581,6 +586,7 @@ public class ApplicationAction extends AbstractAction {
      * @param pType       parameter type
      * @param pKey        the value of the &#064;Action.Parameter annotation
      * @param actionEvent the ActionEvent that trigged this Action
+     * @return
      */
     protected Object getActionArgument(Class pType, String pKey, ActionEvent actionEvent) {
         Object argument = null;
@@ -666,6 +672,7 @@ public class ApplicationAction extends AbstractAction {
      * @see #getActionArgument
      * @see Task
      */
+    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         javax.swing.Action proxy = getProxy();
         if (proxy != null) {
@@ -792,6 +799,7 @@ public class ApplicationAction extends AbstractAction {
      * @param key   {@inheritDoc}
      * @param value {@inheritDoc}
      */
+    @Override
     public void putValue(String key, Object value) {
         if (SELECTED_KEY.equals(key) && (value instanceof Boolean)) {
             setSelected((Boolean) value);
@@ -846,6 +854,7 @@ public class ApplicationAction extends AbstractAction {
      *
      * @return A string representation of this ApplicationAction
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
