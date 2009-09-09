@@ -5,18 +5,12 @@
 
 package org.jdesktop.application;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.Icon;
-import javax.swing.KeyStroke;
-
 import static java.util.Locale.ENGLISH;
 
 /**
@@ -104,7 +98,7 @@ import static java.util.Locale.ENGLISH;
  * @see ResourceMap
  */
 public class ApplicationAction extends AbstractAction {
-    private static final Logger logger = Logger.getLogger(ApplicationAction.class.getName());
+    //private static final Logger logger = Logger.getLogger(ApplicationAction.class.getName());
     private final ApplicationActionMap appAM;
     private final ResourceMap resourceMap;
     private final String actionName;        // see getName()
@@ -377,7 +371,7 @@ public class ApplicationAction extends AbstractAction {
         if (proxy != null) {
             setEnabled(proxy.isEnabled());
             Object s = proxy.getValue(SELECTED_KEY);
-            setSelected((s instanceof Boolean) && ((Boolean) s).booleanValue());
+            setSelected((s instanceof Boolean) && (Boolean) s);
             maybePutDescriptionValue(javax.swing.Action.SHORT_DESCRIPTION, proxy);
             maybePutDescriptionValue(javax.swing.Action.LONG_DESCRIPTION, proxy);
         }
@@ -756,7 +750,7 @@ public class ApplicationAction extends AbstractAction {
     public boolean isSelected() {
         if (getProxy() != null || isSelectedMethod == null) {
             Object v = getValue(SELECTED_KEY);
-            return v instanceof Boolean && ((Boolean) v).booleanValue();
+            return v instanceof Boolean && (Boolean) v;
         } else {
             try {
                 Object b = isSelectedMethod.invoke(appAM.getActionsObject());
@@ -866,7 +860,7 @@ public class ApplicationAction extends AbstractAction {
         sb.append(getName());
         Object selectedValue = getValue(SELECTED_KEY);
         if (selectedValue instanceof Boolean) {
-            if (((Boolean) selectedValue).booleanValue()) {
+            if ((Boolean) selectedValue) {
                 sb.append("+");
             }
         }
