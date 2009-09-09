@@ -99,19 +99,17 @@ class MnemonicText {
         return vk;
     }
 
-    /* This javax.swing.Action constants is only 
-     * defined in Mustang (1.6), see 
-     * http://download.java.net/jdk6/docs/api/javax/swing/Action.html
-     */
-    private static final String DISPLAYED_MNEMONIC_INDEX_KEY = "SwingDisplayedMnemonicIndexKey";
-
     private static void configureAction(javax.swing.Action target, String text, int key, int index) {
         target.putValue(javax.swing.Action.NAME, text);
         if (key != KeyEvent.VK_UNDEFINED) {
             target.putValue(javax.swing.Action.MNEMONIC_KEY, key);
         }
         if (index != -1) {
-            target.putValue(DISPLAYED_MNEMONIC_INDEX_KEY, index);
+            /* This javax.swing.Action constants is only
+             * defined in Mustang (1.6), see
+             * http://download.java.net/jdk6/docs/api/javax/swing/Action.html
+             */
+            target.putValue(javax.swing.Action.DISPLAYED_MNEMONIC_INDEX_KEY, index);
         }
     }
 
