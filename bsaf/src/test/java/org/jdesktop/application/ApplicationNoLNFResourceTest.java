@@ -35,6 +35,7 @@ public class ApplicationNoLNFResourceTest extends TestCase {
 
     public void testApplicationLookAndFeelResource() {
         LookAndFeel lnf = UIManager.getLookAndFeel();
-        assertTrue("Look and Feel should be native", lnf.isNativeLookAndFeel());
+        // On Linux sestemLaF could not be native
+        assertTrue("Look and Feel should be native", UIManager.getSystemLookAndFeelClassName().equals(lnf.getClass().getName()));
     }
 }
