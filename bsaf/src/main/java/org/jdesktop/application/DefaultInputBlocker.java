@@ -215,7 +215,6 @@ final class DefaultInputBlocker extends Task.InputBlocker {
 
             if (progressBar.getClientProperty(PB_STRING_FORMAT_KEY) == null) {
                 progressBar.putClientProperty(PB_STRING_FORMAT_KEY, progressBar.getString());
-                System.out.println("fmt:"+progressBar.getString());
             }
             progressBar.setString("");
 
@@ -228,8 +227,6 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             return;
         }
         final String fmt = (String) progressBar.getClientProperty(PB_STRING_FORMAT_KEY);
-        System.out.println("* str:"+progressBar.getString());
-        System.out.println("* fmt:"+fmt);
         if (progressBar.getValue() <= 0) {
             progressBar.setString("");
         } else if (fmt == null) {
