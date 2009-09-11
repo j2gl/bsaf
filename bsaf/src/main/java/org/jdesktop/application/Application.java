@@ -233,26 +233,6 @@ public abstract class Application extends AbstractBean {
     protected abstract void startup();
 
     /**
-     * Called after the startup() method has returned and there
-     * are no more events on the
-     * {@link Toolkit#getSystemEventQueue system event queue}.
-     * When this method is called, the application's GUI is ready
-     * to use.
-     * <p/>
-     * It's usually important for an application to start up as
-     * quickly as possible.  Applications can override this method
-     * to do some additional start up work, after the GUI is up
-     * and ready to use.
-     *
-     * @see #launch
-     * @see #startup
-     * @see #shutdown
-     * @deprecated since 1.9 this method is never called.
-     */
-    protected void ready() {
-    }
-
-    /**
      * Called when the application {@link #exit exits}.
      * Subclasses may override this method to do any cleanup
      * tasks that are neccessary before exiting.  Obviously, you'll want to try
@@ -367,7 +347,6 @@ public abstract class Application extends AbstractBean {
      * <p/>
      * {@code ExitListeners} run on the event dispatching thread.
      *
-     * @param event the EventObject that triggered this call or null
      * @see #exit(EventObject)
      * @see #addExitListener
      * @see #removeExitListener
@@ -441,12 +420,13 @@ public abstract class Application extends AbstractBean {
      * {@link #launch launch} method.  However it's {@code initialize}
      * and {@code startup} methods are not run.
      *
+     * @param <T>
      * @param applicationClass this Application's subclass
      * @return the launched Application singleton.
      * @see Application#launch
      */
     public static <T extends Application> T getInstance(Class<T> applicationClass) {
-        return applicationClass.cast(applicationProperty.get());
+        return applicationClass.cast(getInstance());
     }
 
     /**
@@ -471,7 +451,12 @@ public abstract class Application extends AbstractBean {
      * @see Application#getInstance(Class)
      */
     public static Application getInstance() {
-        return applicationProperty.get();
+        Application application = applicationProperty.get();
+        if (application == null) {
+            application = new NoApplication();
+            applicationProperty.set(application);
+        }
+        return application;
     }
 
     /* Prototype support for the View type */
@@ -486,5 +471,18 @@ public abstract class Application extends AbstractBean {
 
     public void hide(View view) {
         view.getRootPane().getParent().setVisible(false);
+    }
+
+    private static class NoApplication extends Application {
+        protected NoApplication() {
+            ApplicationContext ctx = getContext();
+            ctx.setApplicationClass(getClass());
+            ctx.setApplication(this);
+            ResourceMap appResourceMap = ctx.getResourceMap();
+            appResourceMap.putResource("platform", platform());
+        }
+
+        @Override
+        protected void startup() {}
     }
 }
