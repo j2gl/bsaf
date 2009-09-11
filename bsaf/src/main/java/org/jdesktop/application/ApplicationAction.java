@@ -396,14 +396,6 @@ public class ApplicationAction extends AbstractAction {
         }
     }
 
-    /* The corresponding javax.swing.Action constants are only 
-    * defined in Mustang (1.6), see 
-    * http://download.java.net/jdk6/docs/api/javax/swing/Action.html
-    */
-    private static final String SELECTED_KEY = "SwingSelectedKey";
-    private static final String DISPLAYED_MNEMONIC_INDEX_KEY = "SwingDisplayedMnemonicIndexKey";
-    private static final String LARGE_ICON_KEY = "SwingLargeIconKey";
-
     /* Init all of the javax.swing.Action properties for the @Action
      * named actionName.  
      */
