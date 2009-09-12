@@ -341,4 +341,5 @@ public class ApplicationTest extends TestCase {
             assertEquals("after calling ActionMapObject.anAction()", -1, amo.n);
         }
     }
+
 }
