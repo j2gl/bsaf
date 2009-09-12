@@ -5,7 +5,6 @@
 
 package org.jdesktop.application;
 
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.Beans;
@@ -108,7 +107,7 @@ import javax.swing.event.EventListenerList;
  * @see UIManager#setLookAndFeel
  */
 
-@ProxyActions({"cut", "copy", "paste", "delete"})
+@ProxyActions({"cut", "copy", "paste", "delete", "select-all"})
 
 public abstract class Application extends AbstractBean {
     private static final Logger logger = Logger.getLogger(Application.class.getName());
@@ -194,6 +193,7 @@ public abstract class Application extends AbstractBean {
      * @see #startup
      * @see #shutdown
      */
+    @SuppressWarnings({"UnusedDeclaration"})
     protected void initialize(String[] args) {
         ApplicationContext ctx = getContext();
         ctx.setApplicationClass(getClass());
