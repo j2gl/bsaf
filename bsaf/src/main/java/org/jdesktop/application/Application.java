@@ -8,6 +8,7 @@ package org.jdesktop.application;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.beans.Beans;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.logging.Level;
@@ -426,7 +427,18 @@ public abstract class Application extends AbstractBean {
      * @see Application#launch
      */
     public static <T extends Application> T getInstance(Class<T> applicationClass) {
-        return applicationClass.cast(getInstance());
+        Application application = applicationProperty.get();
+        if (application == null && Beans.isDesignTime()) {
+            try {
+                application = applicationClass.newInstance();
+                application.initialize(new String[0]);
+            } catch (Exception ex) {
+                String msg = String.format("Couldn't construct %s", applicationClass);
+                throw(new Error(msg, ex));
+            }
+            applicationProperty.set(application);
+        }
+        return applicationClass.cast(application);
     }
 
     /**

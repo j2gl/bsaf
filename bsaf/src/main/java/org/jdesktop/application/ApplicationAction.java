@@ -443,8 +443,12 @@ public class ApplicationAction extends AbstractAction {
             iconOrNameSpecified = true;
         }
         // Action.shortDescription => Action.SHORT_DESCRIPTION
-        putValue(javax.swing.Action.SHORT_DESCRIPTION,
+        String shortDescription = resourceMap.getString(baseName +
+                ".Action.shortDescription");
+        if (shortDescription != null && !shortDescription.isEmpty()) {
+            putValue(javax.swing.Action.SHORT_DESCRIPTION,
                 resourceMap.getString(baseName + ".Action.shortDescription"));
+        }
         // Action.longDescription => Action.LONG_DESCRIPTION
         putValue(javax.swing.Action.LONG_DESCRIPTION,
                 resourceMap.getString(baseName + ".Action.longDescription"));
