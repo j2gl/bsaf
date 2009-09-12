@@ -16,7 +16,7 @@ import static java.util.Locale.ENGLISH;
  *
  * @author Sergey A. Malenkov
  */
-public final class FileSystemStorage implements LocalStorage {
+public final class FileSystemStorage extends AbstractLocalStorage {
 
     private File directory;
 
@@ -72,11 +72,6 @@ public final class FileSystemStorage implements LocalStorage {
         catch (SecurityException exception) {
             throw new IOException("could not read from entry: " + name, exception);
         }
-    }
-
-    @Override
-    public OutputStream openOutputStream(String name) throws IOException {
-        return openOutputStream(name, false);
     }
 
     @Override

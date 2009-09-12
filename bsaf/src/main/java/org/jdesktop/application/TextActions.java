@@ -124,11 +124,19 @@ class TextActions extends AbstractBean {
         Caret caret = text.getCaret();
         boolean selection = (caret.getDot() != caret.getMark());
         boolean editable = text.isEditable();
-        boolean data = getClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
         setCopyEnabled(selection);
         setCutEnabled(editable && selection);
         setDeleteEnabled(editable && selection);
-        setPasteEnabled(editable && data);
+
+        try {
+            boolean data = getClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
+            setPasteEnabled(editable && data);
+        } catch (IllegalStateException e) {
+            //java.lang.IllegalStateException: cannot open system clipboard
+            //http://kenai.com/jira/browse/BSAF-4
+            //happens on Windows when clipboard is not available
+            setPasteEnabled(editable); //we won't disable paste action rather
+        }
     }
 
     // TBD: what if text.getActionMap is null, or if it's parent isn't the UI-installed actionMap

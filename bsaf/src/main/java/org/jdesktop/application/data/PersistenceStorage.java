@@ -17,7 +17,7 @@ import javax.jnlp.UnavailableServiceException;
  *
  * @author Sergey A. Malenkov
  */
-public final class PersistenceStorage implements LocalStorage {
+final class PersistenceStorage extends AbstractLocalStorage {
 
     private final BasicService bs;
     private final PersistenceService ps;
@@ -36,13 +36,9 @@ public final class PersistenceStorage implements LocalStorage {
         this.size = size;
     }
 
+    @Override
     public InputStream openInputStream(String name) throws IOException {
         return new BufferedInputStream(ps.get(getURL(name)).getInputStream());
-    }
-
-    @Override
-    public OutputStream openOutputStream(String name) throws IOException {
-        return openOutputStream(name, false);
     }
 
     @Override
@@ -54,6 +50,7 @@ public final class PersistenceStorage implements LocalStorage {
         return new BufferedOutputStream(ps.get(url).getOutputStream(append));
     }
 
+    @Override
     public void deleteEntry(String name) throws IOException {
         ps.delete(getURL(name));
     }
