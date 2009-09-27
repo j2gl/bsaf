@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */
+ */ 
 
 package org.jdesktop.application;
 
-import junit.framework.TestCase;
-
-import javax.swing.*;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import junit.framework.*;
 
 /**
  * Checks that explicitly defining the Application.lookAndFeel resource
- * to be "system" causes the UIManager.lookAndFeel property to be
+ * to be "system" causes the UIManager.lookAndFeel property to be 
  * initialized to the sytem look and feel.
  * This test depends on resources/AppilcationSystemLNF.properties
- *
+ * 
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ApplicationSystemLNFResourceTest extends TestCase {
@@ -28,19 +28,18 @@ public class ApplicationSystemLNFResourceTest extends TestCase {
 
     public ApplicationSystemLNFResourceTest(String testName) {
         super(testName);
-        if (!isAppLaunched) {
-            ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
-            isAppLaunched = true;
-        }
+	if (!isAppLaunched) {
+	    ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
+	    isAppLaunched = true;
+	}
     }
 
     public void testApplicationLookAndFeelResource() {
-        ApplicationContext ctx = Application.getInstance(ApplicationSystemLNF.class).getContext();
-        String lnfResource = ctx.getResourceMap().getString("Application.lookAndFeel");
-        assertEquals("Application.lookAndFeel resource", "system", lnfResource);
-        LookAndFeel lnf = UIManager.getLookAndFeel();
-        // On Linux sestemLaF could not be native
-        assertTrue("Look and Feel should be native", UIManager.getSystemLookAndFeelClassName().equals(lnf.getClass().getName()));
+	ApplicationContext ctx = Application.getInstance(ApplicationSystemLNF.class).getContext();
+	String lnfResource = ctx.getResourceMap().getString("Application.lookAndFeel");
+	assertEquals("Application.lookAndFeel resource", "system", lnfResource);
+	LookAndFeel lnf = UIManager.getLookAndFeel();
+	assertTrue("Look and Feel should be native", lnf.isNativeLookAndFeel());
     }
 }
 

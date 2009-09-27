@@ -1,18 +1,19 @@
+
+
 /*
-* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
-* subject to license terms.
-*/
+ * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+ * subject to license terms.
+ */ 
 
 package org.jdesktop.application;
 
+import javax.swing.ActionMap;
 import junit.framework.TestCase;
 
-import javax.swing.*;
-
 /**
- * Check that Application.getInstance() can be used even in
+ * Check that Application.getInstance() can be used even in 
  * situtations where an Application hasn't actually been launched.
- * <p/>
+ * 
  * This test depends on resources/Basic.properties
  *
  * @author Hans Muller (Hans.Muller@Sun.COM)
@@ -20,9 +21,7 @@ import javax.swing.*;
 public class NoApplicationTest extends TestCase {
 
     private static class Basic {
-        @Action
-        public void myAction() {
-        }
+        @Action public void myAction() { }
     }
 
     public void testGetInstance() {
@@ -33,23 +32,23 @@ public class NoApplicationTest extends TestCase {
         assertEquals(app, ctx.getApplication());
         ResourceMap appRM = ctx.getResourceMap();
         assertNotNull("Application.getInstance().getContext().getResourceMap()", appRM);
-
+        
         /* Verify that a few of the default Application resources are defined */
         String[] resources = {
-                "Application.title",
-                "Application.vendor",
-                "copy.Action.text",
-                "quit.Action.text",
+            "Application.title",
+            "Application.vendor",
+            "copy.Action.text",
+            "quit.Action.text",
         };
-        for (String resource : resources) {
+        for(String resource : resources) {
             assertNotNull(appRM.getString(resource));
         }
 
         /* Verify that the default Application actions are defined */
         ActionMap appAM = ctx.getActionMap();
         assertNotNull("Application.getInstance().getContext().getActionMap()", appAM);
-        String[] appActionNames = {"quit", "cut", "copy", "paste", "delete"};
-        for (String actionName : appActionNames) {
+	String[] appActionNames = {"quit", "cut", "copy", "paste", "delete"};
+	for(String actionName : appActionNames) {
             assertNotNull(appAM.get(actionName));
         }
 
@@ -66,7 +65,7 @@ public class NoApplicationTest extends TestCase {
         ActionMap basicAM = ctx.getActionMap(Basic.class, basic);
         assertNotNull("Application.getInstance().getContext().getActionMap(Basic.class)", basicAM);
         assertNotNull(basicAM.get("myAction"));
-        for (String actionName : appActionNames) {
+	for(String actionName : appActionNames) {
             assertNotNull(basicAM.get(actionName));
         }
     }

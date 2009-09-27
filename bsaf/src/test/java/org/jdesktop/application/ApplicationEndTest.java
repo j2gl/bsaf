@@ -1,17 +1,17 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */
+ */ 
 
 package org.jdesktop.application;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 
 /**
- * Verify overriding Application#end() defeats the default call to
+ * Verify overriding Application#end() defeats the default call to 
  * System.exit().
- *
+ * 
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ApplicationEndTest extends TestCase {
@@ -28,9 +28,7 @@ public class ApplicationEndTest extends TestCase {
 
     public static class EndApplication extends WaitForStartupApplication {
         boolean endCalled = false;
-
-        @Override
-        protected void end() {
+        @Override protected void end() {
             endCalled = true;  // default was System.exit(0);
         }
     }
@@ -41,19 +39,19 @@ public class ApplicationEndTest extends TestCase {
 
     public ApplicationEndTest(String testName) {
         super(testName);
-        if (!isAppLaunched) {
-            EndApplication.launchAndWait(EndApplication.class);
-            isAppLaunched = true;
+	if (!isAppLaunched) {
+	    EndApplication.launchAndWait(EndApplication.class);
+	    isAppLaunched = true;
             Runtime rt = Runtime.getRuntime();
             Thread hook = new ShutdownHookError();
             rt.addShutdownHook(hook);
             application().exit();
             rt.removeShutdownHook(hook);
-        }
+	}
     }
 
     public void testEndCalled() {
-        assertTrue(application().endCalled);
+	assertTrue(application().endCalled);
     }
 }
 

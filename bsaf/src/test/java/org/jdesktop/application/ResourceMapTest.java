@@ -1,23 +1,47 @@
+
 /*
-* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
-* subject to license terms.
-*/
+ * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+ * subject to license terms.
+ */
 
 package org.jdesktop.application;
 
-import junit.framework.TestCase;
-import org.jdesktop.application.ResourceConverter.ResourceConverterException;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.border.EmptyBorder;
+import junit.framework.*;
+import org.jdesktop.application.ResourceConverter.ResourceConverterException;
 
 /*
  * ResourceMapTest.java - JUnit based test
@@ -38,62 +62,60 @@ import java.util.*;
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ResourceMapTest extends TestCase {
-
+    
     public ResourceMapTest(String testName) {
         super(testName);
     }
-
+    
     public void testSupportedResourceTypes() {
         Class[] supportedTypes = {
-                Boolean.class, boolean.class,
-                Integer.class, int.class,
-                Long.class, long.class,
-                Short.class, short.class,
-                Byte.class, byte.class,
-                Float.class, float.class,
-                Double.class, double.class,
-                Icon.class,
-                ImageIcon.class,
-                Color.class,
-                Font.class,
-                KeyStroke.class,
-                MessageFormat.class,
-                Point.class,
-                Dimension.class,
-                Rectangle.class,
-                Insets.class,
-                EmptyBorder.class,
-                URL.class,
-                URI.class
+            Boolean.class, boolean.class,
+            Integer.class, int.class,
+            Long.class, long.class,
+            Short.class, short.class,
+            Byte.class, byte.class,
+            Float.class, float.class,
+            Double.class, double.class,
+            Icon.class,
+            ImageIcon.class,
+            Color.class,
+            Font.class,
+            KeyStroke.class,
+            MessageFormat.class,
+            Point.class,
+            Dimension.class,
+            Rectangle.class,
+            Insets.class,
+            EmptyBorder.class,
+            URL.class,
+            URI.class
         };
         ClassLoader classLoader = getClass().getClassLoader();
-        new ResourceMap(null, classLoader, "noBundle");
-        for (Class type : supportedTypes) {
+        ResourceMap rm = new ResourceMap(null, classLoader, "noBundle");
+        for(Class type : supportedTypes) {
             String msg = "default supported ResourceConverter type: " + type.getName();
             assertNotNull(msg, ResourceConverter.forType(type));
         }
     }
-
+    
     private static class TestColor extends Color {
         public final String key;
-
         public TestColor(String key, int r, int g, int b) {
             super(r, g, b);
             this.key = key;
         }
-
         public TestColor(String key, int a, int r, int g, int b) {
             super(r, g, b, a);
             this.key = key;
         }
     }
-
+    
     private void checkBlack1x1Icon(String accessPathString, Icon icon) {
         assertNotNull(accessPathString, icon);
         assertEquals(accessPathString + ".getIconWidth()", icon.getIconWidth(), 1);
         assertEquals(accessPathString + ".getIconHeight()", icon.getIconHeight(), 1);
     }
-
+    
     private ResourceMap basicResourceMap() {
         String bundleBaseName = getClass().getPackage().getName() + ".resources.Basic";
         /* If the ResourceBundle can't be found, getBundle() will throw an exception.
@@ -103,195 +125,189 @@ public class ResourceMapTest extends TestCase {
          */
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
-        return new ResourceMap(null, classLoader, bundleBaseName);
+        ResourceMap resourceMap = new ResourceMap(null, classLoader, bundleBaseName);
+        return resourceMap;
     }
-
+    
     private void checkBasicResourceMap(ResourceMap rm) {
         assertFalse("containsKey(\"noSuchResource\")", rm.containsKey("noSuchResource"));
         assertNull("getObject(\"noSuchResource\")", rm.getObject("noSuchResource", Object.class));
-
+        
         String aStringResource = "aStringResource";
         assertTrue("containsKey(\"aStringResource\")", rm.containsKey(aStringResource));
         assertEquals("getString(\"aStringResource\")", aStringResource, rm.getString(aStringResource));
-        String testString = (String) (rm.getObject(aStringResource, String.class));
+        String testString = (String)(rm.getObject(aStringResource, String.class));
         assertEquals("getObject(\"aStringResource\")", aStringResource, testString);
-
+        
+        String aHelloMessage = "aHelloMessage";
         assertEquals("getString(\"aHelloMessage\")", "Hello World", rm.getString("aHelloMessage", "World"));
-
+        
         String integer123 = "integer123";
         String short123 = "short123";
         String long123 = "long123";
         String byte123 = "byte123";
         String float123 = "float123";
         String double123 = "double123";
-        assertEquals("getInteger(\"" + integer123 + "\")", rm.getInteger(integer123).intValue(), 123);
-        assertEquals("getShort(\"" + short123 + "\")", rm.getShort(short123).shortValue(), 123);
-        assertEquals("getLong(\"" + long123 + "\")", rm.getLong(long123).longValue(), 123L);
-        assertEquals("getByte(\"" + byte123 + "\")", rm.getByte(byte123).byteValue(), 123);
-        assertEquals("getFloat(\"" + float123 + "\")", rm.getFloat(float123).floatValue(), 123.0f);
-        assertEquals("getDouble(\"" + double123 + "\")", rm.getDouble(double123).doubleValue(), 123.0);
-
+        assertEquals("getInteger(\""+integer123+"\")", rm.getInteger(integer123).intValue(), 123);
+        assertEquals("getShort(\""+short123+"\")", rm.getShort(short123).shortValue(), 123);
+        assertEquals("getLong(\""+long123+"\")", rm.getLong(long123).longValue(), 123L);
+        assertEquals("getByte(\""+byte123+"\")", rm.getByte(byte123).byteValue(), 123);
+        assertEquals("getFloat(\""+float123+"\")", rm.getFloat(float123).floatValue(), 123.0f);
+        assertEquals("getDouble(\""+double123+"\")", rm.getDouble(double123).doubleValue(), 123.0);
+        
         String integer0 = "integer0";
         String short0 = "short0";
         String long0 = "long0";
         String byte0 = "byte0";
-        assertEquals("getInteger(\"" + integer0 + "\")", rm.getInteger(integer0).intValue(), 0);
-        assertEquals("getShort(\"" + short0 + "\")", rm.getShort(short0).shortValue(), 0);
-        assertEquals("getLong(\"" + long0 + "\")", rm.getLong(long0).longValue(), 0L);
-        assertEquals("getByte(\"" + byte0 + "\")", rm.getByte(byte0).byteValue(), 0);
-
+        assertEquals("getInteger(\""+integer0+"\")", rm.getInteger(integer0).intValue(), 0);
+        assertEquals("getShort(\""+short0+"\")", rm.getShort(short0).shortValue(), 0);
+        assertEquals("getLong(\""+long0+"\")", rm.getLong(long0).longValue(), 0L);
+        assertEquals("getByte(\""+byte0+"\")", rm.getByte(byte0).byteValue(), 0);
+        
         String integerNegative1 = "integerNegative1";
         String shortNegative1 = "shortNegative1";
         String longNegative1 = "longNegative1";
         String byteNegative1 = "byteNegative1";
-        assertEquals("getInteger(\"" + integerNegative1 + "\")", rm.getInteger(integerNegative1).intValue(), -1);
-        assertEquals("getShort(\"" + shortNegative1 + "\")", rm.getShort(shortNegative1).shortValue(), -1);
-        assertEquals("getLong(\"" + longNegative1 + "\")", rm.getLong(longNegative1).longValue(), -1L);
-        assertEquals("getByte(\"" + byteNegative1 + "\")", rm.getByte(byteNegative1).byteValue(), -1);
-
+        assertEquals("getInteger(\""+integerNegative1+"\")", rm.getInteger(integerNegative1).intValue(), -1);
+        assertEquals("getShort(\""+shortNegative1+"\")", rm.getShort(shortNegative1).shortValue(), -1);
+        assertEquals("getLong(\""+longNegative1+"\")", rm.getLong(longNegative1).longValue(), -1L);
+        assertEquals("getByte(\""+byteNegative1+"\")", rm.getByte(byteNegative1).byteValue(), -1);
+        
         try {
             rm.getInteger("badlyFormattedInteger");
             fail("rm.getInteger(\"badlyFormattedInteger\") expected throw");
         } catch (ResourceMap.LookupException e) {
         }
-
+        
         /* ResourceConverterException has a little bit of logic to limit
-        * limit the length of the message string.  Check the output
-        * log (also checking programatically here).
-        */
+         * limit the length of the message string.  Check the output
+         * log (also checking programatically here).
+         */
         String badlyFormattedGiantInteger = "badlyFormattedGiantInteger";
         try {
             rm.getInteger(badlyFormattedGiantInteger);
-            fail("rm.getString(\"" + badlyFormattedGiantInteger + "\") expected throw");
+            fail("rm.getString(\""+badlyFormattedGiantInteger+"\") expected throw");
         } catch (ResourceMap.LookupException e) {
         }
         ResourceConverter sc = ResourceConverter.forType(Integer.class);
         String badGiantInteger = rm.getString(badlyFormattedGiantInteger);
         try {
             sc.parseString(badGiantInteger, rm);
-        } catch (ResourceConverterException e) {
+        } catch(ResourceConverterException e) {
             boolean f = e.getMessage().length() < badGiantInteger.length();
             assertTrue("ResourceConverterException message should be truncated", f);
         }
-
+        
         String[] trueKeys = {"booleanTrue", "booleanTRUE", "booleanYes", "booleanOn"};
-        for (String key : trueKeys) {
+        for(String key : trueKeys) {
             assertTrue("getBoolean(\"" + key + "\")", rm.getBoolean(key));
         }
-
+        
         String[] falseKeys = {"booleanFalse", "booleanFALSE", "booleanNo", "booleanOff"};
-        for (String key : falseKeys) {
+        for(String key : falseKeys) {
             assertFalse("getBoolean(\"" + key + "\")", rm.getBoolean(key));
         }
-
+        
         // Color formats are: #RRGGBB",  "#AARRGGBB", "R, G, B", "R, G, B, A"
         TestColor[] testColors = {
-                new TestColor("color123", 1, 2, 3),
-                new TestColor("color345", 3, 4, 5),
-                new TestColor("color567", 5, 6, 7),
-                new TestColor("color5678", 8, 5, 6, 7),  // TestColor(a, r, g, b)
-                new TestColor("color556677", 0x55, 0x66, 0x77),
-                new TestColor("color55667788", 0x55, 0x66, 0x77, 0x88)
+            new TestColor("color123", 1, 2, 3),
+            new TestColor("color345", 3, 4, 5),
+            new TestColor("color567", 5, 6, 7),
+            new TestColor("color5678", 8, 5, 6, 7),  // TestColor(a, r, g, b)
+            new TestColor("color556677", 0x55, 0x66, 0x77),
+            new TestColor("color55667788", 0x55, 0x66, 0x77, 0x88)
         };
-        for (TestColor testColor : testColors) {
+        for(TestColor testColor : testColors) {
             Color c1 = rm.getColor(testColor.key);
             Color c2 = rm.getColor(testColor.key);
             assertEquals("getColor(\"" + testColor.key + "\") c1", c1, testColor);
             assertEquals("getColor(\"" + testColor.key + "\") c2", c2, testColor);
-            assertTrue("getColor(\"" + testColor.key + "\") c1==c2", c2 == c2);
+            assertTrue("getColor(\"" + testColor.key + "\") c1==c2", c2==c2);
         }
-
+        
         /* Verify that looking up an integer resource that
-        * names a Color resourced that has already been loaded
-        * triggers a LookupException.
-        */
+         * names a Color resourced that has already been loaded
+         * triggers a LookupException.
+         */
         Color c123 = rm.getColor("color123");
-        assertEquals("unexpected failure", c123, new Color(1, 2, 3));
+        assertEquals("unexpected failure", c123, new Color(1,2,3));
         try {
             rm.getInteger("color123");
             fail("rm.getInteger(\"color123\") expected throw");
-        } catch (ResourceMap.LookupException e) {
-        }
-
+        } catch (ResourceMap.LookupException e) {	}
+        
         String fontArialPLAIN12 = "fontArialPLAIN12";
         Font f1 = rm.getFont(fontArialPLAIN12);
         Font f2 = rm.getFont(fontArialPLAIN12);
-        assertNotNull("getFont(\"" + fontArialPLAIN12 + "\")", f1);
-        assertEquals("getFont(\"" + fontArialPLAIN12 + "\") f1.equals(f2)", f1, f2);
+        assertNotNull("getFont(\""+fontArialPLAIN12+"\")", f1);
+        assertEquals("getFont(\""+fontArialPLAIN12+"\") f1.equals(f2)", f1, f2);
         // Note that ResourceMap is not required to cache values, so it's not
         // necessarily true that f1==f2
-
+        
         ImageIcon imageIcon = rm.getImageIcon("black1x1Icon");
         checkBlack1x1Icon("getImageIcon(\"black1x1Icon\")", imageIcon);
 
         Icon icon = rm.getIcon("black1x1Icon");
         checkBlack1x1Icon("getIcon(\"black1x1Icon\")", icon);
 
-        // Verify that absolute pathnames work
+	// Verify that absolute pathnames work
         ImageIcon absIcon = rm.getImageIcon("AbsoluteBlack1x1Icon");
         checkBlack1x1Icon("getImageIcon(\"AbsoluteBlack1x1Icon\")", absIcon);
 
         // Check the support for Point, Dimension, Rectangle, Insets, EmptyBorder
-        {
+        { 
             String[] resourceKeys = {
-                    "point12",
-                    "pointMinus12",
-                    "dimension56",
-                    "dimension89",
-                    "rectangle1234",
-                    "rectangleMinus5309",
-                    "insets7890",
-                    "emptyBorder8675",
-                    "emptyBorder0000"
+                "point12", 
+                "pointMinus12", 
+                "dimension56", 
+                "dimension89", 
+                "rectangle1234",
+                "rectangleMinus5309",
+                "insets7890",
+                "emptyBorder8675",
+                "emptyBorder0000"
             };
             Object[] resourceValues = {
-                    new Point(1, 2),
-                    new Point(-1, -2),
-                    new Dimension(5, 6),
-                    new Dimension(8, 9),
-                    new Rectangle(1, 2, 3, 4),
-                    new Rectangle(-5, -3, 0, 9),
-                    new Insets(7, 8, 9, 0),
-                    new EmptyBorder(8, 6, 7, 5),
-                    new EmptyBorder(0, 0, 0, 0)
+                new Point(1, 2),
+                new Point(-1, -2),
+                new Dimension(5, 6),
+                new Dimension(8, 9),
+                new Rectangle(1, 2, 3, 4),
+                new Rectangle(-5, -3, 0, 9),
+                new Insets(7, 8, 9, 0),
+                new EmptyBorder(8, 6, 7, 5),
+                new EmptyBorder(0, 0, 0, 0)
             };
-            for (int i = 0; i < resourceKeys.length; i++) {
+            for(int i = 0; i < resourceKeys.length; i++) {
                 String key = resourceKeys[i];
                 Object expectedValue = resourceValues[i];
                 Class type = expectedValue.getClass();
                 String msg = String.format("get%s(\"%s\")", type.getSimpleName(), key);
                 if (EmptyBorder.class.isAssignableFrom(type)) {
-                    EmptyBorder border = (EmptyBorder) rm.getObject(key, type);
-                    EmptyBorder expectedBorder = (EmptyBorder) expectedValue;
+                    EmptyBorder border = (EmptyBorder)rm.getObject(key, type);
+                    EmptyBorder expectedBorder = (EmptyBorder)expectedValue;
                     assertEquals(msg, expectedBorder.getBorderInsets(), border.getBorderInsets());
-                } else {
+                }
+                else {
                     assertEquals(msg, expectedValue, rm.getObject(key, type));
                 }
             }
         }
 
         // Check the support for URLs
-        URL url;
-        try {
-            url = new URL("http://www.sun.com");
-        }
-        catch (MalformedURLException e) {
-            throw new Error(e);
-        }
+        URL url = null;
+        try { url = new URL("http://www.sun.com"); }
+        catch (MalformedURLException e) { throw new Error(e); }
         assertEquals(url, rm.getObject("sunURL", URL.class));
 
         // Check the support for URIs
-        URI uri;
-        try {
-            uri = new URI("mailto:users@appframework.dev.java.net");
-        }
-        catch (URISyntaxException e) {
-            throw new Error(e);
-        }
+        URI uri = null;
+        try { uri = new URI("mailto:users@appframework.dev.java.net"); }
+        catch (URISyntaxException e) { throw new Error(e); }
         assertEquals(uri, rm.getObject("mailURI", URI.class));
     }
-
-
+    
+    
     /**
      * Verify that the we can load a ResourceBundle and get/cache
      * all its resources through a ResourceMap.
@@ -299,7 +315,7 @@ public class ResourceMapTest extends TestCase {
     public void testBasics() {
         checkBasicResourceMap(basicResourceMap());
     }
-
+    
     /**
      * Verify that an empty ResourceMap whose parent is basicResourcMap
      * looks the same as (just) basicResourceMap.
@@ -308,7 +324,7 @@ public class ResourceMapTest extends TestCase {
         ClassLoader classLoader = getClass().getClassLoader();
         checkBasicResourceMap(new ResourceMap(basicResourceMap(), classLoader, "noSuchBundle"));
     }
-
+    
     public void testMultipleBundleNames() {
         String b2 = getClass().getPackage().getName() + ".resources.MultiBundle";
         String b1 = b2 + "_AllLocales";
@@ -325,26 +341,22 @@ public class ResourceMapTest extends TestCase {
         assertEquals("XP", resourceMap.getString("WindowsXP_only"));
         assertEquals("AllLocales", resourceMap.getString("AllLocales_only"));
     }
-
+    
     private static class TestType {
         public final String value;
-
-        TestType(String value) {
-            this.value = value;
-        }
+        TestType(String value) { this.value = value; }
     }
-
+    
     private static class TestResourceConverter extends ResourceConverter {
         TestResourceConverter() {
             super(TestType.class);
         }
-
         @Override
         public Object parseString(String s, ResourceMap ignore) {
             return new TestType(s);
         }
     }
-
+    
     public void testRegisterResourceConverter() {
         ResourceMap rm = basicResourceMap();
         ResourceConverter.register(new TestResourceConverter());
@@ -352,55 +364,56 @@ public class ResourceMapTest extends TestCase {
         String testAddResourceConverter = "testAddResourceConverter";
         assertEquals(testAddResourceConverter, rm.getString(testAddResourceConverter));
         Object tt = rm.getObject(testAddResourceConverter, TestType.class);
-        assertNotNull("getString(\"" + testAddResourceConverter + "\")", tt);
-        Boolean b = ((TestType) tt).value.equals(testAddResourceConverter);
-        assertTrue("getString(\"" + testAddResourceConverter + "\").value", b);
+        assertNotNull("getString(\""+testAddResourceConverter+"\")", tt);
+        Boolean b = ((TestType)tt).value.equals(testAddResourceConverter);
+        assertTrue("getString(\""+testAddResourceConverter+"\").value", b);
     }
-
+    
     private ResourceMap childResourceMap() {
         String bundleBaseName = getClass().getPackage().getName() + ".resources.Child";
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
         return new ResourceMap(null, classLoader, bundleBaseName);
     }
-
+    
     public void testKeySetBasics() {
         Set<String> keys = childResourceMap().keySet();
         assertNotNull("childResourceMap.keySet()", keys);
         String[] expectedKeys = {"p1", "p2", "p3", "p4", "p5"};
         assertEquals("childResourceMap().keySet().size()", expectedKeys.length, keys.size());
         // TBD check that childResourceMap is read-only
-        Set<String> shouldBeEmpty = new HashSet<String>(keys);
+        Set<String> shouldBeEmpty = new HashSet(keys);
         assertTrue("Should remove all keys", shouldBeEmpty.removeAll(Arrays.asList(expectedKeys)));
         assertEquals("Should (now) be an empty set", shouldBeEmpty.size(), 0);
         // TBD check that the keys iterator works
         // and check again with empty resourcemap with child as parent
     }
-
+    
     private ResourceMap parentChildResourceMap() {
         String bundleBaseName = getClass().getPackage().getName() + ".resources.Parent";
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
         return new ResourceMap(childResourceMap(), classLoader, bundleBaseName);
     }
-
+    
     public void testKeySetParentChild() {
         Set<String> keys = parentChildResourceMap().keySet();
         assertNotNull("parentChildResourceMap.keySet()", keys);
         String[] expectedKeys = {"p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"};
         assertEquals("parentChildResourceMap().keySet().size()", expectedKeys.length, keys.size());
-        Set<String> shouldBeEmpty = new HashSet<String>(keys);
+        Set<String> shouldBeEmpty = new HashSet(keys);
         assertTrue("Should remove all keys", shouldBeEmpty.removeAll(Arrays.asList(expectedKeys)));
         assertEquals("Should (now) be an empty set", shouldBeEmpty.size(), 0);
     }
-
+    
     private ResourceMap injectionResourceMap() {
         String bundleBaseName = getClass().getPackage().getName() + ".resources.Injection";
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
-        return new ResourceMap(null, classLoader, bundleBaseName);
+        ResourceMap resourceMap = new ResourceMap(null, classLoader, bundleBaseName);
+        return resourceMap;
     }
-
+    
     public void testInjectComponentProperties() {
         JLabel label = new JLabel();
         label.setName("testLabel");
@@ -424,7 +437,7 @@ public class ResourceMapTest extends TestCase {
         rm.injectComponent(labelNullText);
         assertNull(labelNullText.getText());
     }
-
+    
     public void testInjectComponentHierarchyProperties() {
         JFrame mainFrame = new JFrame();
         JMenuBar menuBar = new JMenuBar();
@@ -449,9 +462,9 @@ public class ResourceMapTest extends TestCase {
         mnemonicLabel2.setName("mnemonicLabel2");
         button.setName("button");
         mainFrame.add(parentPanel);
-        mainFrame.setJMenuBar(menuBar);
-        menuBar.add(menu);
-        menu.add(item);
+	mainFrame.setJMenuBar(menuBar);
+	menuBar.add(menu);
+	menu.add(item);
         parentPanel.add(childPanel);
         parentPanel.add(textField1);
         parentPanel.add(mnemonicLabel1);
@@ -469,7 +482,7 @@ public class ResourceMapTest extends TestCase {
         assertEquals("item.getMnemonic()", 69, item.getMnemonic());
         assertEquals("textField1.getText()", "textField1", textField1.getText());
         assertEquals("textField2.getText()", "textField2", textField2.getText());
-        assertEquals("textField2.getBackground()", new Color(0, 0, 0), textField2.getBackground());
+        assertEquals("textField2.getBackground()", new Color(0,0,0), textField2.getBackground());
         Color parentBackground = new Color(0x55, 0x00, 0x00);
         Color parentForeground = new Color(0x00, 0x66, 0x00);
         Color childForeground = new Color(0x00, 0x00, 0x77);
@@ -488,36 +501,25 @@ public class ResourceMapTest extends TestCase {
         assertEquals(KeyEvent.VK_A, mnemonicLabel2.getDisplayedMnemonic());
         assertEquals(KeyEvent.VK_X, button.getMnemonic());
     }
-
+    
     private static class TestResourceAnnotation {
-        @Resource
-        private String stringField;
-        @Resource
-        protected int intField;
-        @Resource
-        public Color colorField;
-        @Resource
-        boolean booleanField;
-        @Resource
-        static String staticField;
-        @Resource(key = "F1")
-        private String stringF1Field;
-        @Resource(key = "TestResourceAnnotation.objectField")
-        Object objectField;
-        @Resource
-        int[] numbers = new int[12];
-        @Resource
-        Icon[] icons = new Icon[2];
-        @Resource
-        KeyStroke shortcutX;
-        @Resource
-        KeyStroke shortcutShiftX;
+        @Resource private String stringField;
+        @Resource protected int intField;
+        @Resource public Color colorField;
+        @Resource boolean booleanField;
+        @Resource static String staticField;
+        @Resource(key="F1") private String stringF1Field;
+        @Resource(key="TestResourceAnnotation.objectField") Object objectField;
+        @Resource int[] numbers = new int[12];
+        @Resource Icon[] icons = new Icon[2];
+        @Resource KeyStroke shortcutX;
+        @Resource KeyStroke shortcutShiftX;
     }
-
+    
     public void testResourceAnnotation() {
         ResourceMap rm = basicResourceMap();
         TestResourceAnnotation target = new TestResourceAnnotation();
-        for (int i = 0; i < target.numbers.length; i++) {
+        for(int i = 0; i < target.numbers.length; i++) {
             target.numbers[i] = -1;
         }
         rm.injectFields(target);
@@ -525,14 +527,14 @@ public class ResourceMapTest extends TestCase {
         assertEquals("@Resource protected int intField;", 123, target.intField);
         assertEquals("@Resource public Color colorField;", new Color(0, 1, 2), target.colorField);
         assertTrue("@Resource boolean booleanField;", target.booleanField);
-        assertEquals("@Resource static String staticField;", "staticField", TestResourceAnnotation.staticField);
+        assertEquals("@Resource static String staticField;", "staticField", target.staticField);
         assertEquals("@Resource(key=\"F1\") private String stringF1Field;", "stringF1Field", target.stringF1Field);
         assertEquals("@Resource(key=\"TestResourceAnnotation.objectField\")", "objectField", target.objectField);
-        for (int i = 0; i < target.numbers.length; i++) {
+        for(int i = 0; i < target.numbers.length; i++) {
             if ((i == 2) || (i == 3) || (i == 11)) {
-                assertEquals("@Resource int[] numbers[" + i + "]", i, target.numbers[i]);
+                assertEquals("@Resource int[] numbers["+i+"]", i, target.numbers[i]);
             } else {
-                assertEquals("@Resource int[] numbers[" + i + "]", -1, target.numbers[i]);
+                assertEquals("@Resource int[] numbers["+i+"]", -1, target.numbers[i]);
             }
         }
         checkBlack1x1Icon("@Resource icons[0]", target.icons[0]);
@@ -543,14 +545,15 @@ public class ResourceMapTest extends TestCase {
         assertEquals(KeyStroke.getKeyStroke(shortcut + " shift X"), target.shortcutShiftX);
 
     }
-
+    
     private ResourceMap expressionEvaluationResourceMap() {
         String bundleBaseName = getClass().getPackage().getName() + ".resources.ExprEval";
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
-        return new ResourceMap(null, classLoader, bundleBaseName);
+        ResourceMap resourceMap = new ResourceMap(null, classLoader, bundleBaseName);
+        return resourceMap;
     }
-
+    
     public void testExpressionEvaluation() {
         ResourceMap rm = expressionEvaluationResourceMap();
         assertEquals("rm.getString(hello)", "Hello", rm.getString("hello"));
@@ -566,17 +569,15 @@ public class ResourceMapTest extends TestCase {
         try {
             rm.getString("noSuchVariableKey");
             fail("rm.getString(\"noSuchVariableKey\") expected throw");
-        } catch (ResourceMap.LookupException e) {
-        }
+        } catch (ResourceMap.LookupException e) {	}
         try {
             rm.getString("noClosingBrace");
             fail("rm.getString(\"noClosingBrace\") expected throw");
-        } catch (ResourceMap.LookupException e) {
-        }
+        } catch (ResourceMap.LookupException e) {	}
         assertNull("getString(\"justNull\")", rm.getString("justNull"));
         assertTrue("containsKey(\"justNull\")", rm.containsKey("justNull"));
     }
-
+    
     public void testResourceMapSubclass() {
         final HashMap<String, Object> myMap = new HashMap<String, Object>();
         myMap.put("hello", "hello");
@@ -584,18 +585,15 @@ public class ResourceMapTest extends TestCase {
         myMap.put("hello world", "${hello} ${world}");
         myMap.put("HelloX", "Hello %s");
         ResourceMap rm = new ResourceMap(null, getClass().getClassLoader(), "no bundles") {
-            protected Set<String> getResourceKeySet() {
+            protected  Set<String> getResourceKeySet() {
                 return myMap.keySet();
             }
-
             protected boolean containsResourceKey(String key) {
                 return myMap.containsKey(key);
             }
-
             protected Object getResource(String key) {
                 return myMap.get(key);
             }
-
             protected void putResource(String key, Object value) {
                 myMap.put(key, value);
             }
@@ -608,7 +606,7 @@ public class ResourceMapTest extends TestCase {
         assertEquals("hello world", rm.getString("hello world"));
         assertEquals("Hello World", rm.getString("HelloX", "World"));
     }
-
+    
     private ResourceMap platformResourceMap() { // see basicResourceMap
         String bundleBaseName = getClass().getPackage().getName() + ".resources.Basic";
         String osBundleName = bundleBaseName + "_WindowsXP";
@@ -620,16 +618,17 @@ public class ResourceMapTest extends TestCase {
         ResourceBundle.getBundle(bundleBaseName);
         ResourceBundle.getBundle(osBundleName);
         ClassLoader classLoader = getClass().getClassLoader();
-        return new ResourceMap(null, classLoader, osBundleName, bundleBaseName);
+        ResourceMap resourceMap = new ResourceMap(null, classLoader, osBundleName, bundleBaseName);
+        return resourceMap;
     }
-
+    
     public void testPlatformResourceMap() {
         ResourceMap rm = platformResourceMap();
         checkBasicResourceMap(rm);
         assertEquals("notPlatformSpecific", rm.getString("notPlatformSpecific"));
         assertEquals("platformSpecific", rm.getString("platformSpecific"));
     }
-
+    
     public void testLocaleResource() {
         Locale oldLocale = Locale.getDefault();
         Locale.setDefault(new Locale("zz"));
@@ -658,20 +657,20 @@ public class ResourceMapTest extends TestCase {
         assertEquals(rm.getObject(integer123, int.class), new Integer(123));
 
         assertEquals(rm.getShort(short123).shortValue(), 123);
-        assertEquals(rm.getObject(short123, short.class), new Short((short) 123));
+        assertEquals(rm.getObject(short123, short.class), new Short((short)123));
 
         assertEquals(rm.getLong(long123).longValue(), 123L);
         assertEquals(rm.getObject(long123, long.class), new Long(123));
 
         assertEquals(rm.getByte(byte123).byteValue(), 123);
-        assertEquals(rm.getObject(byte123, byte.class), new Byte((byte) 123));
+        assertEquals(rm.getObject(byte123, byte.class), new Byte((byte)123));
 
         assertEquals(rm.getFloat(float123).floatValue(), 123.0f);
         assertEquals(rm.getObject(float123, float.class), new Float(123.0f));
 
         assertEquals(rm.getDouble(double123).doubleValue(), 123.0);
         assertEquals(rm.getObject(double123, double.class), new Double(123.0));
-
+        
         assertTrue(rm.getBoolean(booleanTrue));
         assertEquals(Boolean.TRUE, rm.getObject(booleanTrue, boolean.class));
     }
@@ -685,20 +684,21 @@ public class ResourceMapTest extends TestCase {
          */
         ResourceBundle.getBundle(bundleBaseName);
         ClassLoader classLoader = getClass().getClassLoader();
-        return new ResourceMap(null, classLoader, bundleBaseName);
+        ResourceMap resourceMap = new ResourceMap(null, classLoader, bundleBaseName);
+        return resourceMap;
     }
 
     /**
-     * Test for Issue #10: If the default locale changes, ResourceMap
+     * Test for Issue #10: If the default locale changes, ResourceMap 
      * cache entries should be cleared
      */
     public void testDefaultLocaleChange() {
         Locale.setDefault(Locale.ENGLISH);
         ResourceMap rm = localeChangeTestResourceMap();
-        assertEquals("English string", "Hello", rm.getString("hello"));
+        assertEquals("English string",   "Hello", rm.getString("hello"));
         assertEquals("English variable", "Hello World", rm.getString("welcome"));
         Locale.setDefault(Locale.GERMAN);
-        assertEquals("German string", "Hallo", rm.getString("hello"));
+        assertEquals("German string",   "Hallo", rm.getString("hello"));
         assertEquals("German variable", "Hallo Welt", rm.getString("welcome"));
     }
 

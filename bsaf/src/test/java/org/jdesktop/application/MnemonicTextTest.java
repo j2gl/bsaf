@@ -1,16 +1,20 @@
+
 /*
-* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
-* subject to license terms.
-*/
+ * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+ * subject to license terms.
+ */ 
 
 
 package org.jdesktop.application;
 
-import junit.framework.TestCase;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import junit.framework.*;
+import org.jdesktop.application.MnemonicText;
 
 /**
  * Test the internal (package private) MnemonicText class.
@@ -58,11 +62,9 @@ public class MnemonicTextTest extends TestCase {
         String text;
         int mnemonicKey = KeyEvent.VK_UNDEFINED;
         int mnemonicIndex = -1;
-
         MnemonicData(String text) {
             this.markedText = this.text = text;
         }
-
         MnemonicData(String markedText, String text, int mnemonicKey, int mnemonicIndex) {
             this.markedText = markedText;
             this.text = text;
@@ -70,40 +72,39 @@ public class MnemonicTextTest extends TestCase {
             this.mnemonicIndex = mnemonicIndex;
         }
     }
-
+    
     public void testConfigure() {
         MnemonicData[] testData = {
-                new MnemonicData(""),  // text doesn't contain a valid mnemonic marker
-                new MnemonicData("&"), // ...
-                new MnemonicData("x"),
-                new MnemonicData("xy"),
-                new MnemonicData("xyz"),
-                new MnemonicData("x&"),
-                new MnemonicData("x& "),
-                new MnemonicData("x&\t"),
-                new MnemonicData("x & y"),
-                new MnemonicData("'&'"),
-                new MnemonicData("foo('&')"),
-                new MnemonicData("&x & y", "x & y", KeyEvent.VK_X, 0), // *does* contain ...
-                new MnemonicData("x & &y", "x & y", KeyEvent.VK_Y, 4), // ... 
-                new MnemonicData("&File", "File", KeyEvent.VK_F, 0),
-                new MnemonicData("Save &As", "Save As", KeyEvent.VK_A, 5),
+            new MnemonicData(""),  // text doesn't contain a valid mnemonic marker
+            new MnemonicData("&"), // ...
+            new MnemonicData("x"),
+            new MnemonicData("xy"),
+            new MnemonicData("xyz"),
+            new MnemonicData("x&"),
+            new MnemonicData("x& "),
+            new MnemonicData("x&\t"),
+            new MnemonicData("x & y"),
+            new MnemonicData("'&'"),
+            new MnemonicData("foo('&')"),
+            new MnemonicData("&x & y", "x & y", KeyEvent.VK_X, 0), // *does* contain ...
+            new MnemonicData("x & &y", "x & y", KeyEvent.VK_Y, 4), // ... 
+            new MnemonicData("&File", "File", KeyEvent.VK_F, 0),
+            new MnemonicData("Save &As", "Save As", KeyEvent.VK_A, 5),
         };
         JLabel l = new JLabel();
-        for (MnemonicData d : testData) {
+        for(MnemonicData d : testData) {
             MnemonicText.configure(l, d.markedText);
             checkLabel(l, d.text, d.mnemonicKey, d.mnemonicIndex);
         }
         JButton b = new JButton();
-        for (MnemonicData d : testData) {
+        for(MnemonicData d : testData) {
             MnemonicText.configure(b, d.markedText);
             checkButton(b, d.text, d.mnemonicKey, d.mnemonicIndex);
         }
         javax.swing.Action a = new AbstractAction("test") {
-            public void actionPerformed(ActionEvent e) {
-            }
+            public void actionPerformed(ActionEvent e) { }
         };
-        for (MnemonicData d : testData) {
+        for(MnemonicData d : testData) {
             MnemonicText.configure(a, d.markedText);
             checkAction(a, d.text, d.mnemonicKey, d.mnemonicIndex);
         }
