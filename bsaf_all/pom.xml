@@ -14,7 +14,6 @@
 	<modules>
 		<module>../bsaf</module>
 		<module>../bsaf_examples</module>
-		<module>../bsaf_test_apps</module>
 	</modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
