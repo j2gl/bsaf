@@ -1,15 +1,26 @@
+
+
 /*
-* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
-* subject to license terms.
-*/
+ * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+ * subject to license terms.
+ */ 
 
 package examples;
 
-import org.jdesktop.application.*;
+import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
-
-import javax.swing.*;
-import java.awt.*;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -18,53 +29,58 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 
 /**
  * This is a very simple example of a reusable {@code @Actions} class.  The code defines
  * a JComponent subclass called BaseScenePanel that defines two @Actions: create
- * and remove, that add/remove an icon from the scene panel.  These actions are added
- * to a right button popup menu for the component.
+ * and remove, that add/remove an icon from the scene panel.  These actions are added 
+ * to a right button popup menu for the component.   
  * [TBD: demo resource shadowing too]
- *
+ * 
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ActionMapExample extends SingleFrameApplication {
     private static final Logger logger = Logger.getLogger(ActionMapExample.class.getName());
-    private static final Insets zeroInsets = new Insets(0, 0, 0, 0);
+    private static final Insets zeroInsets = new Insets(0,0,0,0);
 
-    @Override
-    protected void startup() {
+    @Override protected void startup() {
         View view = getMainView();
         view.setComponent(createMainPanel());
         show(view);
     }
 
     public static void main(String[] args) {
-        Launcher.getInstance().launch(ActionMapExample.class, args);
+        launch(ActionMapExample.class, args);
     }
 
     private JComponent createMainPanel() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+	GridBagConstraints c = new GridBagConstraints();
 
-        initGridBagConstraints(c);
-        c.anchor = GridBagConstraints.WEST;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.HORIZONTAL;
+	initGridBagConstraints(c);
+	c.anchor = GridBagConstraints.WEST;
+	c.gridwidth = GridBagConstraints.REMAINDER;
+	c.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(new BaseScenePanel(this), c);
 
-        initGridBagConstraints(c);
+	initGridBagConstraints(c);
         c.weightx = 0.5;
         c.weighty = 1.0;
-        c.fill = GridBagConstraints.BOTH;
+	c.fill = GridBagConstraints.BOTH;
         mainPanel.add(new DerivedScenePanelA(this), c);
 
-        initGridBagConstraints(c);
+	initGridBagConstraints(c);
         c.weightx = 0.5;
         c.weighty = 1.0;
-        c.fill = GridBagConstraints.BOTH;
-        c.gridwidth = GridBagConstraints.REMAINDER;
+	c.fill = GridBagConstraints.BOTH;
+	c.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(new DerivedScenePanelB(this), c);
         return mainPanel;
     }
@@ -77,30 +93,29 @@ public class ActionMapExample extends SingleFrameApplication {
         c.gridx = GridBagConstraints.RELATIVE;
         c.gridy = GridBagConstraints.RELATIVE;
         c.insets = zeroInsets;
-        c.ipadx = 0;
-        c.ipady = 0;
+        c.ipadx = 0; 
+        c.ipady = 0; 
         c.weightx = 0.0;
         c.weighty = 0.0;
     }
 
 
     /**
-     * A JComponent that renders a Scene and defines two {@code @Actions}:
+     * A JComponent that renders a Scene and defines two {@code @Actions}: 
      * <ul>
      * <li> {@code create} - adds a new Node to the scene to the right of the last one
-     * <li> {@code remove} - removes the selected Node
+     * <li> {@code remove} - removes the selected Node 
      * </ul>
-     * These actions are added to a popup menu.
-     * <p/>
-     * Subclasses can override the {@code create} and {@code remove} methods to
+     * These actions are added to a popup menu. 
+     * <p>
+     * Subclasses can override the {@code create} and {@code remove} methods to 
      * change the corresponding actions.
      */
     public static class BaseScenePanel extends JComponent implements PropertyChangeListener {
         private final Scene scene;
         private final Application application;
 
-        @Action
-        public void create() {
+        @Action public void create() {
             ResourceMap resourceMap = getContext().getResourceMap(getClass(), BaseScenePanel.class);
             Node node = new Node(resourceMap.getIcon("circleIcon"));
             Insets insets = getInsets();
@@ -112,8 +127,7 @@ public class ActionMapExample extends SingleFrameApplication {
             getScene().add(node);
         }
 
-        @Action
-        public void remove() {
+        @Action public void remove() {
             getScene().remove(getScene().getSelectedNode());
         }
 
@@ -135,7 +149,7 @@ public class ActionMapExample extends SingleFrameApplication {
         }
 
         private class SelectionListener extends MouseAdapter {
-            public void mousePressed(MouseEvent e) {
+            public void mousePressed(MouseEvent e) { 
                 if (!e.isPopupTrigger()) {
                     Node node = getScene().nodeAt(e.getX(), e.getY());
                     if (node != null) {
@@ -149,27 +163,28 @@ public class ActionMapExample extends SingleFrameApplication {
             return scene;
         }
 
-        protected final Application getApplication() {
-            return application;
+        protected final Application getApplication() { 
+            return application; 
         }
 
-        protected final ApplicationContext getContext() {
+        protected final ApplicationContext getContext() { 
             return application.getContext();
         }
 
         public void propertyChange(PropertyChangeEvent e) {
             if (e.getPropertyName() == null) {
                 repaint();
-            } else if (e.getPropertyName().equals("selectedNode")) {
+            }
+            else if (e.getPropertyName().equals("selectedNode")) {
                 Node node = getScene().getSelectedNode();
-                repaint(); // todo oldSelection + newSelection bounds
+                repaint(); // TBD oldSelection + newSelection bounds
             }
         }
 
         protected void paintComponent(Graphics g) {
             g.setColor(getBackground());
             g.fillRect(0, 0, getWidth(), getHeight());
-            for (Node node : getScene().getNodes()) {
+            for(Node node : getScene().getNodes()) {
                 Icon icon = node.getIcon();
                 Point location = node.getLocation();
                 icon.paintIcon(this, g, location.x, location.y);
@@ -180,12 +195,12 @@ public class ActionMapExample extends SingleFrameApplication {
                 }
             }
         }
-
+        
         public Dimension getPreferredSize() {
             List<Node> nodes = getScene().getNodes();
-            int maxX = 128;
+            int maxX = 128; 
             int maxY = 128;
-            for (Node node : nodes) {
+            for(Node node : nodes) {
                 Rectangle r = node.getBounds();
                 maxX = Math.max(maxX, r.x);
                 maxY = Math.max(maxY, r.y);
@@ -201,8 +216,7 @@ public class ActionMapExample extends SingleFrameApplication {
             super(application);
         }
 
-        @Override
-        public void create() {
+        @Override public void create() {
             ResourceMap resourceMap = getContext().getResourceMap(getClass(), BaseScenePanel.class);
             Node node = new Node(resourceMap.getIcon("squareIcon"));
             Insets insets = getInsets();
@@ -225,8 +239,7 @@ public class ActionMapExample extends SingleFrameApplication {
             super(application);
         }
 
-        @Override
-        public void create() {
+        @Override public void create() {
             ResourceMap resourceMap = getContext().getResourceMap(getClass(), BaseScenePanel.class);
             Node node = new Node(resourceMap.getIcon("triangleIcon"));
             Insets insets = getInsets();
@@ -255,13 +268,9 @@ public class ActionMapExample extends SingleFrameApplication {
             this.menu = menu;
         }
 
-        public void mousePressed(MouseEvent e) {
-            maybeShowPopup(e);
-        }
+        public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
 
-        public void mouseReleased(MouseEvent e) {
-            maybeShowPopup(e);
-        }
+        public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
 
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
@@ -303,8 +312,9 @@ public class ActionMapExample extends SingleFrameApplication {
 
         public final Rectangle getLastNodeBounds() {
             if (nodes.size() == 0) {
-                return new Rectangle(0, 0, 0, 0);
-            } else {
+                return new Rectangle(0,0,0,0);
+            }
+            else {
                 Node lastNode = nodes.get(nodes.size() - 1);
                 return lastNode.getBounds();
             }
@@ -312,7 +322,7 @@ public class ActionMapExample extends SingleFrameApplication {
 
         public final Node nodeAt(int x, int y) {
             Node lastNode = null;
-            for (Node node : nodes) {
+            for(Node node : nodes) {
                 if (node.getBounds().contains(x, y)) {
                     lastNode = node;
                 }
@@ -350,7 +360,7 @@ public class ActionMapExample extends SingleFrameApplication {
             return icon;
         }
 
-        public Point getLocation() {
+        public Point getLocation() { 
             return new Point(location);
         }
 

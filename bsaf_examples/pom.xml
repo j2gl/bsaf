@@ -33,7 +33,7 @@
     <dependency>
         <groupId>org.jdesktop.bsaf</groupId>
         <artifactId>bsaf</artifactId>
-        <version>1.9</version>
+        <version>${bsaf.version}</version>
     </dependency>
   </dependencies>
     <properties>

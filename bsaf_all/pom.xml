@@ -1,22 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jdesktop.bsaf</groupId>
-  <artifactId>bsaf_all</artifactId>
-  <packaging>pom</packaging>
-  <version>1.9</version>
-  <name>bsaf_all</name>
-  <url>http://kenai.com/projects/bsaf</url>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jdesktop.bsaf</groupId>
+    <artifactId>bsaf_all</artifactId>
+    <packaging>pom</packaging>
+    <version>1.9</version>
+    <name>bsaf_all</name>
+    <url>http://kenai.com/projects/bsaf</url>
+
+	<properties>
+		<bsaf.version>1.9-SNAPSHOT</bsaf.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
     <build>
         <plugins>
         </plugins>
     </build>
-	<modules>
-		<module>../bsaf</module>
-		<module>../bsaf_examples</module>
-	</modules>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <modules>
+        <module>../bsaf</module>
+        <module>../bsaf_examples</module>
+    </modules>
 </project>
 
