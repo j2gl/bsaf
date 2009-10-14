@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.event.ActionEvent;
@@ -103,6 +102,7 @@ import javax.swing.KeyStroke;
  * @see ResourceMap
  */
 public class ApplicationAction extends AbstractAction {
+
     private static final Logger logger = Logger.getLogger(ApplicationAction.class.getName());
     private final ApplicationActionMap appAM;
     private final ResourceMap resourceMap;
@@ -190,67 +190,65 @@ public class ApplicationAction extends AbstractAction {
      * @see ApplicationActionMap#getActionsObject
      */
     public ApplicationAction(ApplicationActionMap appAM,
-			     ResourceMap resourceMap,
-			     String baseName,
-			     Method actionMethod, 
-			     String enabledProperty, 
-			     String selectedProperty,
-			     Task.BlockingScope block) {
-	if (appAM == null) {
-	    throw new IllegalArgumentException("null appAM");
-	}
-	if (baseName == null) {
-	    throw new IllegalArgumentException("null baseName");
-	}
-	this.appAM = appAM;
-	this.resourceMap = resourceMap;
-	this.actionName = baseName;
-	this.actionMethod = actionMethod;
-	this.enabledProperty = enabledProperty;
-	this.selectedProperty = selectedProperty;
-	this.block = block;
+            ResourceMap resourceMap,
+            String baseName,
+            Method actionMethod,
+            String enabledProperty,
+            String selectedProperty,
+            Task.BlockingScope block) {
+        if (appAM == null) {
+            throw new IllegalArgumentException("null appAM");
+        }
+        if (baseName == null) {
+            throw new IllegalArgumentException("null baseName");
+        }
+        this.appAM = appAM;
+        this.resourceMap = resourceMap;
+        this.actionName = baseName;
+        this.actionMethod = actionMethod;
+        this.enabledProperty = enabledProperty;
+        this.selectedProperty = selectedProperty;
+        this.block = block;
 
-	/* If enabledProperty is specified, lookup up the is/set methods and
-	 * verify that the former exists.
-	 */
-	if (enabledProperty != null) {
-	    setEnabledMethod = propertySetMethod(enabledProperty, boolean.class);
-	    isEnabledMethod = propertyGetMethod(enabledProperty);
-	    if (isEnabledMethod == null) {
+        /* If enabledProperty is specified, lookup up the is/set methods and
+         * verify that the former exists.
+         */
+        if (enabledProperty != null) {
+            setEnabledMethod = propertySetMethod(enabledProperty, boolean.class);
+            isEnabledMethod = propertyGetMethod(enabledProperty);
+            if (isEnabledMethod == null) {
                 throw newNoSuchPropertyException(enabledProperty);
-	    }
-	}
-	else {
-	    this.isEnabledMethod = null;
-	    this.setEnabledMethod = null;
-	}
+            }
+        } else {
+            this.isEnabledMethod = null;
+            this.setEnabledMethod = null;
+        }
 
-	/* If selectedProperty is specified, lookup up the is/set methods and
-	 * verify that the former exists.
-	 */
-	if (selectedProperty != null) {
-	    setSelectedMethod = propertySetMethod(selectedProperty, boolean.class);
-	    isSelectedMethod = propertyGetMethod(selectedProperty);
-	    if (isSelectedMethod == null) {
+        /* If selectedProperty is specified, lookup up the is/set methods and
+         * verify that the former exists.
+         */
+        if (selectedProperty != null) {
+            setSelectedMethod = propertySetMethod(selectedProperty, boolean.class);
+            isSelectedMethod = propertyGetMethod(selectedProperty);
+            if (isSelectedMethod == null) {
                 throw newNoSuchPropertyException(selectedProperty);
-	    }
+            }
             super.putValue(SELECTED_KEY, Boolean.FALSE);
-	}
-	else {
-	    this.isSelectedMethod = null;
-	    this.setSelectedMethod = null;
-	}
+        } else {
+            this.isSelectedMethod = null;
+            this.setSelectedMethod = null;
+        }
 
-	if (resourceMap != null) {
-	    initActionProperties(resourceMap, baseName);
-	}
+        if (resourceMap != null) {
+            initActionProperties(resourceMap, baseName);
+        }
     }
 
     /* Shorter convenience constructor used to create ProxyActions, 
      * see ApplicationActionMap.addProxyAction().
      */
     ApplicationAction(ApplicationActionMap appAM, ResourceMap resourceMap, String actionName) {
-	this(appAM, resourceMap, actionName, null, null, null, Task.BlockingScope.NONE);
+        this(appAM, resourceMap, actionName, null, null, null, Task.BlockingScope.NONE);
     }
 
     private IllegalArgumentException newNoSuchPropertyException(String propertyName) {
@@ -267,10 +265,10 @@ public class ApplicationAction extends AbstractAction {
      * @return the name of the enabledProperty or null.
      * @see #isEnabled
      */
-    String getEnabledProperty() { 
-	return enabledProperty; 
+    String getEnabledProperty() {
+        return enabledProperty;
     }
-    
+
     /**
      * The name of the {@code @Action} selectedProperty whose value is
      * returned by {@link #isSelected isSelected}, or null.
@@ -278,10 +276,9 @@ public class ApplicationAction extends AbstractAction {
      * @return the name of the selectedProperty or null.
      * @see #isSelected
      */
-    String getSelectedProperty() { 
-        return selectedProperty; 
+    String getSelectedProperty() {
+        return selectedProperty;
     }
-
 
     /**
      * Return the proxy for this action or null.
@@ -291,8 +288,8 @@ public class ApplicationAction extends AbstractAction {
      * @see #setProxySource
      * @see #actionPerformed
      */
-    public javax.swing.Action getProxy() { 
-	return proxy;
+    public javax.swing.Action getProxy() {
+        return proxy;
     }
 
     /**
@@ -315,28 +312,27 @@ public class ApplicationAction extends AbstractAction {
      * then set this action's longDescription.  
      * </ul>
      * 
-	 * @param proxy
-	 * @see #setProxy
+     * @param proxy
+     * @see #setProxy
      * @see #setProxySource
      * @see #actionPerformed
      */
-    public void setProxy(javax.swing.Action proxy) { 
-	javax.swing.Action oldProxy = this.proxy;
-	this.proxy = proxy;
-	if (oldProxy != null) {
-	    oldProxy.removePropertyChangeListener(proxyPCL);
-	    proxyPCL = null;
-	}
-	if (this.proxy != null) {
-	    updateProxyProperties();
-	    proxyPCL = new ProxyPCL();
-	    proxy.addPropertyChangeListener(proxyPCL);
-	}
-	else if (oldProxy != null) {
-	    setEnabled(false);
+    public void setProxy(javax.swing.Action proxy) {
+        javax.swing.Action oldProxy = this.proxy;
+        this.proxy = proxy;
+        if (oldProxy != null) {
+            oldProxy.removePropertyChangeListener(proxyPCL);
+            proxyPCL = null;
+        }
+        if (this.proxy != null) {
+            updateProxyProperties();
+            proxyPCL = new ProxyPCL();
+            proxy.addPropertyChangeListener(proxyPCL);
+        } else if (oldProxy != null) {
+            setEnabled(false);
             setSelected(false);
-	}
-	firePropertyChange("proxy", oldProxy, this.proxy);
+        }
+        firePropertyChange("proxy", oldProxy, this.proxy);
     }
 
     /**
@@ -348,8 +344,8 @@ public class ApplicationAction extends AbstractAction {
      * @see #setProxySource
      * @see ActionEvent#getSource
      */
-    public Object getProxySource() { 
-	return proxySource; 
+    public Object getProxySource() {
+        return proxySource;
     }
 
     /**
@@ -362,27 +358,27 @@ public class ApplicationAction extends AbstractAction {
      * @see ActionEvent#setSource
      */
     public void setProxySource(Object source) {
-	Object oldValue = this.proxySource;
-	this.proxySource = source;
-	firePropertyChange("proxySource", oldValue, this.proxySource);
+        Object oldValue = this.proxySource;
+        this.proxySource = source;
+        firePropertyChange("proxySource", oldValue, this.proxySource);
     }
 
-    private void  maybePutDescriptionValue(String key, javax.swing.Action proxy) {
-	Object s = proxy.getValue(key);
-	if (s instanceof String) {
-	    putValue(key, (String)s);
-	}
+    private void maybePutDescriptionValue(String key, javax.swing.Action proxy) {
+        Object s = proxy.getValue(key);
+        if (s instanceof String) {
+            putValue(key, (String) s);
+        }
     }
 
     private void updateProxyProperties() {
-		javax.swing.Action proxy = getProxy();
-		if (proxy != null) {
-			setEnabled(proxy.isEnabled());
-				Object s = proxy.getValue(SELECTED_KEY);
-			setSelected((s instanceof Boolean) && ((Boolean)s).booleanValue());
-			maybePutDescriptionValue(javax.swing.Action.SHORT_DESCRIPTION, proxy);
-			maybePutDescriptionValue(javax.swing.Action.LONG_DESCRIPTION, proxy);
-		}
+        javax.swing.Action proxy = getProxy();
+        if (proxy != null) {
+            setEnabled(proxy.isEnabled());
+            Object s = proxy.getValue(SELECTED_KEY);
+            setSelected((s instanceof Boolean) && ((Boolean) s).booleanValue());
+            maybePutDescriptionValue(javax.swing.Action.SHORT_DESCRIPTION, proxy);
+            maybePutDescriptionValue(javax.swing.Action.LONG_DESCRIPTION, proxy);
+        }
     }
 
     /* This PCL is added to the proxy action, i.e. getProxy().  We
@@ -391,112 +387,112 @@ public class ApplicationAction extends AbstractAction {
      * mirror the description properties if they're non-null.
      */
     private class ProxyPCL implements PropertyChangeListener {
-		public void propertyChange(PropertyChangeEvent e) {
-			String propertyName = e.getPropertyName();
-			if ((propertyName == null) ||
-					"enabled".equals(propertyName) ||
-			"selected".equals(propertyName) ||
-			javax.swing.Action.SHORT_DESCRIPTION.equals(propertyName) ||
-			javax.swing.Action.LONG_DESCRIPTION.equals(propertyName)) {
-			updateProxyProperties();
-			}
-		}
-    }    
+
+        public void propertyChange(PropertyChangeEvent e) {
+            String propertyName = e.getPropertyName();
+            if ((propertyName == null) ||
+                    "enabled".equals(propertyName) ||
+                    "selected".equals(propertyName) ||
+                    javax.swing.Action.SHORT_DESCRIPTION.equals(propertyName) ||
+                    javax.swing.Action.LONG_DESCRIPTION.equals(propertyName)) {
+                updateProxyProperties();
+            }
+        }
+    }
 
     /* Init all of the javax.swing.Action properties for the @Action
      * named actionName.  
      */
     private void initActionProperties(ResourceMap resourceMap, String baseName) {
-	boolean iconOrNameSpecified = false;  // true if Action's icon/name properties set
-	String typedName = null;
+        boolean iconOrNameSpecified = false;  // true if Action's icon/name properties set
+        String typedName = null;
 
-	// Action.text => Action.NAME,MNEMONIC_KEY,DISPLAYED_MNEMONIC_INDEX_KEY
-	String text = resourceMap.getString(baseName + ".Action.text");
-	if (text != null) {
+        // Action.text => Action.NAME,MNEMONIC_KEY,DISPLAYED_MNEMONIC_INDEX_KEY
+        String text = resourceMap.getString(baseName + ".Action.text");
+        if (text != null) {
             MnemonicText.configure(this, text);
-	    iconOrNameSpecified = true;
-	}
-	// Action.mnemonic => Action.MNEMONIC_KEY
-	Integer mnemonic = resourceMap.getKeyCode(baseName + ".Action.mnemonic");
-	if (mnemonic != null) {
-	    putValue(javax.swing.Action.MNEMONIC_KEY, mnemonic);
-	}
-	// Action.mnemonic => Action.DISPLAYED_MNEMONIC_INDEX_KEY
-	Integer index = resourceMap.getInteger(baseName + ".Action.displayedMnemonicIndex");
-	if (index != null) {
-	    putValue(DISPLAYED_MNEMONIC_INDEX_KEY, index);
-	}
-	// Action.accelerator => Action.ACCELERATOR_KEY
-	KeyStroke key = resourceMap.getKeyStroke(baseName + ".Action.accelerator");
-	if (key != null) {
-	    putValue(javax.swing.Action.ACCELERATOR_KEY, key);
-	}
-	// Action.icon => Action.SMALL_ICON,LARGE_ICON_KEY
-	Icon icon = resourceMap.getIcon(baseName + ".Action.icon");
-	if (icon != null) {
-	    putValue(javax.swing.Action.SMALL_ICON, icon);
-	    putValue(LARGE_ICON_KEY, icon);
-	    iconOrNameSpecified = true;
-	}
-	// Action.smallIcon => Action.SMALL_ICON
-	Icon smallIcon = resourceMap.getIcon(baseName + ".Action.smallIcon");
-	if (smallIcon != null) {
-	    putValue(javax.swing.Action.SMALL_ICON, smallIcon);
-	    iconOrNameSpecified = true;
-	}
-	// Action.largeIcon => Action.LARGE_ICON
-	Icon largeIcon = resourceMap.getIcon(baseName + ".Action.largeIcon");
-	if (largeIcon != null) {
-	    putValue(LARGE_ICON_KEY, largeIcon);
-	    iconOrNameSpecified = true;
-	}
-	// Action.shortDescription => Action.SHORT_DESCRIPTION
-	String shortDescription = resourceMap.getString(baseName +
-			".Action.shortDescription");
-	if (shortDescription != null && !shortDescription.isEmpty()) {
-		putValue(javax.swing.Action.SHORT_DESCRIPTION,
-			resourceMap.getString(baseName + ".Action.shortDescription"));
-	}
-	// Action.longDescription => Action.LONG_DESCRIPTION
-	putValue(javax.swing.Action.LONG_DESCRIPTION, 
-		 resourceMap.getString(baseName + ".Action.longDescription"));
-	// Action.command => Action.ACTION_COMMAND_KEY
-	putValue(javax.swing.Action.ACTION_COMMAND_KEY,
-		 resourceMap.getString(baseName + ".Action.command"));
-	// If no visual was defined for this Action, i.e. no text
-	// and no icon, then we default Action.NAME
-	if (!iconOrNameSpecified) {
-	    putValue(javax.swing.Action.NAME, actionName);
-	}
+            iconOrNameSpecified = true;
+        }
+        // Action.mnemonic => Action.MNEMONIC_KEY
+        Integer mnemonic = resourceMap.getKeyCode(baseName + ".Action.mnemonic");
+        if (mnemonic != null) {
+            putValue(javax.swing.Action.MNEMONIC_KEY, mnemonic);
+        }
+        // Action.mnemonic => Action.DISPLAYED_MNEMONIC_INDEX_KEY
+        Integer index = resourceMap.getInteger(baseName + ".Action.displayedMnemonicIndex");
+        if (index != null) {
+            putValue(DISPLAYED_MNEMONIC_INDEX_KEY, index);
+        }
+        // Action.accelerator => Action.ACCELERATOR_KEY
+        KeyStroke key = resourceMap.getKeyStroke(baseName + ".Action.accelerator");
+        if (key != null) {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, key);
+        }
+        // Action.icon => Action.SMALL_ICON,LARGE_ICON_KEY
+        Icon icon = resourceMap.getIcon(baseName + ".Action.icon");
+        if (icon != null) {
+            putValue(javax.swing.Action.SMALL_ICON, icon);
+            putValue(LARGE_ICON_KEY, icon);
+            iconOrNameSpecified = true;
+        }
+        // Action.smallIcon => Action.SMALL_ICON
+        Icon smallIcon = resourceMap.getIcon(baseName + ".Action.smallIcon");
+        if (smallIcon != null) {
+            putValue(javax.swing.Action.SMALL_ICON, smallIcon);
+            iconOrNameSpecified = true;
+        }
+        // Action.largeIcon => Action.LARGE_ICON
+        Icon largeIcon = resourceMap.getIcon(baseName + ".Action.largeIcon");
+        if (largeIcon != null) {
+            putValue(LARGE_ICON_KEY, largeIcon);
+            iconOrNameSpecified = true;
+        }
+        // Action.shortDescription => Action.SHORT_DESCRIPTION
+        String shortDescription = resourceMap.getString(baseName +
+                ".Action.shortDescription");
+        if (shortDescription != null && !shortDescription.isEmpty()) {
+            putValue(javax.swing.Action.SHORT_DESCRIPTION,
+                    resourceMap.getString(baseName + ".Action.shortDescription"));
+        }
+        // Action.longDescription => Action.LONG_DESCRIPTION
+        putValue(javax.swing.Action.LONG_DESCRIPTION,
+                resourceMap.getString(baseName + ".Action.longDescription"));
+        // Action.command => Action.ACTION_COMMAND_KEY
+        putValue(javax.swing.Action.ACTION_COMMAND_KEY,
+                resourceMap.getString(baseName + ".Action.command"));
+        // If no visual was defined for this Action, i.e. no text
+        // and no icon, then we default Action.NAME
+        if (!iconOrNameSpecified) {
+            putValue(javax.swing.Action.NAME, actionName);
+        }
     }
 
     private String propertyMethodName(String prefix, String propertyName) {
-	return prefix + propertyName.substring(0, 1).toUpperCase(java.util.Locale.ENGLISH) + propertyName.substring(1);
+        return prefix + propertyName.substring(0, 1).toUpperCase(java.util.Locale.ENGLISH) + propertyName.substring(1);
     }
 
     private Method propertyGetMethod(String propertyName) {
-	String[] getMethodNames = {
-	    propertyMethodName("is", propertyName),
-	    propertyMethodName("get", propertyName)
-	};
-	Class actionsClass = appAM.getActionsClass();
-	for (String name : getMethodNames) {
-	    try {
-		return actionsClass.getMethod(name);
-	    }
-	    catch(NoSuchMethodException ignore) { }
-	}
-	return null;
+        String[] getMethodNames = {
+            propertyMethodName("is", propertyName),
+            propertyMethodName("get", propertyName)
+        };
+        Class actionsClass = appAM.getActionsClass();
+        for (String name : getMethodNames) {
+            try {
+                return actionsClass.getMethod(name);
+            } catch (NoSuchMethodException ignore) {
+            }
+        }
+        return null;
     }
 
     private Method propertySetMethod(String propertyName, Class type) {
-	Class actionsClass = appAM.getActionsClass();
-	try {
-	    return actionsClass.getMethod(propertyMethodName("set", propertyName), type);
-	}
-	catch(NoSuchMethodException ignore) { 
-	    return null;
-	}
+        Class actionsClass = appAM.getActionsClass();
+        try {
+            return actionsClass.getMethod(propertyMethodName("set", propertyName), type);
+        } catch (NoSuchMethodException ignore) {
+            return null;
+        }
     }
 
     /**
@@ -524,7 +520,7 @@ public class ApplicationAction extends AbstractAction {
      * @return the (read-only) value of the name property
      */
     public String getName() {
-	return actionName;
+        return actionName;
     }
 
     /**
@@ -535,7 +531,6 @@ public class ApplicationAction extends AbstractAction {
     public ResourceMap getResourceMap() {
         return resourceMap;
     }
-
 
     /**
      * 
@@ -589,32 +584,25 @@ public class ApplicationAction extends AbstractAction {
      * @param actionEvent the ActionEvent that trigged this Action
      */
     protected Object getActionArgument(Class pType, String pKey, ActionEvent actionEvent) {
-	Object argument = null;
-	if (pType == ActionEvent.class) {
-	    argument = actionEvent;
-	}
-	else if (pType == javax.swing.Action.class) {
-	    argument =  this;
-	}
-	else if (pType == ActionMap.class) {
-	    argument = appAM;
-	}
-	else if (pType == ResourceMap.class) {
-	    argument = resourceMap;
-	}
-	else if (pType == ApplicationContext.class) {
-	    argument = appAM.getContext();
-	}
-	else if (pType == Application.class) {
-	    argument = appAM.getContext().getApplication();
-	}
-	else {
-	    Exception e = new IllegalArgumentException("unrecognized @Action method parameter");
-	    actionFailed(actionEvent, e);
-	}
-	return argument;
+        Object argument = null;
+        if (pType == ActionEvent.class) {
+            argument = actionEvent;
+        } else if (pType == javax.swing.Action.class) {
+            argument = this;
+        } else if (pType == ActionMap.class) {
+            argument = appAM;
+        } else if (pType == ResourceMap.class) {
+            argument = resourceMap;
+        } else if (pType == ApplicationContext.class) {
+            argument = appAM.getContext();
+        } else if (pType == Application.class) {
+            argument = appAM.getContext().getApplication();
+        } else {
+            Exception e = new IllegalArgumentException("unrecognized @Action method parameter");
+            actionFailed(actionEvent, e);
+        }
+        return argument;
     }
-
 
     private Task.InputBlocker createInputBlocker(Task task, ActionEvent event) {
         Object target = event.getSource();
@@ -625,44 +613,43 @@ public class ApplicationAction extends AbstractAction {
     }
 
     private void noProxyActionPerformed(ActionEvent actionEvent) {
-	Object taskObject = null;
+        Object taskObject = null;
 
-	/* Create the arguments array for actionMethod by 
-	 * calling getActionArgument() for each parameter.
-	 */
-	Annotation[][] allPAnnotations = actionMethod.getParameterAnnotations();
-	Class<?>[] pTypes = actionMethod.getParameterTypes();
-	Object[] arguments = new Object[pTypes.length];
-	for(int i = 0; i < pTypes.length; i++) {
-	    String pKey = null;
-	    for(Annotation pAnnotation : allPAnnotations[i]) {
-		if (pAnnotation instanceof Action.Parameter) {
-		    pKey = ((Action.Parameter)pAnnotation).value();
-		    break;
-		}
-	    }
-	    arguments[i] = getActionArgument(pTypes[i], pKey, actionEvent);
-	}
+        /* Create the arguments array for actionMethod by
+         * calling getActionArgument() for each parameter.
+         */
+        Annotation[][] allPAnnotations = actionMethod.getParameterAnnotations();
+        Class<?>[] pTypes = actionMethod.getParameterTypes();
+        Object[] arguments = new Object[pTypes.length];
+        for (int i = 0; i < pTypes.length; i++) {
+            String pKey = null;
+            for (Annotation pAnnotation : allPAnnotations[i]) {
+                if (pAnnotation instanceof Action.Parameter) {
+                    pKey = ((Action.Parameter) pAnnotation).value();
+                    break;
+                }
+            }
+            arguments[i] = getActionArgument(pTypes[i], pKey, actionEvent);
+        }
 
-	/* Call target.actionMethod(arguments).  If the return value
-	 * is a Task, then execute it.
-	 */
-	try {
-	    Object target = appAM.getActionsObject();
-	    taskObject = actionMethod.invoke(target, arguments);
-	}
-	catch (Exception e) {
-	    actionFailed(actionEvent, e);
-	}
+        /* Call target.actionMethod(arguments).  If the return value
+         * is a Task, then execute it.
+         */
+        try {
+            Object target = appAM.getActionsObject();
+            taskObject = actionMethod.invoke(target, arguments);
+        } catch (Exception e) {
+            actionFailed(actionEvent, e);
+        }
 
-	if (taskObject instanceof Task) {
-	    Task task = (Task)taskObject;
+        if (taskObject instanceof Task) {
+            Task task = (Task) taskObject;
             if (task.getInputBlocker() == null) {
                 task.setInputBlocker(createInputBlocker(task, actionEvent));
             }
-	    ApplicationContext ctx = appAM.getContext();
-	    ctx.getTaskService().execute(task);
-	}
+            ApplicationContext ctx = appAM.getContext();
+            ctx.getTaskService().execute(task);
+        }
     }
 
     /**
@@ -679,14 +666,13 @@ public class ApplicationAction extends AbstractAction {
      * @see Task
      */
     public void actionPerformed(ActionEvent actionEvent) {
-	javax.swing.Action proxy = getProxy();
-	if (proxy != null) {
-	    actionEvent.setSource(getProxySource());
-	    proxy.actionPerformed(actionEvent);
-	}
-	else if (actionMethod != null) {
-	    noProxyActionPerformed(actionEvent);    
-	}
+        javax.swing.Action proxy = getProxy();
+        if (proxy != null) {
+            actionEvent.setSource(getProxySource());
+            proxy.actionPerformed(actionEvent);
+        } else if (actionMethod != null) {
+            noProxyActionPerformed(actionEvent);
+        }
     }
 
     /**
@@ -701,19 +687,18 @@ public class ApplicationAction extends AbstractAction {
      * @see #setEnabled
      * @see ApplicationActionMap#getActionsObject
      */
-    @Override  public boolean isEnabled() {
-	if ((getProxy() != null) || (isEnabledMethod == null)) {
-	    return super.isEnabled();
-	}
-	else {
-	    try {
-		Object b = isEnabledMethod.invoke(appAM.getActionsObject());
-		return (Boolean)b;
-	    }
-	    catch (Exception e) {
+    @Override
+    public boolean isEnabled() {
+        if ((getProxy() != null) || (isEnabledMethod == null)) {
+            return super.isEnabled();
+        } else {
+            try {
+                Object b = isEnabledMethod.invoke(appAM.getActionsObject());
+                return (Boolean) b;
+            } catch (Exception e) {
                 throw newInvokeError(isEnabledMethod, e);
-	    }
-	}
+            }
+        }
     }
 
     /**
@@ -728,18 +713,17 @@ public class ApplicationAction extends AbstractAction {
      * @see #isEnabled
      * @see ApplicationActionMap#getActionsObject
      */
-    @Override public void setEnabled(boolean enabled) {
-	if ((getProxy() != null) || (setEnabledMethod == null)) {
-	    super.setEnabled(enabled);
-	}
-	else {
-	    try {
-		setEnabledMethod.invoke(appAM.getActionsObject(), enabled);
-	    }
-	    catch (Exception e) {
+    @Override
+    public void setEnabled(boolean enabled) {
+        if ((getProxy() != null) || (setEnabledMethod == null)) {
+            super.setEnabled(enabled);
+        } else {
+            try {
+                setEnabledMethod.invoke(appAM.getActionsObject(), enabled);
+            } catch (Exception e) {
                 throw newInvokeError(setEnabledMethod, e, enabled);
-	    }
-	}
+            }
+        }
     }
 
     /**
@@ -754,19 +738,17 @@ public class ApplicationAction extends AbstractAction {
      * @see ApplicationActionMap#getActionsObject
      */
     public boolean isSelected() {
-	if ((getProxy() != null) || (isSelectedMethod == null)) {
+        if ((getProxy() != null) || (isSelectedMethod == null)) {
             Object v = getValue(SELECTED_KEY);
-            return (v instanceof Boolean) ? ((Boolean)v).booleanValue() : false;
-	}
-	else {
-	    try {
-		Object b = isSelectedMethod.invoke(appAM.getActionsObject());
-		return (Boolean)b;
-	    }
-	    catch (Exception e) {
+            return (v instanceof Boolean) ? ((Boolean) v).booleanValue() : false;
+        } else {
+            try {
+                Object b = isSelectedMethod.invoke(appAM.getActionsObject());
+                return (Boolean) b;
+            } catch (Exception e) {
                 throw newInvokeError(isSelectedMethod, e);
-	    }
-	}
+            }
+        }
     }
 
     /**
@@ -782,20 +764,18 @@ public class ApplicationAction extends AbstractAction {
      * @see ApplicationActionMap#getActionsObject
      */
     public void setSelected(boolean selected) {
-	if ((getProxy() != null) || (setSelectedMethod == null)) {
+        if ((getProxy() != null) || (setSelectedMethod == null)) {
             super.putValue(SELECTED_KEY, Boolean.valueOf(selected));
-	}
-	else {
-	    try {
+        } else {
+            try {
                 super.putValue(SELECTED_KEY, Boolean.valueOf(selected));
                 if (selected != isSelected()) {
                     setSelectedMethod.invoke(appAM.getActionsObject(), selected);
                 }
-	    }
-	    catch (Exception e) {
+            } catch (Exception e) {
                 throw newInvokeError(setSelectedMethod, e, selected);
-	    }
-	}
+            }
+        }
     }
 
     /**
@@ -807,9 +787,8 @@ public class ApplicationAction extends AbstractAction {
      */
     public void putValue(String key, Object value) {
         if (SELECTED_KEY.equals(key) && (value instanceof Boolean)) {
-            setSelected((Boolean)value);
-        }
-        else {
+            setSelected((Boolean) value);
+        } else {
             super.putValue(key, value);
         }
     }
@@ -819,7 +798,7 @@ public class ApplicationAction extends AbstractAction {
      */
     private Error newInvokeError(Method m, Exception e, Object... args) {
         String argsString = (args.length == 0) ? "" : args[0].toString();
-        for(int i = 1; i < args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             argsString += ", " + args[i];
         }
         String actionsClassName = appAM.getActionsObject().getClass().getName();
@@ -835,18 +814,18 @@ public class ApplicationAction extends AbstractAction {
      */
     void forwardPropertyChangeEvent(PropertyChangeEvent e, String actionPropertyName) {
         if ("selected".equals(actionPropertyName) && (e.getNewValue() instanceof Boolean)) {
-            putValue(SELECTED_KEY, (Boolean)e.getNewValue());
+            putValue(SELECTED_KEY, (Boolean) e.getNewValue());
         }
-	firePropertyChange(actionPropertyName, e.getOldValue(), e.getNewValue());
+        firePropertyChange(actionPropertyName, e.getOldValue(), e.getNewValue());
     }
 
     /* Log enough output for a developer to figure out 
      * what went wrong.
      */
     private void actionFailed(ActionEvent actionEvent, Exception e) {
-	// TBD Log an error
-	// e.printStackTrace();
-	throw new Error(e);
+        // TBD Log an error
+        // e.printStackTrace();
+        throw new Error(e);
     }
 
     /**
@@ -862,30 +841,34 @@ public class ApplicationAction extends AbstractAction {
      */
     public String toString() {
         StringBuilder sb = new StringBuilder();
-	sb.append(getClass().getName());
-	sb.append(" ");
-	boolean enabled = isEnabled();
-	if (!enabled) { sb.append("(");	}
-	sb.append(getName());
-	Object selectedValue = getValue(SELECTED_KEY);
-	if (selectedValue instanceof Boolean) {
-	    if (((Boolean)selectedValue).booleanValue()) {
-		sb.append("+");
-	    }
-	}
-	if (!enabled) { sb.append(")");	}
-	Object nameValue = getValue(javax.swing.Action.NAME); // [getName()].Action.text
-	if (nameValue instanceof String) {
-	    sb.append(" \"");
-	    sb.append((String)nameValue);
-	    sb.append("\"");
-	}
-	proxy = getProxy();
-	if (proxy != null) {
-	    sb.append(" Proxy for: ");
-	    sb.append(proxy.toString());
-	}
-	return sb.toString();
+        sb.append(getClass().getName());
+        sb.append(" ");
+        boolean enabled = isEnabled();
+        if (!enabled) {
+            sb.append("(");
+        }
+        sb.append(getName());
+        Object selectedValue = getValue(SELECTED_KEY);
+        if (selectedValue instanceof Boolean) {
+            if (((Boolean) selectedValue).booleanValue()) {
+                sb.append("+");
+            }
+        }
+        if (!enabled) {
+            sb.append(")");
+        }
+        Object nameValue = getValue(javax.swing.Action.NAME); // [getName()].Action.text
+        if (nameValue instanceof String) {
+            sb.append(" \"");
+            sb.append((String) nameValue);
+            sb.append("\"");
+        }
+        proxy = getProxy();
+        if (proxy != null) {
+            sb.append(" Proxy for: ");
+            sb.append(proxy.toString());
+        }
+        return sb.toString();
     }
 }
 
