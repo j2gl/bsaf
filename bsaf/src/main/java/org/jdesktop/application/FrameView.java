@@ -1,21 +1,15 @@
-
-
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
-import java.awt.Frame;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
-
 public class FrameView extends View {
+
     private static final Logger logger = Logger.getLogger(FrameView.class.getName());
     private JFrame frame = null;
 
@@ -39,15 +33,15 @@ public class FrameView extends View {
      * @return this application's  main frame
      */
     public JFrame getFrame() {
-	if (frame == null) {
-	    String title = getContext().getResourceMap().getString("Application.title");
-	    frame = new JFrame(title);
-	    frame.setName("mainFrame");
-	}
-	return frame;
+        if (frame == null) {
+            String title = getContext().getResourceMap().getString("Application.title");
+            frame = new JFrame(title);
+            frame.setName("mainFrame");
+        }
+        return frame;
     }
 
-     /**
+    /**
      * Sets the JFrame use to show this View
      * <p>
      * This method should be called from the startup method by a
@@ -70,16 +64,17 @@ public class FrameView extends View {
      * @see #getFrame
      */
     public void setFrame(JFrame frame) {
-	if (frame == null) {
-	    throw new IllegalArgumentException("null JFrame");
-	}
-	if (this.frame != null) {
-	    throw new IllegalStateException("frame already set");
-	}
-	this.frame = frame;
-	firePropertyChange("frame", null, this.frame);
+        if (frame == null) {
+            throw new IllegalArgumentException("null JFrame");
+        }
+        if (this.frame != null) {
+            throw new IllegalStateException("frame already set");
+        }
+        this.frame = frame;
+        firePropertyChange("frame", null, this.frame);
     }
 
+    @Override
     public JRootPane getRootPane() {
         return getFrame().getRootPane();
     }

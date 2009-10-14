@@ -1,12 +1,10 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.util.List;
-
 
 /**
  * Listener used for observing {@code Task} execution.  
@@ -123,14 +121,37 @@ public interface TaskListener<T, V> {
      * TaskListeners:
      * <pre>
      * </pre>
+     * @param <T>
+     * @param <V> 
      */
     class Adapter<T, V> implements TaskListener<T, V> {
-	public void doInBackground(TaskEvent<Void> event) {}
-	public void process(TaskEvent<List<V>> event) {}
-	public void succeeded(TaskEvent<T> event) {}
-	public void failed(TaskEvent<Throwable> event) {}
-	public void cancelled(TaskEvent<Void> event) {}
-	public void interrupted(TaskEvent<InterruptedException> event) {}
-	public void finished(TaskEvent<Void> event) {}
+
+        @Override
+        public void doInBackground(TaskEvent<Void> event) {
+        }
+
+        @Override
+        public void process(TaskEvent<List<V>> event) {
+        }
+
+        @Override
+        public void succeeded(TaskEvent<T> event) {
+        }
+
+        @Override
+        public void failed(TaskEvent<Throwable> event) {
+        }
+
+        @Override
+        public void cancelled(TaskEvent<Void> event) {
+        }
+
+        @Override
+        public void interrupted(TaskEvent<InterruptedException> event) {
+        }
+
+        @Override
+        public void finished(TaskEvent<Void> event) {
+        }
     }
 }

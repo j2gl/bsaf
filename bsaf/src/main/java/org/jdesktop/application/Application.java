@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.ActiveEvent;
@@ -24,7 +23,6 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
 
 /**
  * The base class for Swing applications. 
@@ -120,10 +118,9 @@ import javax.swing.UIManager;
  * @see UIManager#setLookAndFeel
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
-
 @ProxyActions({"cut", "copy", "paste", "delete"})
-
 public abstract class Application extends AbstractBean {
+
     private static final Logger logger = Logger.getLogger(Application.class.getName());
     private static Application application = null;
     private final List<ExitListener> exitListeners;
@@ -139,7 +136,7 @@ public abstract class Application extends AbstractBean {
      * method.  
      */
     protected Application() {
-	exitListeners = new CopyOnWriteArrayList<ExitListener>();
+        exitListeners = new CopyOnWriteArrayList<ExitListener>();
         context = new ApplicationContext();
     }
 
@@ -157,28 +154,29 @@ public abstract class Application extends AbstractBean {
      * The {@code applicationClass} constructor and {@code startup} methods
      * run on the event dispatching thread.
      * 
+     * @param <T>
      * @param applicationClass the {@code Application} class to launch
      * @param args {@code main} method arguments
      * @see #shutdown
      * @see ApplicationContext#getApplication
      */
     public static synchronized <T extends Application> void launch(final Class<T> applicationClass, final String[] args) {
-	Runnable doCreateAndShowGUI = new Runnable() {
-	    public void run() {
-		try {
-		    application = create(applicationClass);
+        Runnable doCreateAndShowGUI = new Runnable() {
+
+            public void run() {
+                try {
+                    application = create(applicationClass);
                     application.initialize(args);
-		    application.startup();
+                    application.startup();
                     application.waitForReady();
-		}
-		catch (Exception e) {
+                } catch (Exception e) {
                     String msg = String.format("Application %s failed to launch", applicationClass);
-		    logger.log(Level.SEVERE, msg, e);
-                    throw(new Error(msg, e));
-		}
-	    }
-	};
-	SwingUtilities.invokeLater(doCreateAndShowGUI);
+                    logger.log(Level.SEVERE, msg, e);
+                    throw (new Error(msg, e));
+                }
+            }
+        };
+        SwingUtilities.invokeLater(doCreateAndShowGUI);
     }
 
     /* Initializes the ApplicationContext applicationClass and application
@@ -199,9 +197,8 @@ public abstract class Application extends AbstractBean {
              * We paper over that issue here.
              */
             try {
-                System.setProperty("java.net.useSystemProxies", "true"); 
-            }
-            catch (SecurityException ignoreException) {
+                System.setProperty("java.net.useSystemProxies", "true");
+            } catch (SecurityException ignoreException) {
                 // Unsigned apps can't set this property. 
             }
         }
@@ -215,8 +212,7 @@ public abstract class Application extends AbstractBean {
         if (!ctor.isAccessible()) {
             try {
                 ctor.setAccessible(true);
-            }
-            catch (SecurityException ignore) {
+            } catch (SecurityException ignore) {
                 // ctor.newInstance() will throw an IllegalAccessException
             }
         }
@@ -228,10 +224,10 @@ public abstract class Application extends AbstractBean {
         ctx.setApplicationClass(applicationClass);
         ctx.setApplication(application);
 
-	/* Load the application resource map, notably the 
-	 * Application.* properties.
-	 */
-	ResourceMap appResourceMap = ctx.getResourceMap();
+        /* Load the application resource map, notably the
+         * Application.* properties.
+         */
+        ResourceMap appResourceMap = ctx.getResourceMap();
 
         appResourceMap.putResource("platform", platform());
 
@@ -247,12 +243,10 @@ public abstract class Application extends AbstractBean {
                 if (lnf.equalsIgnoreCase("system")) {
                     String name = UIManager.getSystemLookAndFeelClassName();
                     UIManager.setLookAndFeel(name);
-                }
-                else if (!lnf.equalsIgnoreCase("default")) {
+                } else if (!lnf.equalsIgnoreCase("default")) {
                     UIManager.setLookAndFeel(lnf);
                 }
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 String s = "Couldn't set LookandFeel " + key + " = \"" + lnfResource + "\"";
                 logger.log(Level.WARNING, s, e);
             }
@@ -271,8 +265,7 @@ public abstract class Application extends AbstractBean {
             if ((osName != null) && osName.toLowerCase().startsWith("mac os x")) {
                 platform = "osx";
             }
-        }
-        catch (SecurityException ignore) {
+        } catch (SecurityException ignore) {
         }
         return platform;
     }
@@ -357,17 +350,27 @@ public abstract class Application extends AbstractBean {
      * was empty at dispatch time.
      */
     private static class NotifyingEvent extends PaintEvent implements ActiveEvent {
+
         private boolean dispatched = false;
         private boolean qEmpty = false;
+
         NotifyingEvent(Component c) {
             super(c, PaintEvent.UPDATE, null);
         }
-        synchronized boolean isDispatched() { return dispatched; }
-        synchronized boolean isEventQEmpty() { return qEmpty; }
+
+        synchronized boolean isDispatched() {
+            return dispatched;
+        }
+
+        synchronized boolean isEventQEmpty() {
+            return qEmpty;
+        }
+
+        @Override
         public void dispatch() {
             EventQueue q = Toolkit.getDefaultToolkit().getSystemEventQueue();
-            synchronized(this) {
-		qEmpty = (q.peekEvent() == null);
+            synchronized (this) {
+                qEmpty = (q.peekEvent() == null);
                 dispatched = true;
                 notifyAll();
             }
@@ -379,17 +382,16 @@ public abstract class Application extends AbstractBean {
      */
     private void waitForEmptyEventQ() {
         boolean qEmpty = false;
-        JPanel placeHolder  = new JPanel();
+        JPanel placeHolder = new JPanel();
         EventQueue q = Toolkit.getDefaultToolkit().getSystemEventQueue();
         while (!qEmpty) {
             NotifyingEvent e = new NotifyingEvent(placeHolder);
             q.postEvent(e);
-            synchronized(e) {
+            synchronized (e) {
                 while (!e.isDispatched()) {
                     try {
                         e.wait();
-                    } 
-		    catch (InterruptedException ie) {
+                    } catch (InterruptedException ie) {
                     }
                 }
                 qEmpty = e.isEventQEmpty();
@@ -401,16 +403,22 @@ public abstract class Application extends AbstractBean {
      * something, now that the GUI is "ready".
      */
     private class DoWaitForEmptyEventQ extends Task<Void, Void> {
-        DoWaitForEmptyEventQ() { super(Application.this); }
-	@Override protected Void doInBackground() {
-	    waitForEmptyEventQ();
-	    return null;
-	}
-	@Override protected void finished() { 
-	    ready();	
-	}
-    }
 
+        DoWaitForEmptyEventQ() {
+            super(Application.this);
+        }
+
+        @Override
+        protected Void doInBackground() {
+            waitForEmptyEventQ();
+            return null;
+        }
+
+        @Override
+        protected void finished() {
+            ready();
+        }
+    }
 
     /**
      * Gracefully shutdown the application, calls {@code exit(null)}
@@ -420,7 +428,7 @@ public abstract class Application extends AbstractBean {
      * @see #exit(EventObject)
      */
     public final void exit() {
-	exit(null);
+        exit(null);
     }
 
     /**
@@ -460,28 +468,25 @@ public abstract class Application extends AbstractBean {
      * @see #end
      */
     public void exit(EventObject event) {
-	for (ExitListener listener : exitListeners) {
-	    if (!listener.canExit(event)) {
-		return;
-	    }
-	}
-	try {
-	    for (ExitListener listener : exitListeners) {
-		try {
-		    listener.willExit(event);
-		}
-		catch (Exception e) { 
-		    logger.log(Level.WARNING, "ExitListener.willExit() failed", e);
-		}
-	    }
-	    shutdown();
-	}
-	catch (Exception e) { 
-	    logger.log(Level.WARNING, "unexpected error in Application.shutdown()", e);
-	}
-	finally {
+        for (ExitListener listener : exitListeners) {
+            if (!listener.canExit(event)) {
+                return;
+            }
+        }
+        try {
+            for (ExitListener listener : exitListeners) {
+                try {
+                    listener.willExit(event);
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "ExitListener.willExit() failed", e);
+                }
+            }
+            shutdown();
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "unexpected error in Application.shutdown()", e);
+        } finally {
             end();
-	}
+        }
     }
 
     /**
@@ -510,14 +515,15 @@ public abstract class Application extends AbstractBean {
      * <p>
      * {@code ExitListeners} run on the event dispatching thread.
      * 
-     * @param event the EventObject that triggered this call or null
      * @see #exit(EventObject)
      * @see #addExitListener
      * @see #removeExitListener
      */
     public interface ExitListener extends EventListener {
-	boolean canExit(EventObject event);
-	void willExit(EventObject event);
+
+        boolean canExit(EventObject event);
+
+        void willExit(EventObject event);
     }
 
     /**
@@ -528,7 +534,7 @@ public abstract class Application extends AbstractBean {
      * @see #getExitListeners
      */
     public void addExitListener(ExitListener listener) {
-	exitListeners.add(listener);
+        exitListeners.add(listener);
     }
 
     /**
@@ -539,7 +545,7 @@ public abstract class Application extends AbstractBean {
      * @see #getExitListeners
      */
     public void removeExitListener(ExitListener listener) {
-	exitListeners.remove(listener);
+        exitListeners.remove(listener);
     }
 
     /**
@@ -548,8 +554,8 @@ public abstract class Application extends AbstractBean {
      * @return all of the {@code ExitListeners} added so far.
      */
     public ExitListener[] getExitListeners() {
-	int size = exitListeners.size();
-	return exitListeners.toArray(new ExitListener[size]);
+        int size = exitListeners.size();
+        return exitListeners.toArray(new ExitListener[size]);
     }
 
     /**
@@ -559,8 +565,9 @@ public abstract class Application extends AbstractBean {
      * @param e the triggering event
      * @see #exit(EventObject)
      */
-    @Action public void quit(ActionEvent e) {
-	exit(e);
+    @Action
+    public void quit(ActionEvent e) {
+        exit(e);
     }
 
     /**
@@ -583,6 +590,7 @@ public abstract class Application extends AbstractBean {
      * {@link #launch launch} method.  However it's {@code initialize}
      * and {@code startup} methods are not run.  
      * 
+     * @param <T>
      * @param applicationClass this Application's subclass
      * @return the launched Application singleton.
      * @see Application#launch
@@ -596,13 +604,12 @@ public abstract class Application extends AbstractBean {
              */
             try {
                 application = create(applicationClass);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 String msg = String.format("Couldn't construct %s", applicationClass);
-                throw(new Error(msg, e));
+                throw (new Error(msg, e));
             }
         }
-	return applicationClass.cast(application);
+        return applicationClass.cast(application);
     }
 
     /**
@@ -634,6 +641,7 @@ public abstract class Application extends AbstractBean {
     }
 
     private static class NoApplication extends Application {
+
         protected NoApplication() {
             ApplicationContext ctx = getContext();
             ctx.setApplicationClass(getClass());
@@ -641,14 +649,16 @@ public abstract class Application extends AbstractBean {
             ResourceMap appResourceMap = ctx.getResourceMap();
             appResourceMap.putResource("platform", platform());
         }
-        protected void startup() {}
+
+        @Override
+        protected void startup() {
+        }
     }
 
 
     /* Prototype support for the View type */
-
     public void show(View view) {
-        Window window = (Window)view.getRootPane().getParent();
+        Window window = (Window) view.getRootPane().getParent();
         if (window != null) {
             window.pack();
             window.setVisible(true);

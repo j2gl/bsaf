@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006-2009 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.BorderLayout;
@@ -38,10 +37,9 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
 final class DefaultInputBlocker extends Task.InputBlocker {
-    private static final Logger logger = Logger.getLogger(DefaultInputBlocker.class.getName());
-	
-    private static final String PB_STRING_FORMAT_KEY = "progressBarStringFormat";
 
+    private static final Logger logger = Logger.getLogger(DefaultInputBlocker.class.getName());
+    private static final String PB_STRING_FORMAT_KEY = "progressBarStringFormat";
     private JDialog modalDialog = null;
 
     DefaultInputBlocker(Task task, Task.BlockingScope scope, Object target, ApplicationAction action) {
@@ -49,12 +47,12 @@ final class DefaultInputBlocker extends Task.InputBlocker {
     }
 
     private void setActionTargetBlocked(boolean f) {
-        javax.swing.Action action = (javax.swing.Action)getTarget();
+        javax.swing.Action action = (javax.swing.Action) getTarget();
         action.setEnabled(!f);
     }
 
     private void setComponentTargetBlocked(boolean f) {
-        Component c = (Component)getTarget();
+        Component c = (Component) getTarget();
         c.setEnabled(!f);
         // Note: can't set the cursor on a disabled component
     }
@@ -68,7 +66,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             rv.add(root);
         }
         if (root instanceof Container) {
-            for(Component child : ((Container)root).getComponents()) {
+            for (Component child : ((Container) root).getComponents()) {
                 blockingDialogComponents(child, rv);
             }
         }
@@ -93,10 +91,10 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         if (action != null) {
             ResourceMap actionResourceMap = action.getResourceMap();
             String actionName = action.getName();
-            for(Component c : blockingDialogComponents(root)) {
+            for (Component c : blockingDialogComponents(root)) {
                 c.setName(actionName + "." + c.getName());
             }
-            actionResourceMap.injectComponents(root);            
+            actionResourceMap.injectComponents(root);
         }
     }
 
@@ -128,10 +126,12 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             JButton cancelButton = new JButton();
             cancelButton.setName("BlockingDialog.cancelButton");
             ActionListener doCancelTask = new ActionListener() {
-                    public void actionPerformed(ActionEvent ignore) {
-                        getTask().cancel(true);
-                    }
-                };
+
+                @Override
+                public void actionPerformed(ActionEvent ignore) {
+                    getTask().cancel(true);
+                }
+            };
             cancelButton.addActionListener(doCancelTask);
             optionPane.setOptions(new Object[]{cancelButton});
         } else {
@@ -140,7 +140,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         /* Create the JDialog.  If the task can be canceled, then 
          * map closing the dialog window to canceling the task.
          */
-        Component dialogOwner = (Component)getTarget();
+        Component dialogOwner = (Component) getTarget();
         String taskTitle = getTask().getTitle();
         String dialogTitle = (taskTitle == null) ? "BlockingDialog" : taskTitle;
         final JDialog dialog = optionPane.createDialog(dialogOwner, dialogTitle);
@@ -148,6 +148,8 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         dialog.setName("BlockingDialog");
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         WindowListener dialogCloseListener = new WindowAdapter() {
+
+            @Override
             public void windowClosing(WindowEvent e) {
                 if (getTask().getUserCanCancel()) {
                     getTask().cancel(true);
@@ -176,7 +178,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         Object message = optionPane.getMessage();
         if (message instanceof String) {
             Font font = optionPane.getFont();
-            final JTextArea textArea = new JTextArea((String)message);
+            final JTextArea textArea = new JTextArea((String) message);
             textArea.setFont(font);
             int lh = textArea.getFontMetrics(font).getHeight();
             Insets margin = new Insets(0, 0, lh, 24); // top left bottom right
@@ -190,13 +192,15 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             progressBar.setName("BlockingDialog.progressBar");
             progressBar.setIndeterminate(true);
             PropertyChangeListener taskPCL = new PropertyChangeListener() {
+
+                @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     if ("progress".equals(e.getPropertyName())) {
                         progressBar.setIndeterminate(false);
-                        progressBar.setValue((Integer)e.getNewValue());
+                        progressBar.setValue((Integer) e.getNewValue());
                         updateStatusBarString(progressBar);
                     } else if ("message".equals(e.getPropertyName())) {
-                        textArea.setText((String)e.getNewValue());
+                        textArea.setText((String) e.getNewValue());
                     }
                 }
             };
@@ -204,7 +208,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             panel.add(progressBar, BorderLayout.SOUTH);
             injectBlockingDialogComponents(panel);
 
-             /* The initial value of the progressBar string is the format.
+            /* The initial value of the progressBar string is the format.
              * We save the format string in a client property.  The format
              * String will be applied four values (see below).  The default
              * format String is in resources/Application.properties, it's:
@@ -226,7 +230,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             return;
         }
         final String fmt = (String) progressBar.getClientProperty(PB_STRING_FORMAT_KEY);
-        if  (progressBar.getValue() <= 0) {
+        if (progressBar.getValue() <= 0) {
             progressBar.setString("");
         } else if (fmt == null) {
             progressBar.setString(null);
@@ -234,9 +238,9 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             double pctComplete = progressBar.getValue() / 100.0;
             long durSeconds = getTask().getExecutionDuration(TimeUnit.SECONDS);
             long durMinutes = durSeconds / 60;
-            long remSeconds = (long)(0.5 + ((double)durSeconds / pctComplete)) - durSeconds;
+            long remSeconds = (long) (0.5 + ((double) durSeconds / pctComplete)) - durSeconds;
             long remMinutes = remSeconds / 60;
-            String s = String.format(fmt, durMinutes, durSeconds - (durMinutes * 60), 
+            String s = String.format(fmt, durMinutes, durSeconds - (durMinutes * 60),
                     remMinutes, remSeconds - (remMinutes * 60));
             progressBar.setString(s);
         }
@@ -245,10 +249,10 @@ final class DefaultInputBlocker extends Task.InputBlocker {
 
     private void showBusyGlassPane(boolean f) {
         RootPaneContainer rpc = null;
-        Component root = (Component)getTarget();
-        while(root != null) {
+        Component root = (Component) getTarget();
+        while (root != null) {
             if (root instanceof RootPaneContainer) {
-                rpc = (RootPaneContainer)root;
+                rpc = (RootPaneContainer) root;
                 break;
             }
             root = root.getParent();
@@ -261,10 +265,12 @@ final class DefaultInputBlocker extends Task.InputBlocker {
                     menuBar.setEnabled(false);
                 }
                 JComponent glassPane = new BusyGlassPane();
-                InputVerifier retainFocusWhileVisible = new InputVerifier() { 
-                    public boolean verify(JComponent c) { 
-                        return !c.isVisible(); 
-                    } 
+                InputVerifier retainFocusWhileVisible = new InputVerifier() {
+
+                    @Override
+                    public boolean verify(JComponent c) {
+                        return !c.isVisible();
+                    }
                 };
                 glassPane.setInputVerifier(retainFocusWhileVisible);
                 Component oldGlassPane = rpc.getGlassPane();
@@ -275,11 +281,11 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             } else {
                 JMenuBar menuBar = rpc.getRootPane().getJMenuBar();
                 if (menuBar != null) {
-                    boolean enabled = (Boolean)menuBar.getClientProperty(this);
+                    boolean enabled = (Boolean) menuBar.getClientProperty(this);
                     menuBar.putClientProperty(this, null);
                     menuBar.setEnabled(enabled);
                 }
-                Component oldGlassPane = (Component)rpc.getRootPane().getClientProperty(this);
+                Component oldGlassPane = (Component) rpc.getRootPane().getClientProperty(this);
                 rpc.getRootPane().putClientProperty(this, null);
                 if (!oldGlassPane.isVisible()) {
                     rpc.getGlassPane().setVisible(false);
@@ -292,13 +298,15 @@ final class DefaultInputBlocker extends Task.InputBlocker {
     /* Note: unfortunately, the busy cursor is reset when the modal 
      * dialog is shown.
      */
-    private static class BusyGlassPane extends JPanel  {
+    private static class BusyGlassPane extends JPanel {
+
         BusyGlassPane() {
-            super(null, false); 
+            super(null, false);
             setVisible(false);
             setOpaque(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            MouseInputListener blockMouseEvents = new MouseInputAdapter() {};
+            MouseInputListener blockMouseEvents = new MouseInputAdapter() {
+            };
             addMouseMotionListener(blockMouseEvents);
             addMouseListener(blockMouseEvents);
         }
@@ -335,6 +343,8 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             }
             modalDialog = createBlockingDialog();
             ActionListener showModalDialog = new ActionListener() {
+
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     if (modalDialog != null) { // already dismissed
                         modalDialog.setVisible(true);
@@ -358,33 +368,34 @@ final class DefaultInputBlocker extends Task.InputBlocker {
     @Override
     protected void block() {
         switch (getScope()) {
-        case ACTION:      
-            setActionTargetBlocked(true); 
-            break;
-        case COMPONENT:   
-            setComponentTargetBlocked(true); 
-            break;
-        case WINDOW:      
-        case APPLICATION: 
-            showBusyGlassPane(true);
-            showBlockingDialog(true); 
-            break;
+            case ACTION:
+                setActionTargetBlocked(true);
+                break;
+            case COMPONENT:
+                setComponentTargetBlocked(true);
+                break;
+            case WINDOW:
+            case APPLICATION:
+                showBusyGlassPane(true);
+                showBlockingDialog(true);
+                break;
         }
     }
 
-    @Override protected void unblock() {
+    @Override
+    protected void unblock() {
         switch (getScope()) {
-        case ACTION:      
-            setActionTargetBlocked(false); 
-            break;
-        case COMPONENT:   
-            setComponentTargetBlocked(false); 
-            break;
-        case WINDOW:      
-        case APPLICATION: 
-            showBusyGlassPane(false);
-            showBlockingDialog(false);
-            break;
+            case ACTION:
+                setActionTargetBlocked(false);
+                break;
+            case COMPONENT:
+                setComponentTargetBlocked(false);
+                break;
+            case WINDOW:
+            case APPLICATION:
+                showBusyGlassPane(false);
+                showBlockingDialog(false);
+                break;
         }
     }
 }

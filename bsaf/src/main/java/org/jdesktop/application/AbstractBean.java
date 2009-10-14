@@ -1,11 +1,9 @@
-
 package org.jdesktop.application;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.SwingUtilities;
-
 
 /**
  * An encapsulation of the PropertyChangeSupport methods based on 
@@ -20,10 +18,11 @@ import javax.swing.SwingUtilities;
  * private class.  
  */
 public class AbstractBean {
+
     private final PropertyChangeSupport pcs;
 
     public AbstractBean() {
-	pcs = new EDTPropertyChangeSupport(this);
+        pcs = new EDTPropertyChangeSupport(this);
     }
 
     /**
@@ -42,7 +41,7 @@ public class AbstractBean {
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
-  
+
     /**
      * Remove a PropertyChangeListener from the listener list.
      * <p>
@@ -102,7 +101,7 @@ public class AbstractBean {
     public PropertyChangeListener[] getPropertyChangeListeners() {
         return pcs.getPropertyChangeListeners();
     }
-  
+
     /**
      * Called whenever the value of a bound property is set.
      * <p>
@@ -117,7 +116,7 @@ public class AbstractBean {
      */
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         if (oldValue != null && newValue != null && oldValue.equals(newValue)) {
-	    return;
+            return;
         }
         pcs.firePropertyChange(propertyName, oldValue, newValue);
     }
@@ -135,25 +134,27 @@ public class AbstractBean {
      * @see java.beans.PropertyChangeSupport#firePropertyChange(PropertyChangeEvent e)
      */
     protected void firePropertyChange(PropertyChangeEvent e) {
-	pcs.firePropertyChange(e);
+        pcs.firePropertyChange(e);
     }
 
     private static class EDTPropertyChangeSupport extends PropertyChangeSupport {
-	EDTPropertyChangeSupport(Object source) {
-	    super(source);
-	}
-	public void firePropertyChange(final PropertyChangeEvent e) {
-	    if (SwingUtilities.isEventDispatchThread()) {
-		super.firePropertyChange(e);
-	    } 
-	    else {
-		Runnable doFirePropertyChange = new Runnable() {
-		    public void run() {
-			firePropertyChange(e);
-		    }
-		};
-		SwingUtilities.invokeLater(doFirePropertyChange);
-	    }
-	}
+
+        EDTPropertyChangeSupport(Object source) {
+            super(source);
+        }
+
+        public void firePropertyChange(final PropertyChangeEvent e) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                super.firePropertyChange(e);
+            } else {
+                Runnable doFirePropertyChange = new Runnable() {
+
+                    public void run() {
+                        firePropertyChange(e);
+                    }
+                };
+                SwingUtilities.invokeLater(doFirePropertyChange);
+            }
+        }
     }
 }

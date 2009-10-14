@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
 
 /**
  * The application's {@code ResourceManager} provides 
@@ -53,6 +51,7 @@ import java.util.logging.Logger;
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ResourceManager extends AbstractBean {
+
     private static final Logger logger = Logger.getLogger(ResourceManager.class.getName());
     private final Map<String, ResourceMap> resourceMaps;
     private final ApplicationContext context;
@@ -73,6 +72,7 @@ public class ResourceManager extends AbstractBean {
      * </pre>
      * 
      * FIXME - @param javadoc
+     * @param context
      * @see ApplicationContext#getResourceManager
      * @see ApplicationContext#getResourceMap
      */
@@ -81,7 +81,7 @@ public class ResourceManager extends AbstractBean {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
-	resourceMaps = new ConcurrentHashMap<String, ResourceMap>();
+        resourceMaps = new ConcurrentHashMap<String, ResourceMap>();
     }
 
     // FIXME - documentation
@@ -97,17 +97,17 @@ public class ResourceManager extends AbstractBean {
      * appear bundles that come later.
      */
     private List<String> allBundleNames(Class startClass, Class stopClass) {
-	List<String> bundleNames = new ArrayList<String>();
+        List<String> bundleNames = new ArrayList<String>();
         Class limitClass = stopClass.getSuperclass(); // could be null
-	for(Class c = startClass; c != limitClass; c = c.getSuperclass()) {
+        for (Class c = startClass; c != limitClass; c = c.getSuperclass()) {
             bundleNames.addAll(getClassBundleNames(c));
-	}
+        }
         return Collections.unmodifiableList(bundleNames);
     }
 
     private String bundlePackageName(String bundleName) {
-	int i = bundleName.lastIndexOf(".");
-	return (i == -1) ? "" : bundleName.substring(0, i);
+        int i = bundleName.lastIndexOf(".");
+        return (i == -1) ? "" : bundleName.substring(0, i);
     }
 
     /* Creates a parent chain of ResourceMaps for the specfied
@@ -117,27 +117,25 @@ public class ResourceManager extends AbstractBean {
      * of the final ResourceMap in the chain is root.
      */
     private ResourceMap createResourceMapChain(ClassLoader cl, ResourceMap root, ListIterator<String> names) {
-	if (!names.hasNext()) {
-	    return root;
-	}
-	else {
-	    String bundleName0 = names.next();
-	    String rmBundlePackage = bundlePackageName(bundleName0);
-	    List<String> rmNames = new ArrayList<String>();
-	    rmNames.add(bundleName0); 
-            while(names.hasNext()) {
+        if (!names.hasNext()) {
+            return root;
+        } else {
+            String bundleName0 = names.next();
+            String rmBundlePackage = bundlePackageName(bundleName0);
+            List<String> rmNames = new ArrayList<String>();
+            rmNames.add(bundleName0);
+            while (names.hasNext()) {
                 String bundleName = names.next();
                 if (rmBundlePackage.equals(bundlePackageName(bundleName))) {
                     rmNames.add(bundleName);
-                }
-                else {
+                } else {
                     names.previous();
                     break;
                 }
             }
-	    ResourceMap parent = createResourceMapChain(cl, root, names);
-	    return createResourceMap(cl, parent, rmNames);
-	}
+            ResourceMap parent = createResourceMapChain(cl, root, names);
+            return createResourceMap(cl, parent, rmNames);
+        }
     }
 
     /* Lazily creates the Application ResourceMap chain,
@@ -147,35 +145,35 @@ public class ResourceManager extends AbstractBean {
      * Application.class.
      */
     private ResourceMap getApplicationResourceMap() {
-	if (appResourceMap == null) {
+        if (appResourceMap == null) {
             List<String> appBundleNames = getApplicationBundleNames();
-	    Class appClass = getContext().getApplicationClass();
-	    if (appClass == null) {
-		logger.warning("getApplicationResourceMap(): no Application class");
-		appClass = Application.class;
-	    }
-	    ClassLoader classLoader = appClass.getClassLoader();
-	    appResourceMap = createResourceMapChain(classLoader, null, appBundleNames.listIterator());
-	}
-	return appResourceMap;
+            Class appClass = getContext().getApplicationClass();
+            if (appClass == null) {
+                logger.warning("getApplicationResourceMap(): no Application class");
+                appClass = Application.class;
+            }
+            ClassLoader classLoader = appClass.getClassLoader();
+            appResourceMap = createResourceMapChain(classLoader, null, appBundleNames.listIterator());
+        }
+        return appResourceMap;
     }
 
     /* Lazily creates the ResourceMap chain for the the class from 
      * startClass to stopClass.
      */
     private ResourceMap getClassResourceMap(Class startClass, Class stopClass) {
-	String classResourceMapKey = startClass.getName() + stopClass.getName();
-	ResourceMap classResourceMap = resourceMaps.get(classResourceMapKey);
-	if (classResourceMap == null) {
+        String classResourceMapKey = startClass.getName() + stopClass.getName();
+        ResourceMap classResourceMap = resourceMaps.get(classResourceMapKey);
+        if (classResourceMap == null) {
             List<String> classBundleNames = allBundleNames(startClass, stopClass);
             ClassLoader classLoader = startClass.getClassLoader();
             ResourceMap appRM = getResourceMap();
-	    classResourceMap = createResourceMapChain(classLoader, appRM, classBundleNames.listIterator());
-	    resourceMaps.put(classResourceMapKey, classResourceMap);
-	}
-	return classResourceMap;
+            classResourceMap = createResourceMapChain(classLoader, appRM, classBundleNames.listIterator());
+            resourceMaps.put(classResourceMapKey, classResourceMap);
+        }
+        return classResourceMap;
     }
-    
+
     /**
      * Returns a {@link ResourceMap#getParent chain} of {@code ResourceMaps}
      * that encapsulate the {@code ResourceBundles} for each class
@@ -242,14 +240,14 @@ public class ResourceManager extends AbstractBean {
      * @see ResourceMap#getBundleNames
      */
     public ResourceMap getResourceMap(Class startClass, Class stopClass) {
-	if (startClass == null) {
-	    throw new IllegalArgumentException("null startClass");
-	}
-	if (stopClass == null) {
-	    throw new IllegalArgumentException("null stopClass");
-	}
+        if (startClass == null) {
+            throw new IllegalArgumentException("null startClass");
+        }
+        if (stopClass == null) {
+            throw new IllegalArgumentException("null stopClass");
+        }
         if (!stopClass.isAssignableFrom(startClass)) {
-	    throw new IllegalArgumentException("startClass is not a subclass, or the same as, stopClass");
+            throw new IllegalArgumentException("startClass is not a subclass, or the same as, stopClass");
         }
         return getClassResourceMap(startClass, stopClass);
     }
@@ -266,9 +264,9 @@ public class ResourceManager extends AbstractBean {
      * @see #getResourceMap(Class, Class)
      */
     public final ResourceMap getResourceMap(Class cls) {
-	if (cls == null) {
-	    throw new IllegalArgumentException("null class");
-	}
+        if (cls == null) {
+            throw new IllegalArgumentException("null class");
+        }
         return getResourceMap(cls, cls);
     }
 
@@ -286,7 +284,7 @@ public class ResourceManager extends AbstractBean {
      * @see ApplicationContext#getApplicationClass
      */
     public ResourceMap getResourceMap() {
-	return getApplicationResourceMap();
+        return getApplicationResourceMap();
     }
 
     /**
@@ -313,26 +311,26 @@ public class ResourceManager extends AbstractBean {
      * cached.  If it's reset, then all ResourceMaps cached by
      * {@code getResourceMap} will be updated.
      * 
+     * @return
      * @see #setApplicationBundleNames
      * @see #getResourceMap
      * @see #getClassBundleNames
      * @see ApplicationContext#getApplication
      */
     public List<String> getApplicationBundleNames() {
-	/* Lazily compute an initial value for this property, unless the
-	 * application's class hasn't been specified yet.  In that case
-	 * we just return a placeholder based on Application.class.
-	 */
-	if (applicationBundleNames == null) {
-	    Class appClass = getContext().getApplicationClass();
-	    if (appClass == null) {
-		return allBundleNames(Application.class, Application.class); // placeholder
-	    }
-	    else {
-		applicationBundleNames = allBundleNames(appClass, Application.class);
-	    }
-	}
-	return applicationBundleNames;
+        /* Lazily compute an initial value for this property, unless the
+         * application's class hasn't been specified yet.  In that case
+         * we just return a placeholder based on Application.class.
+         */
+        if (applicationBundleNames == null) {
+            Class appClass = getContext().getApplicationClass();
+            if (appClass == null) {
+                return allBundleNames(Application.class, Application.class); // placeholder
+            } else {
+                applicationBundleNames = allBundleNames(appClass, Application.class);
+            }
+        }
+        return applicationBundleNames;
     }
 
     /**
@@ -340,25 +338,25 @@ public class ResourceManager extends AbstractBean {
      * application.  More information about the property is provided
      * by the {@link #getApplicationBundleNames} method.  
      * 
+     * @param bundleNames
      * @see #setApplicationBundleNames
      */
     public void setApplicationBundleNames(List<String> bundleNames) {
-	if (bundleNames != null) {
-	    for(String bundleName : bundleNames) {
-		if ((bundleName == null) || (bundleNames.size() == 0)) {
-		    throw new IllegalArgumentException("invalid bundle name \"" + bundleName + "\"");
-		}
-	    }
-	}
-	Object oldValue = applicationBundleNames;
-	if (bundleNames != null) {
-	    applicationBundleNames = Collections.unmodifiableList(new ArrayList(bundleNames));
-	}
-	else {
-	    applicationBundleNames = null;
-	}
-	resourceMaps.clear();
-	firePropertyChange("applicationBundleNames", oldValue, applicationBundleNames);
+        if (bundleNames != null) {
+            for (String bundleName : bundleNames) {
+                if ((bundleName == null) || (bundleNames.size() == 0)) {
+                    throw new IllegalArgumentException("invalid bundle name \"" + bundleName + "\"");
+                }
+            }
+        }
+        Object oldValue = applicationBundleNames;
+        if (bundleNames != null) {
+            applicationBundleNames = Collections.unmodifiableList(new ArrayList(bundleNames));
+        } else {
+            applicationBundleNames = null;
+        }
+        resourceMaps.clear();
+        firePropertyChange("applicationBundleNames", oldValue, applicationBundleNames);
     }
 
     /* Convert a class name to an eponymous resource bundle in the 
@@ -373,19 +371,18 @@ public class ResourceManager extends AbstractBean {
      * developers.
      */
     private String classBundleBaseName(Class cls) {
-	String className = cls.getName();
-	StringBuffer sb = new StringBuffer();
-	int i = className.lastIndexOf('.');
-	if (i > 0) {
-	    sb.append(className.substring(0, i));
-	    sb.append(".resources.");
-	    sb.append(cls.getSimpleName());
-	}
-	else {
-	    sb.append("resources.");
-	    sb.append(cls.getSimpleName());
-	}
-	return sb.toString();
+        String className = cls.getName();
+        StringBuffer sb = new StringBuffer();
+        int i = className.lastIndexOf('.');
+        if (i > 0) {
+            sb.append(className.substring(0, i));
+            sb.append(".resources.");
+            sb.append(cls.getSimpleName());
+        } else {
+            sb.append("resources.");
+            sb.append(cls.getSimpleName());
+        }
+        return sb.toString();
     }
 
     /**
@@ -419,8 +416,8 @@ public class ResourceManager extends AbstractBean {
      * @see #getApplicationBundleNames
      */
     protected List<String> getClassBundleNames(Class cls) {
-	String bundleName = classBundleBaseName(cls);
-	return Collections.singletonList(bundleName);
+        String bundleName = classBundleBaseName(cls);
+        return Collections.singletonList(bundleName);
     }
 
     /**
@@ -431,9 +428,13 @@ public class ResourceManager extends AbstractBean {
      * </pre>
      * Custom ResourceManagers might override this method to construct their
      * own ResourceMap subclasses.
+     * @param classLoader
+     * @param parent
+     * @param bundleNames
+     * @return
      */
     protected ResourceMap createResourceMap(ClassLoader classLoader, ResourceMap parent, List<String> bundleNames) {
-	return new ResourceMap(parent, classLoader, bundleNames);
+        return new ResourceMap(parent, classLoader, bundleNames);
     }
 
     /**
@@ -468,6 +469,7 @@ public class ResourceManager extends AbstractBean {
      * in the Application {@link Application#initialize initialize}
      * method.  
      * 
+     * @param platform 
      * @see #getPlatform
      * @see System#getProperty
      */

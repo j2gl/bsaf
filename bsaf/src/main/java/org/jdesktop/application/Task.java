@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.Component;
@@ -16,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingWorker;
-
 
 /**
  * A type of {@link SwingWorker} that represents an application
@@ -117,6 +115,8 @@ import javax.swing.SwingWorker;
  * All of the Task properties can be get/set on any thread.
  * 
  * 
+ * @param <T>
+ * @param <V>
  * @author Hans Muller (Hans.Muller@Sun.COM)
  * @see ApplicationContext
  * @see ResourceMap
@@ -124,12 +124,13 @@ import javax.swing.SwingWorker;
  * @see TaskEvent
  */
 public abstract class Task<T, V> extends SwingWorker<T, V> {
+
     private static final Logger logger = Logger.getLogger(Task.class.getName());
     private final Application application;
     private String resourcePrefix;
     private ResourceMap resourceMap;
     private List<TaskListener<T, V>> taskListeners;
-    private InputBlocker inputBlocker;  
+    private InputBlocker inputBlocker;
     private String name = null;
     private String title = null;
     private String description = null;
@@ -150,41 +151,40 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see Action#block
      */
     public enum BlockingScope {
-       /** 
-        * Don't block the GUI while this Task is executing.
-        */
-       NONE, 
-       /** 
-        * Block an {@link ApplicationAction Action} while the 
-        * task is executing, typically by temporarily disabling it.
-        */
-       ACTION, 
-       /** 
-        * Block a component while the 
-        * task is executing, typically by temporarily disabling it.
-        */
-       COMPONENT, 
-       /** 
-        * Block a top level window while the task is executing,
-        * typically by showing a window-modal dialog.
-        */
-       WINDOW, 
-       /** 
-        * Block all of the application's top level windows, 
-        * typically by showing a application-modal dialog.
-        */
-       APPLICATION
+
+        /**
+         * Don't block the GUI while this Task is executing.
+         */
+        NONE,
+        /**
+         * Block an {@link ApplicationAction Action} while the
+         * task is executing, typically by temporarily disabling it.
+         */
+        ACTION,
+        /**
+         * Block a component while the
+         * task is executing, typically by temporarily disabling it.
+         */
+        COMPONENT,
+        /**
+         * Block a top level window while the task is executing,
+         * typically by showing a window-modal dialog.
+         */
+        WINDOW,
+        /**
+         * Block all of the application's top level windows,
+         * typically by showing a application-modal dialog.
+         */
+        APPLICATION
     };
 
     private void initTask(ResourceMap resourceMap, String prefix) {
         this.resourceMap = resourceMap;
         if ((prefix == null) || (prefix.length() == 0)) {
             resourcePrefix = "";
-        }
-        else if (prefix.endsWith(".")) {
+        } else if (prefix.endsWith(".")) {
             resourcePrefix = prefix;
-        }
-        else {
+        } else {
             resourcePrefix = prefix + ".";
         }
         if (resourceMap != null) {
@@ -195,8 +195,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 messageTime = System.currentTimeMillis();
             }
         }
-	addPropertyChangeListener(new StatePCL());
-	taskListeners = new CopyOnWriteArrayList<TaskListener<T, V>>();
+        addPropertyChangeListener(new StatePCL());
+        taskListeners = new CopyOnWriteArrayList<TaskListener<T, V>>();
     }
 
     private ResourceMap defaultResourceMap(Application application) {
@@ -221,6 +221,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * the {@code resourcePrefix} parameter, followed by a ".", as a
      * prefix
      * 
+     * @param application
      * @param resourceMap the ResourceMap for the Task's user properties, can be null
      * @param resourcePrefix prefix for resource names, can be null
      * @see #getResourceMap
@@ -229,6 +230,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setMessage
      * @see #resourceName
      * @see ApplicationContext#getResourceMap
+     * @deprecated
      */
     @Deprecated
     public Task(Application application, ResourceMap resourceMap, String resourcePrefix) {
@@ -252,6 +254,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      *  {@code title}, {@code description}, and {@code message} Task properties
      * and for message {@link java.util.Formatter format} strings.
      * 
+     * @param application
      * @param resourcePrefix prefix for resource names, can be null
      * @see #getResourceMap
      * @see #setTitle
@@ -259,6 +262,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setMessage
      * @see #resourceName
      * @see ApplicationContext#getResourceMap
+     * @deprecated
      */
     @Deprecated
     public Task(Application application, String resourcePrefix) {
@@ -271,12 +275,12 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * prefix, whose ResourceMap is the value of
      * <code>ApplicationContext.getInstance().getResourceMap(this.getClass(),
      * Task.class)</code>.
+     * @param application
      */
     public Task(Application application) {
         this.application = application;
         initTask(defaultResourceMap(application), "");
     }
-
 
     public final Application getApplication() {
         return application;
@@ -299,7 +303,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #done
      */
     public synchronized TaskService getTaskService() {
-	return taskService;
+        return taskService;
     }
 
     /**
@@ -307,13 +311,13 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * the task is done and all of its completion methods have run.
      */
     synchronized void setTaskService(TaskService taskService) {
-	TaskService oldTaskService, newTaskService;
-	synchronized(this) {
-	    oldTaskService = this.taskService;
-	    this.taskService = taskService;
-	    newTaskService = this.taskService;
-	}
-	firePropertyChange("taskService", oldTaskService, newTaskService);
+        TaskService oldTaskService, newTaskService;
+        synchronized (this) {
+            oldTaskService = this.taskService;
+            this.taskService = taskService;
+            newTaskService = this.taskService;
+        }
+        firePropertyChange("taskService", oldTaskService, newTaskService);
     }
 
     /**
@@ -327,11 +331,12 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * using the same naming convention.
      * 
      * @param suffix the resource name's suffix
+     * @return
      * @see #getResourceMap
      * @see #message
      */
     protected final String resourceName(String suffix) {
-	return resourcePrefix + suffix;
+        return resourcePrefix + suffix;
     }
 
     /**
@@ -344,7 +349,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #resourceName
      */
     public final ResourceMap getResourceMap() {
-	return resourceMap;
+        return resourceMap;
     }
 
     /**
@@ -361,8 +366,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setDescription
      * @see #setMessage
      */
-    public synchronized String getTitle() { 
-	return title; 
+    public synchronized String getTitle() {
+        return title;
     }
 
     /**
@@ -383,14 +388,14 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setDescription
      * @see #setMessage
      */
-    protected void setTitle(String title) { 
-	String oldTitle, newTitle;
-	synchronized(this) {
-	    oldTitle = this.title;
-	    this.title = title; 
-	    newTitle = this.title;
-	}
-	firePropertyChange("title", oldTitle, newTitle);
+    protected void setTitle(String title) {
+        String oldTitle, newTitle;
+        synchronized (this) {
+            oldTitle = this.title;
+            this.title = title;
+            newTitle = this.title;
+        }
+        firePropertyChange("title", oldTitle, newTitle);
     }
 
     /**
@@ -407,8 +412,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setTitle
      * @see #setMessage
      */
-    public synchronized String getDescription() { 
-	return description; 
+    public synchronized String getDescription() {
+        return description;
     }
 
     /**
@@ -425,16 +430,15 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setTitle
      * @see #setMessage
      */
-    protected void setDescription(String description) { 
-	String oldDescription, newDescription;
-	synchronized(this) {
-	    oldDescription = this.description;
-	    this.description = description; 
-	    newDescription = this.description;
-	}
-	firePropertyChange("description", oldDescription, newDescription);
+    protected void setDescription(String description) {
+        String oldDescription, newDescription;
+        synchronized (this) {
+            oldDescription = this.description;
+            this.description = description;
+            newDescription = this.description;
+        }
+        firePropertyChange("description", oldDescription, newDescription);
     }
-
 
     /** 
      * Returns the length of time this Task has run.  If the task hasn't
@@ -450,22 +454,20 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @return the length of time this Task has run.
      * @see #execute
      */
-    public long getExecutionDuration(TimeUnit unit) { 
-	long startTime, doneTime, dt;
-	synchronized(this) {
-	    startTime = this.startTime;
-	    doneTime = this.doneTime;
-	}
-	if (startTime == -1L) {
-	    dt = 0L;
-	}
-	else if (doneTime == -1L) {
-	    dt = System.currentTimeMillis() - startTime;
-	}
-	else {
-	    dt = doneTime - startTime;
-	}
-	return unit.convert(Math.max(0L, dt), TimeUnit.MILLISECONDS);
+    public long getExecutionDuration(TimeUnit unit) {
+        long startTime, doneTime, dt;
+        synchronized (this) {
+            startTime = this.startTime;
+            doneTime = this.doneTime;
+        }
+        if (startTime == -1L) {
+            dt = 0L;
+        } else if (doneTime == -1L) {
+            dt = System.currentTimeMillis() - startTime;
+        } else {
+            dt = doneTime - startTime;
+        }
+        return unit.convert(Math.max(0L, dt), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -480,8 +482,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setMessage
      * @see #getMessageDuration
      */
-    public String getMessage() { 
-	return message; 
+    public String getMessage() {
+        return message;
     }
 
     /**
@@ -522,15 +524,15 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #getMessageDuration
      * @see #message
      */
-    protected void setMessage(String message) { 
-	String oldMessage, newMessage;
-	synchronized(this) {
-	    oldMessage = this.message;
-	    this.message = message;
-	    newMessage = this.message;
-	    messageTime = System.currentTimeMillis();
-	}
-	firePropertyChange("message", oldMessage, newMessage);
+    protected void setMessage(String message) {
+        String oldMessage, newMessage;
+        synchronized (this) {
+            oldMessage = this.message;
+            this.message = message;
+            newMessage = this.message;
+            messageTime = System.currentTimeMillis();
+        }
+        firePropertyChange("message", oldMessage, newMessage);
     }
 
     /**
@@ -555,13 +557,12 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see java.text.MessageFormat
      */
     protected final void message(String formatResourceKey, Object... args) {
-	ResourceMap resourceMap = getResourceMap();
-	if (resourceMap != null) {
-	    setMessage(resourceMap.getString(resourceName(formatResourceKey), args));
-	}
-	else {
-	    setMessage(formatResourceKey);
-	}
+        ResourceMap resourceMap = getResourceMap();
+        if (resourceMap != null) {
+            setMessage(resourceMap.getString(resourceName(formatResourceKey), args));
+        } else {
+            setMessage(formatResourceKey);
+        }
     }
 
     /**
@@ -572,13 +573,13 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @return elapsed time since the {@code message} property was last set.
      * @see #setMessage
      */
-    public long getMessageDuration(TimeUnit unit) { 
-	long messageTime;
-	synchronized(this) {
-	    messageTime = this.messageTime;
-	}
-	long dt = (messageTime == -1L) ? 0L : Math.max(0L, System.currentTimeMillis() - messageTime);
-	return unit.convert(dt, TimeUnit.MILLISECONDS);
+    public long getMessageDuration(TimeUnit unit) {
+        long messageTime;
+        synchronized (this) {
+            messageTime = this.messageTime;
+        }
+        long dt = (messageTime == -1L) ? 0L : Math.max(0L, System.currentTimeMillis() - messageTime);
+        return unit.convert(dt, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -593,7 +594,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setUserCanCancel
      */
     public synchronized boolean getUserCanCancel() {
-	return userCanCancel;
+        return userCanCancel;
     }
 
     /**
@@ -613,14 +614,14 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @param userCanCancel true if the user should be allowed to cancel this Task.
      * @see #getUserCanCancel
      */
-    protected void setUserCanCancel(boolean userCanCancel) { 
-	boolean oldValue, newValue;
-	synchronized(this) {
-	    oldValue = this.userCanCancel;
-	    this.userCanCancel = userCanCancel;
-	    newValue = this.userCanCancel;
-	}
-	firePropertyChange("userCanCancel", oldValue, newValue);
+    protected void setUserCanCancel(boolean userCanCancel) {
+        boolean oldValue, newValue;
+        synchronized (this) {
+            oldValue = this.userCanCancel;
+            this.userCanCancel = userCanCancel;
+            newValue = this.userCanCancel;
+        }
+        firePropertyChange("userCanCancel", oldValue, newValue);
     }
 
     /**
@@ -639,8 +640,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @return true if the {@link #setProgress progress} property has been set.
      * @see #setProgress
      */
-    public synchronized boolean isProgressPropertyValid() { 
-	return progressPropertyIsValid;
+    public synchronized boolean isProgressPropertyValid() {
+        return progressPropertyIsValid;
     }
 
     /**
@@ -656,14 +657,14 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setProgress(int)
      */
     protected final void setProgress(int value, int min, int max) {
-	if (min >= max) {
-	    throw new IllegalArgumentException("invalid range: min >= max");
-	}
-	if ((value < min) || (value > max)) {
-	    throw new IllegalArgumentException("invalid value");
-	}
-	float percentage = (float)(value - min) / (float)(max - min);
-	setProgress(Math.round(percentage * 100.0f));
+        if (min >= max) {
+            throw new IllegalArgumentException("invalid range: min >= max");
+        }
+        if ((value < min) || (value > max)) {
+            throw new IllegalArgumentException("invalid value");
+        }
+        float percentage = (float) (value - min) / (float) (max - min);
+        setProgress(Math.round(percentage * 100.0f));
     }
 
     /**
@@ -674,10 +675,10 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setProgress(int)
      */
     protected final void setProgress(float percentage) {
-	if ((percentage < 0.0) || (percentage > 1.0)) {
-	    throw new IllegalArgumentException("invalid percentage");
-	}
-	setProgress(Math.round(percentage * 100.0f));
+        if ((percentage < 0.0) || (percentage > 1.0)) {
+            throw new IllegalArgumentException("invalid percentage");
+        }
+        setProgress(Math.round(percentage * 100.0f));
     }
 
     /**
@@ -693,14 +694,14 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #setProgress(int)
      */
     protected final void setProgress(float value, float min, float max) {
-	if (min >= max) {
-	    throw new IllegalArgumentException("invalid range: min >= max");
-	}
-	if ((value < min) || (value > max)) {
-	    throw new IllegalArgumentException("invalid value");
-	}
-	float percentage = (value - min) / (max - min);
-	setProgress(Math.round(percentage * 100.0f));
+        if (min >= max) {
+            throw new IllegalArgumentException("invalid range: min >= max");
+        }
+        if ((value < min) || (value > max)) {
+            throw new IllegalArgumentException("invalid value");
+        }
+        float percentage = (value - min) / (max - min);
+        setProgress(Math.round(percentage * 100.0f));
     }
 
     /**
@@ -712,7 +713,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * "done" PropertyChangeEvent is fired.
      */
     public final boolean isPending() {
-	return getState() == StateValue.PENDING;
+        return getState() == StateValue.PENDING;
     }
 
     /**
@@ -722,9 +723,10 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * a PropertyChangeEvent for the "started" property is fired.  Similarly
      * when a started Task's state changes to {@code StateValue.DONE}, a
      * "done" PropertyChangeEvent is fired.
+     * @return
      */
     public final boolean isStarted() {
-	return getState() == StateValue.STARTED;
+        return getState() == StateValue.STARTED;
     }
 
     /**
@@ -736,35 +738,32 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * 
      * @param values @{inheritDoc}
      */
-    @Override protected void process(List<V> values) {
-	fireProcessListeners(values);
+    @Override
+    protected void process(List<V> values) {
+        fireProcessListeners(values);
     }
 
-    @Override protected final void done() {
-	try {
-	    if (isCancelled()) {
-		cancelled();
-	    } 
-	    else {
-		try {
-		    succeeded(get());
-		} 
-		catch (InterruptedException e) {
-		    interrupted(e);
-		}
-		catch (ExecutionException e) {
-		    failed(e.getCause());
-		}
-	    }
-	}
-	finally {
-	    try {
-		finished();
-	    }
-	    finally {
-		setTaskService(null);
-	    }
-	}
+    @Override
+    protected final void done() {
+        try {
+            if (isCancelled()) {
+                cancelled();
+            } else {
+                try {
+                    succeeded(get());
+                } catch (InterruptedException e) {
+                    interrupted(e);
+                } catch (ExecutionException e) {
+                    failed(e.getCause());
+                }
+            }
+        } finally {
+            try {
+                finished();
+            } finally {
+                setTaskService(null);
+            }
+        }
     }
 
     /**
@@ -819,9 +818,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #failed
      */
     protected void failed(Throwable cause) {
-	String msg = String.format("%s failed: %s", this, cause);
-	logger.log(Level.SEVERE, msg, cause);
-    } 
+        String msg = String.format("%s failed: %s", this, cause);
+        logger.log(Level.SEVERE, msg, cause);
+    }
 
     /**
      * Called unconditionally (in a {@code finally} clause) after one
@@ -850,10 +849,10 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #removeTaskListener
      */
     public void addTaskListener(TaskListener<T, V> listener) {
-	if (listener == null) {
-	    throw new IllegalArgumentException("null listener");
-	}
-	taskListeners.add(listener);
+        if (listener == null) {
+            throw new IllegalArgumentException("null listener");
+        }
+        taskListeners.add(listener);
     }
 
     /**
@@ -864,10 +863,10 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #addTaskListener
      */
     public void removeTaskListener(TaskListener<T, V> listener) {
-	if (listener == null) {
-	    throw new IllegalArgumentException("null listener");
-	}
-	taskListeners.remove(listener);
+        if (listener == null) {
+            throw new IllegalArgumentException("null listener");
+        }
+        taskListeners.remove(listener);
     }
 
     /**
@@ -877,142 +876,144 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see #addTaskListener
      * @see #removeTaskListener
      */
-    public TaskListener<T,V>[] getTaskListeners() {
-	return taskListeners.toArray(new TaskListener[taskListeners.size()]);
+    public TaskListener<T, V>[] getTaskListeners() {
+        return taskListeners.toArray(new TaskListener[taskListeners.size()]);
     }
 
     /* This method is guaranteed to run on the EDT, it's called
      * from SwingWorker.process().
      */
     private void fireProcessListeners(List<V> values) {
-	TaskEvent<List<V>> event = new TaskEvent(this, values);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.process(event);
-	}
+        TaskEvent<List<V>> event = new TaskEvent(this, values);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.process(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireDoInBackgroundListeners() {
-	TaskEvent<Void> event = new TaskEvent(this, null);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.doInBackground(event);
-	}
+        TaskEvent<Void> event = new TaskEvent(this, null);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.doInBackground(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireSucceededListeners(T result) {
-	TaskEvent<T> event = new TaskEvent(this, result);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.succeeded(event);
-	}
+        TaskEvent<T> event = new TaskEvent(this, result);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.succeeded(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireCancelledListeners() {
-	TaskEvent<Void> event = new TaskEvent(this, null);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.cancelled(event);
-	}
+        TaskEvent<Void> event = new TaskEvent(this, null);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.cancelled(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireInterruptedListeners(InterruptedException e) {
-	TaskEvent<InterruptedException> event = new TaskEvent(this, e);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.interrupted(event);
-	}
+        TaskEvent<InterruptedException> event = new TaskEvent(this, e);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.interrupted(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireFailedListeners(Throwable e) {
-	TaskEvent<Throwable> event = new TaskEvent(this, e);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.failed(event);
-	}
+        TaskEvent<Throwable> event = new TaskEvent(this, e);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.failed(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireFinishedListeners() {
-	TaskEvent<Void> event = new TaskEvent(this, null);
-	for(TaskListener<T, V> listener : taskListeners) {
-	    listener.finished(event);
-	}
+        TaskEvent<Void> event = new TaskEvent(this, null);
+        for (TaskListener<T, V> listener : taskListeners) {
+            listener.finished(event);
+        }
     }
 
     /* This method runs on the EDT because it's called from
      * StatePCL (see below).
      */
     private void fireCompletionListeners() {
-	try {
-	    if (isCancelled()) {
-		fireCancelledListeners();
-	    } 
-	    else {
-		try {
-		    fireSucceededListeners(get());
-		} 
-		catch (InterruptedException e) {
-		    fireInterruptedListeners(e);
-		}
-		catch (ExecutionException e) {
-		    fireFailedListeners(e.getCause());
-		}
-	    }
-	}
-	finally {
-	    fireFinishedListeners();
-	}
+        try {
+            if (isCancelled()) {
+                fireCancelledListeners();
+            } else {
+                try {
+                    fireSucceededListeners(get());
+                } catch (InterruptedException e) {
+                    fireInterruptedListeners(e);
+                } catch (ExecutionException e) {
+                    fireFailedListeners(e.getCause());
+                }
+            }
+        } finally {
+            fireFinishedListeners();
+        }
     }
 
     private class StatePCL implements PropertyChangeListener {
-	public void propertyChange(PropertyChangeEvent e) {
-	    String propertyName = e.getPropertyName();
-	    if ("state".equals(propertyName)) {
-		StateValue state = (StateValue)(e.getNewValue());
-		Task task = (Task)(e.getSource());
-		switch (state) {
-		case STARTED: taskStarted(task); break;
-		case DONE: taskDone(task); break;
-		}
-	    }
-	    else if ("progress".equals(propertyName)) {
-		synchronized(Task.this) {
-		    progressPropertyIsValid = true;
-		}
-	    }
-	}
-	private void taskStarted(Task task) {
-	    synchronized(Task.this) {
-		startTime = System.currentTimeMillis();
-	    }
-	    firePropertyChange("started", false, true);
-	    fireDoInBackgroundListeners();
-	}
-	private void taskDone(Task task) {
-	    synchronized(Task.this) {
-		doneTime = System.currentTimeMillis();
-	    }
-	    try {
-		task.removePropertyChangeListener(this);
-		firePropertyChange("done", false, true);
-		fireCompletionListeners();
-	    }
-	    finally {
-		firePropertyChange("completed", false, true);
-	    }
-	}
+
+        @Override
+        public void propertyChange(PropertyChangeEvent e) {
+            String propertyName = e.getPropertyName();
+            if ("state".equals(propertyName)) {
+                StateValue state = (StateValue) (e.getNewValue());
+                Task task = (Task) (e.getSource());
+                switch (state) {
+                    case STARTED:
+                        taskStarted(task);
+                        break;
+                    case DONE:
+                        taskDone(task);
+                        break;
+                }
+            } else if ("progress".equals(propertyName)) {
+                synchronized (Task.this) {
+                    progressPropertyIsValid = true;
+                }
+            }
+        }
+
+        private void taskStarted(Task task) {
+            synchronized (Task.this) {
+                startTime = System.currentTimeMillis();
+            }
+            firePropertyChange("started", false, true);
+            fireDoInBackgroundListeners();
+        }
+
+        private void taskDone(Task task) {
+            synchronized (Task.this) {
+                doneTime = System.currentTimeMillis();
+            }
+            try {
+                task.removePropertyChangeListener(this);
+                firePropertyChange("done", false, true);
+                fireCompletionListeners();
+            } finally {
+                firePropertyChange("completed", false, true);
+            }
+        }
     }
 
     /**
@@ -1020,6 +1021,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * <p> 
      * This is a bound property.
      * 
+     * @return
      * @see #setInputBlocker
      */
     public final InputBlocker getInputBlocker() {
@@ -1039,6 +1041,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * <p> 
      * This is a bound property.
      * 
+     * @param inputBlocker
      * @see #getInputBlocker
      */
     public final void setInputBlocker(InputBlocker inputBlocker) {
@@ -1046,11 +1049,11 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             throw new IllegalStateException("task already being executed");
         }
         InputBlocker oldInputBlocker, newInputBlocker;
-	synchronized(this) {
+        synchronized (this) {
             oldInputBlocker = this.inputBlocker;
             this.inputBlocker = inputBlocker;
             newInputBlocker = this.inputBlocker;
-	}
+        }
         firePropertyChange("inputBlocker", oldInputBlocker, newInputBlocker);
     }
 
@@ -1090,6 +1093,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * @see Action
      */
     public static abstract class InputBlocker extends AbstractBean {
+
         private final Task task;
         private final BlockingScope scope;
         private final Object target;
@@ -1118,17 +1122,17 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 throw new IllegalStateException("task already being executed");
             }
             switch (scope) {
-            case ACTION: 
-                if (!(target instanceof javax.swing.Action)) {
-                    throw new IllegalArgumentException("target not an Action");
-                }
-                break;
-            case COMPONENT:
-            case WINDOW:
-                if (!(target instanceof Component)) {
-                    throw new IllegalArgumentException("target not a Component");
-                }
-                break;
+                case ACTION:
+                    if (!(target instanceof javax.swing.Action)) {
+                        throw new IllegalArgumentException("target not an Action");
+                    }
+                    break;
+                case COMPONENT:
+                case WINDOW:
+                    if (!(target instanceof Component)) {
+                        throw new IllegalArgumentException("target not a Component");
+                    }
+                    break;
             }
             this.task = task;
             this.scope = scope;
@@ -1148,7 +1152,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
          * @see TaskService#execute
          */
         public InputBlocker(Task task, BlockingScope scope, Object target) {
-            this(task, scope, target, (target instanceof ApplicationAction) ? (ApplicationAction)target : null);
+            this(task, scope, target, (target instanceof ApplicationAction) ? (ApplicationAction) target : null);
 
         }
 
@@ -1160,7 +1164,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
          * @see #block
          * @see #unblock
          */
-        public final Task getTask() { return task; } 
+        public final Task getTask() {
+            return task;
+        }
 
         /**
          * Defines the extent to which the GUI is blocked while 
@@ -1170,7 +1176,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
          * @see #block
          * @see #unblock
          */
-        public final BlockingScope getScope() { return scope; }
+        public final BlockingScope getScope() {
+            return scope;
+        }
 
         /**
          * Specifies the GUI element that will be blocked while 
@@ -1183,7 +1191,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
          * @see #block
          * @see #unblock
          */
-        public final Object getTarget() { return target; }
+        public final Object getTarget() {
+            return target;
+        }
 
         /**
          * The ApplicationAction ({@code @Action}) that caused
@@ -1201,7 +1211,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
          * @see ApplicationAction#getName
          * @see ApplicationAction#getResourceMap
          */
-        public final ApplicationAction getAction() { return action; }
+        public final ApplicationAction getAction() {
+            return action;
+        }
 
         /**
          * Block input to the GUI per the {@code scope} and {@code target}

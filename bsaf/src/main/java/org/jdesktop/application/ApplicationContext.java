@@ -2,32 +2,17 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
-import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 /**
  * A singleton that manages shared objects, like actions, resources, and tasks, 
@@ -45,6 +30,7 @@ import javax.swing.UIManager;
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ApplicationContext extends AbstractBean {
+
     private static final Logger logger = Logger.getLogger(ApplicationContext.class.getName());
     private final List<TaskService> taskServices;
     private final List<TaskService> taskServicesReadOnly;
@@ -54,20 +40,19 @@ public class ApplicationContext extends AbstractBean {
     private SessionStorage sessionStorage;
     private Application application = null;
     private Class applicationClass = null;
-    private JComponent focusOwner = null;   
-    private Clipboard clipboard = null;     
+    private JComponent focusOwner = null;
+    private Clipboard clipboard = null;
     private Throwable uncaughtException = null;
     private TaskMonitor taskMonitor = null;
-    
 
-    protected ApplicationContext() { 
-	resourceManager = new ResourceManager(this);
-	actionManager = new ActionManager(this);
-	localStorage = new LocalStorage(this);
-	sessionStorage = new SessionStorage(this);
-	taskServices = new CopyOnWriteArrayList<TaskService>();
-	taskServices.add(new TaskService("default"));
-	taskServicesReadOnly = Collections.unmodifiableList(taskServices);
+    protected ApplicationContext() {
+        resourceManager = new ResourceManager(this);
+        actionManager = new ActionManager(this);
+        localStorage = new LocalStorage(this);
+        sessionStorage = new SessionStorage(this);
+        taskServices = new CopyOnWriteArrayList<TaskService>();
+        taskServices.add(new TaskService("default"));
+        taskServicesReadOnly = Collections.unmodifiableList(taskServices);
     }
 
     /**
@@ -81,7 +66,7 @@ public class ApplicationContext extends AbstractBean {
      * @see #getApplication
      */
     public final synchronized Class getApplicationClass() {
-	return applicationClass;
+        return applicationClass;
     }
 
     /**
@@ -93,13 +78,14 @@ public class ApplicationContext extends AbstractBean {
      * configuration.  Normal applications shouldn't need to 
      * call it directly.
      *
+     * @param applicationClass
      * @see #getApplicationClass
      */
     public final synchronized void setApplicationClass(Class applicationClass) {
         if (this.application != null) {
-	    throw new IllegalStateException("application has been launched");
-	}
-	this.applicationClass = applicationClass;
+            throw new IllegalStateException("application has been launched");
+        }
+        this.applicationClass = applicationClass;
     }
 
     /**
@@ -110,16 +96,16 @@ public class ApplicationContext extends AbstractBean {
      * @see Application#launch
      */
     public final synchronized Application getApplication() {
-	return application;
+        return application;
     }
 
     /* Called by Application.launch().
      */
     synchronized void setApplication(Application application) {
-	if (this.application != null) {
-	    throw new IllegalStateException("application has already been launched");
-	}
-	this.application = application;
+        if (this.application != null) {
+            throw new IllegalStateException("application has already been launched");
+        }
+        this.application = application;
     }
 
     /**
@@ -131,7 +117,7 @@ public class ApplicationContext extends AbstractBean {
      * @see #getResourceMap(Class, Class)
      */
     public final ResourceManager getResourceManager() {
-	return resourceManager;
+        return resourceManager;
     }
 
     /**
@@ -147,12 +133,12 @@ public class ApplicationContext extends AbstractBean {
      * @see #getResourceManager
      */
     protected void setResourceManager(ResourceManager resourceManager) {
-	if (resourceManager == null) {
-	    throw new IllegalArgumentException("null resourceManager");
-	}
-	Object oldValue = this.resourceManager;
-	this.resourceManager = resourceManager;
-	firePropertyChange("resourceManager", oldValue, this.resourceManager);
+        if (resourceManager == null) {
+            throw new IllegalArgumentException("null resourceManager");
+        }
+        Object oldValue = this.resourceManager;
+        this.resourceManager = resourceManager;
+        firePropertyChange("resourceManager", oldValue, this.resourceManager);
     }
 
     /**
@@ -230,7 +216,7 @@ public class ApplicationContext extends AbstractBean {
      * @see #getActionMap(Object)
      */
     public final ActionManager getActionManager() {
-	return actionManager;
+        return actionManager;
     }
 
     /**
@@ -246,14 +232,13 @@ public class ApplicationContext extends AbstractBean {
      * @see #getActionMap(Object)
      */
     protected void setActionManager(ActionManager actionManager) {
-	if (actionManager == null) {
-	    throw new IllegalArgumentException("null actionManager");
-	}
-	Object oldValue = this.actionManager;
-	this.actionManager = actionManager;
-	firePropertyChange("actionManager", oldValue, this.actionManager);
+        if (actionManager == null) {
+            throw new IllegalArgumentException("null actionManager");
+        }
+        Object oldValue = this.actionManager;
+        this.actionManager = actionManager;
+        firePropertyChange("actionManager", oldValue, this.actionManager);
     }
-
 
     /** 
      * Returns the shared {@code ActionMap} chain for the entire {@code Application}.
@@ -269,7 +254,7 @@ public class ApplicationContext extends AbstractBean {
      * @see ActionManager#getActionMap()
      */
     public final ApplicationActionMap getActionMap() {
-	return getActionManager().getActionMap();
+        return getActionManager().getActionMap();
     }
 
     /** 
@@ -283,24 +268,27 @@ public class ApplicationContext extends AbstractBean {
      * return getActionManager().getActionMap(actionsClass, actionsObject)
      * </pre>
      * 
+     * @param actionsClass
+     * @param actionsObject
      * @return the {@code ActionMap} chain for the entire {@code Application}.
      * @see ActionManager#getActionMap(Class, Object)
      */
     public final ApplicationActionMap getActionMap(Class actionsClass, Object actionsObject) {
-	return getActionManager().getActionMap(actionsClass, actionsObject);
+        return getActionManager().getActionMap(actionsClass, actionsObject);
     }
 
     /** 
      * Defined as {@code getActionMap(actionsObject.getClass(), actionsObject)}.
      * 
+     * @param actionsObject
      * @return the {@code ActionMap} for the specified object
      * @see #getActionMap(Class, Object)
      */
     public final ApplicationActionMap getActionMap(Object actionsObject) {
-	if (actionsObject == null) {
-	    throw new IllegalArgumentException("null actionsObject");
-	}
-	return getActionManager().getActionMap(actionsObject.getClass(), actionsObject);
+        if (actionsObject == null) {
+            throw new IllegalArgumentException("null actionsObject");
+        }
+        return getActionManager().getActionMap(actionsObject.getClass(), actionsObject);
     }
 
     /**
@@ -309,7 +297,7 @@ public class ApplicationContext extends AbstractBean {
      * @return the shared {@link LocalStorage LocalStorage} object.
      */
     public final LocalStorage getLocalStorage() {
-	return localStorage;
+        return localStorage;
     }
 
     /**
@@ -318,14 +306,13 @@ public class ApplicationContext extends AbstractBean {
      * @param localStorage the shared {@link LocalStorage LocalStorage} object.
      */
     protected void setLocalStorage(LocalStorage localStorage) {
-	if (localStorage == null) {
-	    throw new IllegalArgumentException("null localStorage");
-	}
-	Object oldValue = this.localStorage;
-	this.localStorage = localStorage;
-	firePropertyChange("localStorage", oldValue, this.localStorage);
+        if (localStorage == null) {
+            throw new IllegalArgumentException("null localStorage");
+        }
+        Object oldValue = this.localStorage;
+        this.localStorage = localStorage;
+        firePropertyChange("localStorage", oldValue, this.localStorage);
     }
-
 
     /**
      * The shared {@link SessionStorage SessionStorage} object.
@@ -333,7 +320,7 @@ public class ApplicationContext extends AbstractBean {
      * @return the shared {@link SessionStorage SessionStorage} object.
      */
     public final SessionStorage getSessionStorage() {
-	return sessionStorage;
+        return sessionStorage;
     }
 
     /**
@@ -342,92 +329,95 @@ public class ApplicationContext extends AbstractBean {
      * @param sessionStorage the shared {@link SessionStorage SessionStorage} object.
      */
     protected void setSessionStorage(SessionStorage sessionStorage) {
-	if (sessionStorage == null) {
-	    throw new IllegalArgumentException("null sessionStorage");
-	}
-	Object oldValue = this.sessionStorage;
-	this.sessionStorage = sessionStorage;
-	firePropertyChange("sessionStorage", oldValue, this.sessionStorage);
+        if (sessionStorage == null) {
+            throw new IllegalArgumentException("null sessionStorage");
+        }
+        Object oldValue = this.sessionStorage;
+        this.sessionStorage = sessionStorage;
+        firePropertyChange("sessionStorage", oldValue, this.sessionStorage);
     }
 
     /**
      * A shared {@code Clipboard}.
+     * @return
      */
     public Clipboard getClipboard() {
-	if (clipboard == null) {
-	    try {
-		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-	    } 
-	    catch (SecurityException e) {
-		clipboard = new Clipboard("sandbox");
-	    }
-	}
-	return clipboard;
+        if (clipboard == null) {
+            try {
+                clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            } catch (SecurityException e) {
+                clipboard = new Clipboard("sandbox");
+            }
+        }
+        return clipboard;
     }
 
     /**
      * The application's focus owner.
+     * @return 
      */
-    public JComponent getFocusOwner() { return focusOwner; }
+    public JComponent getFocusOwner() {
+        return focusOwner;
+    }
 
     void setFocusOwner(JComponent focusOwner) {
-	Object oldValue = this.focusOwner;
-	this.focusOwner = focusOwner; 
-	firePropertyChange("focusOwner", oldValue, this.focusOwner);
+        Object oldValue = this.focusOwner;
+        this.focusOwner = focusOwner;
+        firePropertyChange("focusOwner", oldValue, this.focusOwner);
     }
 
     private List<TaskService> copyTaskServices() {
-	return new ArrayList<TaskService>(taskServices);
+        return new ArrayList<TaskService>(taskServices);
     }
 
     public void addTaskService(TaskService taskService) {
-	if (taskService == null) {
-	    throw new IllegalArgumentException("null taskService");
-	}
-	List<TaskService> oldValue = null, newValue = null;
-	boolean changed = false;
-	synchronized(taskServices) {
-	    if (!taskServices.contains(taskService)) {
-		oldValue = copyTaskServices();
-		taskServices.add(taskService);
-		newValue = copyTaskServices();
-		changed = true;
-	    }
-	}
-	if (changed) {
-	    firePropertyChange("taskServices", oldValue, newValue);
-	}
+        if (taskService == null) {
+            throw new IllegalArgumentException("null taskService");
+        }
+        List<TaskService> oldValue = null, newValue = null;
+        boolean changed = false;
+        synchronized (taskServices) {
+            if (!taskServices.contains(taskService)) {
+                oldValue = copyTaskServices();
+                taskServices.add(taskService);
+                newValue = copyTaskServices();
+                changed = true;
+            }
+        }
+        if (changed) {
+            firePropertyChange("taskServices", oldValue, newValue);
+        }
     }
 
     public void removeTaskService(TaskService taskService) {
-	if (taskService == null) {
-	    throw new IllegalArgumentException("null taskService");
-	}
-	List<TaskService> oldValue = null, newValue = null;
-	boolean changed = false;
-	synchronized(taskServices) {
-	    if (taskServices.contains(taskService)) {
-		oldValue = copyTaskServices();
-		taskServices.remove(taskService);
-		newValue = copyTaskServices();
-		changed = true;
-	    }
-	}
-	if (changed) {
-	    firePropertyChange("taskServices", oldValue, newValue);
-	}
+        if (taskService == null) {
+            throw new IllegalArgumentException("null taskService");
+        }
+        List<TaskService> oldValue = null, newValue = null;
+        boolean changed = false;
+        synchronized (taskServices) {
+            if (taskServices.contains(taskService)) {
+                oldValue = copyTaskServices();
+                taskServices.remove(taskService);
+                newValue = copyTaskServices();
+                changed = true;
+            }
+        }
+        if (changed) {
+            firePropertyChange("taskServices", oldValue, newValue);
+        }
     }
 
     public TaskService getTaskService(String name) {
-	if (name == null) {
-	    throw new IllegalArgumentException("null name");
-	}
-	for(TaskService taskService : taskServices) {
-	    if (name.equals(taskService.getName())) {
-		return taskService;
-	    }
-	}
-	return null;
+        if (name == null) {
+            throw new IllegalArgumentException("null name");
+        }
+        for (TaskService taskService : taskServices) {
+            if (name.equals(taskService.getName())) {
+                return taskService;
+            }
+        }
+        return null;
     }
 
     /**
@@ -445,7 +435,7 @@ public class ApplicationContext extends AbstractBean {
      * 
      */
     public final TaskService getTaskService() {
-	return getTaskService("default");
+        return getTaskService("default");
     }
 
     /**
@@ -456,7 +446,7 @@ public class ApplicationContext extends AbstractBean {
      * @see #removeTaskService
      */
     public List<TaskService> getTaskServices() {
-	return taskServicesReadOnly;
+        return taskServicesReadOnly;
     }
 
     /**
@@ -467,9 +457,9 @@ public class ApplicationContext extends AbstractBean {
      * @return the shared TaskMonitor object.
      */
     public final TaskMonitor getTaskMonitor() {
-	if (taskMonitor == null) {
-	    taskMonitor = new TaskMonitor(this);
-	}
-	return taskMonitor;
+        if (taskMonitor == null) {
+            taskMonitor = new TaskMonitor(this);
+        }
+        return taskMonitor;
     }
 }

@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.BorderLayout;
@@ -17,7 +16,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
-
 
 /**
  * A View encapsulates a top-level Application GUI component, like a JFrame
@@ -57,10 +55,11 @@ import javax.swing.JToolBar;
  * @see Application#hide(View)
  */
 public class View extends AbstractBean {
+
     private static final Logger logger = Logger.getLogger(View.class.getName());
     private final Application application;
     private ResourceMap resourceMap = null;
-    private JRootPane rootPane = null; 
+    private JRootPane rootPane = null;
     private JComponent component = null;
     private JMenuBar menuBar = null;
     private List<JToolBar> toolBars = Collections.emptyList();
@@ -210,10 +209,9 @@ public class View extends AbstractBean {
         JComponent newToolBarsPanel = null;
         if (this.toolBars.size() == 1) {
             newToolBarsPanel = toolBars.get(0);
-        }
-        else if (this.toolBars.size() > 1) {
+        } else if (this.toolBars.size() > 1) {
             newToolBarsPanel = new JPanel();
-            for(JComponent toolBar : this.toolBars) {
+            for (JComponent toolBar : this.toolBars) {
                 newToolBarsPanel.add(toolBar);
             }
         }
@@ -243,9 +241,8 @@ public class View extends AbstractBean {
     public void setStatusBar(JComponent statusBar) {
         JComponent oldValue = this.statusBar;
         this.statusBar = statusBar;
-        replaceContentPaneChild(oldValue, this.statusBar, BorderLayout.SOUTH);        
+        replaceContentPaneChild(oldValue, this.statusBar, BorderLayout.SOUTH);
         firePropertyChange("statusBar", oldValue, this.statusBar);
     }
-
 }
 

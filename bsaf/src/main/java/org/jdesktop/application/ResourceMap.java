@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import org.jdesktop.application.ResourceConverter.ResourceConverterException;
@@ -91,6 +90,7 @@ import javax.swing.border.EmptyBorder;
  * @see ResourceBundle
  */
 public class ResourceMap {
+
     private static Logger logger = Logger.getLogger(ResourceMap.class.getName());
     private final static Object nullResource = new String("null resource");
     private final ClassLoader classLoader;
@@ -148,41 +148,44 @@ public class ResourceMap {
      * @see #getBundleNames
      */
     public ResourceMap(ResourceMap parent, ClassLoader classLoader, List<String> bundleNames) {
-	if (classLoader == null) {
-	    throw new IllegalArgumentException("null ClassLoader");
-	}
-	if ((bundleNames == null) || (bundleNames.size() == 0)) {
-	    throw new IllegalArgumentException("no bundle specified");
-	}
-	for (String bn : bundleNames) {
-	    if ((bn == null) || (bn.length() == 0)) {
-		throw new IllegalArgumentException("invalid bundleName: \"" + bn + "\"");
-	    }
-	}
-	String bpn = bundlePackageName(bundleNames.get(0));
-	for (String bn : bundleNames) {
-	    if (!bpn.equals(bundlePackageName(bn))) {
-		throw new IllegalArgumentException("bundles not colocated: \"" + bn + "\" != \"" + bpn + "\"");
-	    }
-	}
-	this.parent = parent;
-	this.classLoader = classLoader;
-	this.bundleNames = Collections.unmodifiableList(new ArrayList<String>(bundleNames));
-	this.resourcesDir = bpn.replace(".", "/") + "/";
+        if (classLoader == null) {
+            throw new IllegalArgumentException("null ClassLoader");
+        }
+        if ((bundleNames == null) || (bundleNames.size() == 0)) {
+            throw new IllegalArgumentException("no bundle specified");
+        }
+        for (String bn : bundleNames) {
+            if ((bn == null) || (bn.length() == 0)) {
+                throw new IllegalArgumentException("invalid bundleName: \"" + bn + "\"");
+            }
+        }
+        String bpn = bundlePackageName(bundleNames.get(0));
+        for (String bn : bundleNames) {
+            if (!bpn.equals(bundlePackageName(bn))) {
+                throw new IllegalArgumentException("bundles not colocated: \"" + bn + "\" != \"" + bpn + "\"");
+            }
+        }
+        this.parent = parent;
+        this.classLoader = classLoader;
+        this.bundleNames = Collections.unmodifiableList(new ArrayList<String>(bundleNames));
+        this.resourcesDir = bpn.replace(".", "/") + "/";
     }
 
     private String bundlePackageName(String bundleName) {
-	int i = bundleName.lastIndexOf(".");
-	return (i == -1) ? "" : bundleName.substring(0, i);
+        int i = bundleName.lastIndexOf(".");
+        return (i == -1) ? "" : bundleName.substring(0, i);
     }
 
     /**
      * Just a convenience version of the constructor for the common case
      * where there's only one bundle name.  Defined as:
      * <code>this(parent, classLoader, Arrays.asList(bundleNames))</code>.
+     * @param parent
+     * @param classLoader
+     * @param bundleNames
      */
     public ResourceMap(ResourceMap parent, ClassLoader classLoader, String... bundleNames) {
-	this(parent, classLoader, Arrays.asList(bundleNames));
+        this(parent, classLoader, Arrays.asList(bundleNames));
     }
 
     /** 
@@ -192,8 +195,8 @@ public class ResourceMap {
      * 
      * @return the parent ResourceMap or null
      */
-    public ResourceMap getParent() { 
-	return parent;  
+    public ResourceMap getParent() {
+        return parent;
     }
 
     /** 
@@ -202,8 +205,8 @@ public class ResourceMap {
      * 
      * @return the names of the ResourceBundles in this ResourceMap
      */
-    public List<String> getBundleNames() { 
-	return bundleNames;
+    public List<String> getBundleNames() {
+        return bundleNames;
     }
 
     /** 
@@ -213,7 +216,7 @@ public class ResourceMap {
      * @return the classLoader constructor argument
      */
     public ClassLoader getClassLoader() {
-	return classLoader;
+        return classLoader;
     }
 
     /** 
@@ -229,7 +232,7 @@ public class ResourceMap {
      * @return the the resources directory for this ResourceMap
      */
     public String getResourcesDir() {
-	return resourcesDir;
+        return resourcesDir;
     }
 
     /* Lazily flattens all of the ResourceBundles named in bundleNames
@@ -243,46 +246,45 @@ public class ResourceMap {
             bundlesLoaded = false;
             locale = defaultLocale;
         }
-	if (!bundlesLoaded) {
-	    Map<String, Object> bundlesMap = new ConcurrentHashMap<String, Object>();
-	    for (int i = bundleNames.size() - 1; i >= 0; i--) {
-		try {
+        if (!bundlesLoaded) {
+            Map<String, Object> bundlesMap = new ConcurrentHashMap<String, Object>();
+            for (int i = bundleNames.size() - 1; i >= 0; i--) {
+                try {
                     String bundleName = bundleNames.get(i);
-		    ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale, classLoader);
-		    Enumeration<String> keys = bundle.getKeys();
-		    while(keys.hasMoreElements()) {
-			String key = keys.nextElement();
-			bundlesMap.put(key, bundle.getObject(key));
-		    }
-		}
-		catch (MissingResourceException ignore) { 
-		    /* bundleName is just a location to check, it's not
-		     * guaranteed to name a ResourceBundle
-		     */
-		}
-	    }
+                    ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale, classLoader);
+                    Enumeration<String> keys = bundle.getKeys();
+                    while (keys.hasMoreElements()) {
+                        String key = keys.nextElement();
+                        bundlesMap.put(key, bundle.getObject(key));
+                    }
+                } catch (MissingResourceException ignore) {
+                    /* bundleName is just a location to check, it's not
+                     * guaranteed to name a ResourceBundle
+                     */
+                }
+            }
             bundlesMapP = bundlesMap;
-	    bundlesLoaded = true;
-	}
-	return bundlesMapP;
+            bundlesLoaded = true;
+        }
+        return bundlesMapP;
     }
 
     private void checkNullKey(String key) {
-	if (key == null) {
-	    throw new IllegalArgumentException("null key");
-	}
+        if (key == null) {
+            throw new IllegalArgumentException("null key");
+        }
     }
 
     private synchronized Set<String> getBundlesMapKeys() {
-	if (bundlesMapKeysP == null) {
-	    Set<String> allKeys = new HashSet<String>(getResourceKeySet());
-	    ResourceMap parent = getParent();
-	    if (parent != null) {
-		allKeys.addAll(parent.keySet());
-	    }
-	    bundlesMapKeysP = Collections.unmodifiableSet(allKeys);
-	}
-	return bundlesMapKeysP;
+        if (bundlesMapKeysP == null) {
+            Set<String> allKeys = new HashSet<String>(getResourceKeySet());
+            ResourceMap parent = getParent();
+            if (parent != null) {
+                allKeys.addAll(parent.keySet());
+            }
+            bundlesMapKeysP = Collections.unmodifiableSet(allKeys);
+        }
+        return bundlesMapKeysP;
     }
 
     /** 
@@ -293,7 +295,7 @@ public class ResourceMap {
      * @see #getParent
      */
     public Set<String> keySet() {
-	return getBundlesMapKeys();
+        return getBundlesMapKeys();
     }
 
     /** 
@@ -305,14 +307,13 @@ public class ResourceMap {
      * @see #keySet
      */
     public boolean containsKey(String key) {
-	checkNullKey(key);
-	if (containsResourceKey(key)) {
-	    return true;
-	}
-	else {
-	    ResourceMap parent = getParent();
-	    return (parent != null) ? parent.containsKey(key) : false;
-	}
+        checkNullKey(key);
+        if (containsResourceKey(key)) {
+            return true;
+        } else {
+            ResourceMap parent = getParent();
+            return (parent != null) ? parent.containsKey(key) : false;
+        }
     }
 
     /** 
@@ -324,38 +325,39 @@ public class ResourceMap {
      * @see #getObject
      */
     public static class LookupException extends RuntimeException {
-	private final Class type;
-	private final String key;
 
-	/**
-	 * Constructs an instance of this class with some useful information 
-	 * about the failure.
-	 * 
-	 * @param msg the detail message
-	 * @param type the type of the resource
-	 * @param key the name of the resource
-	 */
-	public LookupException(String msg, String key, Class type) {
+        private final Class type;
+        private final String key;
+
+        /**
+         * Constructs an instance of this class with some useful information
+         * about the failure.
+         *
+         * @param msg the detail message
+         * @param type the type of the resource
+         * @param key the name of the resource
+         */
+        public LookupException(String msg, String key, Class type) {
             super(String.format("%s: resource %s, type %s", msg, key, type));
             this.key = key;
-	    this.type = type;
-	}
-	
-	/**
-	 * Returns the type of the resource for which lookup failed.
-	 * @return the resource type
-	 */
-	public Class getType() {
-	    return type;
-	}
+            this.type = type;
+        }
 
-	/**
-	 * Returns the type of the name of resource for which lookup failed.
-	 * @return the resource name
-	 */
-	public String getKey() {
-	    return key;
-	}
+        /**
+         * Returns the type of the resource for which lookup failed.
+         * @return the resource type
+         */
+        public Class getType() {
+            return type;
+        }
+
+        /**
+         * Returns the type of the name of resource for which lookup failed.
+         * @return the resource name
+         */
+        public String getKey() {
+            return key;
+        }
     }
 
     /**
@@ -374,16 +376,14 @@ public class ResourceMap {
      * @see #putResource
      * @see #containsResourceKey
      */
-    protected  Set<String> getResourceKeySet() {
-	Map<String, Object> bundlesMap = getBundlesMap();
+    protected Set<String> getResourceKeySet() {
+        Map<String, Object> bundlesMap = getBundlesMap();
         if (bundlesMap == null) {
             return Collections.emptySet();
-        }
-        else {
+        } else {
             return bundlesMap.keySet();
         }
     }
-
 
     /**
      * By default this method is used by {@code getObject} to see
@@ -404,9 +404,9 @@ public class ResourceMap {
      * @see #getResourceKeySet
      */
     protected boolean containsResourceKey(String key) {
-	checkNullKey(key);
-	Map<String, Object> bundlesMap = getBundlesMap();
-	return (bundlesMap != null) && bundlesMap.containsKey(key);
+        checkNullKey(key);
+        Map<String, Object> bundlesMap = getBundlesMap();
+        return (bundlesMap != null) && bundlesMap.containsKey(key);
     }
 
     /**
@@ -432,10 +432,10 @@ public class ResourceMap {
      * @see #getResourceKeySet
      */
     protected Object getResource(String key) {
-	checkNullKey(key);
-	Map<String, Object> bundlesMap = getBundlesMap();
-	Object value = (bundlesMap != null) ? bundlesMap.get(key) : null;
-	return (value == nullResource) ? null : value;
+        checkNullKey(key);
+        Map<String, Object> bundlesMap = getBundlesMap();
+        Object value = (bundlesMap != null) ? bundlesMap.get(key) : null;
+        return (value == nullResource) ? null : value;
     }
 
     /**
@@ -459,11 +459,11 @@ public class ResourceMap {
      * @see #getResourceKeySet
      */
     protected void putResource(String key, Object value) {
-	checkNullKey(key);
-	Map<String, Object> bundlesMap = getBundlesMap();
-	if (bundlesMap != null) {
-	    bundlesMap.put(key, (value == null) ? nullResource : value);
-	}
+        checkNullKey(key);
+        Map<String, Object> bundlesMap = getBundlesMap();
+        if (bundlesMap != null) {
+            bundlesMap.put(key, (value == null) ? nullResource : value);
+        }
     }
 
     /**
@@ -511,6 +511,7 @@ public class ResourceMap {
      * 
      * @param key resource name
      * @param type resource type
+     * @return
      * @see #getParent
      * @see ResourceConverter#forType
      * @see ResourceMap.LookupException
@@ -518,80 +519,86 @@ public class ResourceMap {
      * @throws IllegalArgumentException if <tt>key</tt> or <tt>type</tt> are null
      */
     public Object getObject(String key, Class type) {
-	checkNullKey(key);
-	if (type == null) {
-	    throw new IllegalArgumentException("null type");
-	}
-        if (type.isPrimitive()) {
-            if      (type == Boolean.TYPE)   { type = Boolean.class; }
-            else if (type == Character.TYPE) { type = Character.class; }
-            else if (type ==  Byte.TYPE)     { type = Byte.class; }
-            else if (type ==  Short.TYPE)    { type = Short.class; }
-            else if (type ==  Integer.TYPE)  { type = Integer.class; }
-            else if (type ==  Long.TYPE)     { type = Long.class; }
-            else if (type ==  Float.TYPE)    { type = Float.class; }
-            else if (type ==  Double.TYPE)   { type = Double.class; }
+        checkNullKey(key);
+        if (type == null) {
+            throw new IllegalArgumentException("null type");
         }
-	Object value = null;
-	ResourceMap resourceMapNode = this;
-	/* Find the ResourceMap bundlesMap that contains a non-null
-	 * value for the specified key, first check this ResourceMap,
-	 * then its parents.
-	 */
-	while (resourceMapNode != null) {
-	    if (resourceMapNode.containsResourceKey(key)) {
-		value = resourceMapNode.getResource(key);
-		break;
-	    }
-	    resourceMapNode = resourceMapNode.getParent();
-	}
-	/* If we've found a String expression then replace
-	 * any ${key} variables, and then reset the 
-	 * the original resourceMapNode entry.
-	 */
-	if ((value instanceof String) && ((String)value).contains("${")) {
-	    value = evaluateStringExpression((String)value);
-	    resourceMapNode.putResource(key, value);
-	}
-	
-	/* If the value we've found in resourceMapNode is 
-	 * the expected type, then we're done.  If the expected
+        if (type.isPrimitive()) {
+            if (type == Boolean.TYPE) {
+                type = Boolean.class;
+            } else if (type == Character.TYPE) {
+                type = Character.class;
+            } else if (type == Byte.TYPE) {
+                type = Byte.class;
+            } else if (type == Short.TYPE) {
+                type = Short.class;
+            } else if (type == Integer.TYPE) {
+                type = Integer.class;
+            } else if (type == Long.TYPE) {
+                type = Long.class;
+            } else if (type == Float.TYPE) {
+                type = Float.class;
+            } else if (type == Double.TYPE) {
+                type = Double.class;
+            }
+        }
+        Object value = null;
+        ResourceMap resourceMapNode = this;
+        /* Find the ResourceMap bundlesMap that contains a non-null
+         * value for the specified key, first check this ResourceMap,
+         * then its parents.
+         */
+        while (resourceMapNode != null) {
+            if (resourceMapNode.containsResourceKey(key)) {
+                value = resourceMapNode.getResource(key);
+                break;
+            }
+            resourceMapNode = resourceMapNode.getParent();
+        }
+        /* If we've found a String expression then replace
+         * any ${key} variables, and then reset the
+         * the original resourceMapNode entry.
+         */
+        if ((value instanceof String) && ((String) value).contains("${")) {
+            value = evaluateStringExpression((String) value);
+            resourceMapNode.putResource(key, value);
+        }
+
+        /* If the value we've found in resourceMapNode is
+         * the expected type, then we're done.  If the expected
          * type is primitive and the value is the corresponding
          * object type then we're done too.  Otherwise, 
-	 * if it's a String, then try and convert the String
-	 * and replace the original resourceMapNode entry, 
-	 * otherwise return null.
-	 */
-	if (value != null) {
-	    Class valueClass = value.getClass();
-	    if (!type.isAssignableFrom(valueClass)) {
-		if (value instanceof String) {
-		    ResourceConverter stringConverter = ResourceConverter.forType(type);
-		    if (stringConverter != null) {
-			String sValue = (String)value;
-			try {
-			    value = stringConverter.parseString(sValue, resourceMapNode);
-			    resourceMapNode.putResource(key, value);
-			}
-			catch (ResourceConverterException e) {
-			    String msg = "string conversion failed";
-			    LookupException lfe = new LookupException(msg, key, type);
-			    lfe.initCause(e);
-			    throw lfe;
-			}
-		    }
-		    else {
-			String msg = "no StringConverter for required type";
-			throw new LookupException(msg, key, type);
-		    }
-		}
-		else {
-		    String msg = "named resource has wrong type";
-		    throw new LookupException(msg, key, type);
-		}
-	    }
-	}
-	return value;
+         * if it's a String, then try and convert the String
+         * and replace the original resourceMapNode entry,
+         * otherwise return null.
+         */
+        if (value != null) {
+            Class valueClass = value.getClass();
+            if (!type.isAssignableFrom(valueClass)) {
+                if (value instanceof String) {
+                    ResourceConverter stringConverter = ResourceConverter.forType(type);
+                    if (stringConverter != null) {
+                        String sValue = (String) value;
+                        try {
+                            value = stringConverter.parseString(sValue, resourceMapNode);
+                            resourceMapNode.putResource(key, value);
+                        } catch (ResourceConverterException e) {
+                            String msg = "string conversion failed";
+                            LookupException lfe = new LookupException(msg, key, type);
+                            lfe.initCause(e);
+                            throw lfe;
+                        }
+                    } else {
+                        String msg = "no StringConverter for required type";
+                        throw new LookupException(msg, key, type);
+                    }
+                } else {
+                    String msg = "named resource has wrong type";
+                    throw new LookupException(msg, key, type);
+                }
+            }
+        }
+        return value;
     }
 
     /* Given the following resources:
@@ -604,42 +611,39 @@ public class ResourceMap {
      * would be "Hello World".  The value of ${null} is null.
      */
     private String evaluateStringExpression(String expr) {
-	if (expr.trim().equals("${null}")) {
-	    return null;
-	}
-	StringBuffer value = new StringBuffer();
-	int i0 = 0, i1 = 0;
-	while((i1 = expr.indexOf("${", i0)) != -1) {
-	    if ((i1 == 0) || ((i1 > 0) && (expr.charAt(i1-1) != '\\'))) {
-		int i2 = expr.indexOf("}", i1);
-		if ((i2 != -1) && (i2 > i1+2)) {
-		    String k = expr.substring(i1+2, i2);
-		    String v = getString(k);
-		    value.append(expr.substring(i0, i1));
-		    if (v != null) {
-			value.append(v);
-		    }
-		    else {
-			String msg = String.format("no value for \"%s\" in \"%s\"", k, expr);
-			throw new LookupException(msg, k, String.class);
-		    }
-		    i0 = i2 + 1;  // skip trailing "}"
-		}
-		else {
-		    String msg = String.format("no closing brace in \"%s\"", expr);
-		    throw new LookupException(msg, "<not found>", String.class);
-		}
-	    }
-	    else {  // we've found an escaped variable - "\${"
-		value.append(expr.substring(i0, i1-1));
-		value.append("${");
-		i0 = i1 + 2; // skip past "${"
-	    }
-	}
-	value.append(expr.substring(i0));
-	return value.toString();
+        if (expr.trim().equals("${null}")) {
+            return null;
+        }
+        StringBuffer value = new StringBuffer();
+        int i0 = 0, i1 = 0;
+        while ((i1 = expr.indexOf("${", i0)) != -1) {
+            if ((i1 == 0) || ((i1 > 0) && (expr.charAt(i1 - 1) != '\\'))) {
+                int i2 = expr.indexOf("}", i1);
+                if ((i2 != -1) && (i2 > i1 + 2)) {
+                    String k = expr.substring(i1 + 2, i2);
+                    String v = getString(k);
+                    value.append(expr.substring(i0, i1));
+                    if (v != null) {
+                        value.append(v);
+                    } else {
+                        String msg = String.format("no value for \"%s\" in \"%s\"", k, expr);
+                        throw new LookupException(msg, k, String.class);
+                    }
+                    i0 = i2 + 1;  // skip trailing "}"
+                } else {
+                    String msg = String.format("no closing brace in \"%s\"", expr);
+                    throw new LookupException(msg, "<not found>", String.class);
+                }
+            } else {  // we've found an escaped variable - "\${"
+                value.append(expr.substring(i0, i1 - 1));
+                value.append("${");
+                i0 = i1 + 2; // skip past "${"
+            }
+        }
+        value.append(expr.substring(i0));
+        return value.toString();
     }
-		    
+
     /** 
      * If no arguments are specified, return the String value
      * of the resource named <tt>key</tt>.  This is 
@@ -655,20 +659,21 @@ public class ResourceMap {
      * then the value of <tt>getString("hello", "World")</tt> would
      * be <tt>"Hello World"</tt>.
      * 
-     * @return the String value of the resource named <tt>key</tt> 
+     * @param key
+     * @param args 
+     * @return the String value of the resource named <tt>key</tt>
      * @throws LookupException if an error occurs during lookup or string conversion
      * @throws IllegalArgumentException if <tt>key</tt> is null
      * @see #getObject
      * @see String#format(String, Object...)
      */
     public String getString(String key, Object... args) {
-	if (args.length == 0) {
-	    return (String)getObject(key, String.class);
-	}
-	else {
-	    String format = (String)getObject(key, String.class);
-	    return (format == null) ? null : String.format(format, args);
-	}
+        if (args.length == 0) {
+            return (String) getObject(key, String.class);
+        } else {
+            String format = (String) getObject(key, String.class);
+            return (format == null) ? null : String.format(format, args);
+        }
     }
 
     /** 
@@ -681,8 +686,8 @@ public class ResourceMap {
      * @return the Boolean value of the resource named key
      * @see #getObject
      */
-    public final Boolean getBoolean(String key) { 
-	return (Boolean)getObject(key, Boolean.class); 
+    public final Boolean getBoolean(String key) {
+        return (Boolean) getObject(key, Boolean.class);
     }
 
     /** 
@@ -695,8 +700,8 @@ public class ResourceMap {
      * @return the Integer value of the resource named key
      * @see #getObject
      */
-    public final Integer getInteger(String key) { 
-	return (Integer)getObject(key, Integer.class); 
+    public final Integer getInteger(String key) {
+        return (Integer) getObject(key, Integer.class);
     }
 
     /** 
@@ -709,8 +714,8 @@ public class ResourceMap {
      * @return the Long value of the resource named key
      * @see #getObject
      */
-    public final Long getLong(String key) { 
-	return (Long)getObject(key, Long.class); 
+    public final Long getLong(String key) {
+        return (Long) getObject(key, Long.class);
     }
 
     /** 
@@ -723,10 +728,10 @@ public class ResourceMap {
      * @return the Short value of the resource named key
      * @see #getObject
      */
-    public final Short getShort(String key) { 
-	return (Short)getObject(key, Short.class); 
+    public final Short getShort(String key) {
+        return (Short) getObject(key, Short.class);
     }
-    
+
     /** 
      * A convenience method that's shorthand for calling:
      * <tt>getObject(key, Byte.class)</tt>.  
@@ -737,8 +742,8 @@ public class ResourceMap {
      * @return the Byte value of the resource named key
      * @see #getObject
      */
-    public final Byte getByte(String key) { 
-	return (Byte)getObject(key, Byte.class); 
+    public final Byte getByte(String key) {
+        return (Byte) getObject(key, Byte.class);
     }
 
     /** 
@@ -751,8 +756,8 @@ public class ResourceMap {
      * @return the Float value of the resource named key
      * @see #getObject
      */
-    public final Float getFloat(String key) { 
-	return (Float)getObject(key, Float.class); 
+    public final Float getFloat(String key) {
+        return (Float) getObject(key, Float.class);
     }
 
     /** 
@@ -765,8 +770,8 @@ public class ResourceMap {
      * @return the Double value of the resource named key
      * @see #getObject
      */
-    public final Double getDouble(String key) { 
-	return (Double)getObject(key, Double.class); 
+    public final Double getDouble(String key) {
+        return (Double) getObject(key, Double.class);
     }
 
     /**
@@ -783,8 +788,8 @@ public class ResourceMap {
      * @throws LookupException if an error occurs during lookup or string conversion
      * @throws IllegalArgumentException if <tt>key</tt> is null
      */
-    public final Icon getIcon(String key) { 
-	return (Icon)getObject(key, Icon.class); 
+    public final Icon getIcon(String key) {
+        return (Icon) getObject(key, Icon.class);
     }
 
     /**
@@ -822,8 +827,8 @@ public class ResourceMap {
      * @throws LookupException if an error occurs during lookup or string conversion
      * @throws IllegalArgumentException if <tt>key</tt> is null
      */
-    public final ImageIcon getImageIcon(String key) { 
-	return (ImageIcon)getObject(key, ImageIcon.class); 
+    public final ImageIcon getImageIcon(String key) {
+        return (ImageIcon) getObject(key, ImageIcon.class);
     }
 
     /**
@@ -848,8 +853,8 @@ public class ResourceMap {
      * @throws LookupException if an error occurs during lookup or string conversion
      * @throws IllegalResourceConverteron if <tt>key</tt> is null
      */
-    public final Font getFont(String key) { 
-	return (Font)getObject(key, Font.class); 
+    public final Font getFont(String key) {
+        return (Font) getObject(key, Font.class);
     }
 
     /**
@@ -879,8 +884,8 @@ public class ResourceMap {
      * @throws LookupException if an error occurs during lookup or string conversion
      * @throws IllegalArgumentException ResourceConverter is null
      */
-    public final Color getColor(String key) { 
-	return (Color)getObject(key, Color.class); 
+    public final Color getColor(String key) {
+        return (Color) getObject(key, Color.class);
     }
 
     /**
@@ -899,7 +904,7 @@ public class ResourceMap {
      * @throws IllegalArgumentException if <tt>key</tt> is null
      */
     public final KeyStroke getKeyStroke(String key) {
-	return (KeyStroke)getObject(key, KeyStroke.class); 
+        return (KeyStroke) getObject(key, KeyStroke.class);
     }
 
     /** 
@@ -914,8 +919,8 @@ public class ResourceMap {
      * @see #getObject
      */
     public Integer getKeyCode(String key) {
-	KeyStroke ks = getKeyStroke(key);
-	return (ks != null) ? new Integer(ks.getKeyCode()) : null;
+        KeyStroke ks = getKeyStroke(key);
+        return (ks != null) ? new Integer(ks.getKeyCode()) : null;
     }
 
     /** 
@@ -927,150 +932,145 @@ public class ResourceMap {
      * @see #injectComponents
      */
     public static class PropertyInjectionException extends RuntimeException {
-	private final String key;
-	private final Component component;
-	private final String propertyName;
 
-	/**
-	 * Constructs an instance of this class with some useful information 
-	 * about the failure.
-	 * 
-	 * @param msg the detail message
-	 * @param key the name of the resource
-	 * @param component the component whose property couldn't be set
-	 * @param propertyName the name of the component property
-	 */
-	public PropertyInjectionException(String msg, String key, Component component, String propertyName) {
-	    super(String.format("%s: resource %s, property %s, component %s", msg, key, propertyName, component));
+        private final String key;
+        private final Component component;
+        private final String propertyName;
+
+        /**
+         * Constructs an instance of this class with some useful information
+         * about the failure.
+         *
+         * @param msg the detail message
+         * @param key the name of the resource
+         * @param component the component whose property couldn't be set
+         * @param propertyName the name of the component property
+         */
+        public PropertyInjectionException(String msg, String key, Component component, String propertyName) {
+            super(String.format("%s: resource %s, property %s, component %s", msg, key, propertyName, component));
             this.key = key;
-	    this.component = component;
-	    this.propertyName = propertyName;
-	}
-	
-	/**
-	 * Returns the the name of resource whose value was to be used to set the property
-	 * @return the resource name
-	 */
-	public String getKey() {
-	    return key;
-	}
+            this.component = component;
+            this.propertyName = propertyName;
+        }
 
-	/**
-	 * Returns the component whose property could not be set
-	 * @return the component
-	 */
-	public Component getComponent() {
-	    return component;
-	}
+        /**
+         * Returns the the name of resource whose value was to be used to set the property
+         * @return the resource name
+         */
+        public String getKey() {
+            return key;
+        }
 
-	/**
-	 * Returns the the name of property that could not be set
-	 * @return the property name
-	 */
-	public String getPropertyName() {
-	    return propertyName;
-	}
+        /**
+         * Returns the component whose property could not be set
+         * @return the component
+         */
+        public Component getComponent() {
+            return component;
+        }
+
+        /**
+         * Returns the the name of property that could not be set
+         * @return the property name
+         */
+        public String getPropertyName() {
+            return propertyName;
+        }
     }
 
     private void injectComponentProperty(Component component, PropertyDescriptor pd, String key) {
-	Method setter = pd.getWriteMethod();
-	Class type = pd.getPropertyType();
-	if ((setter != null) && (type != null) && containsKey(key)) {
-	    Object value = getObject(key, type);
+        Method setter = pd.getWriteMethod();
+        Class type = pd.getPropertyType();
+        if ((setter != null) && (type != null) && containsKey(key)) {
+            Object value = getObject(key, type);
             String propertyName = pd.getName();
             try {
                 // Note: this could be generalized, we could delegate 
                 // to a component property injector.
                 if ("text".equals(propertyName) && (component instanceof AbstractButton)) {
-                    MnemonicText.configure(component, (String)value);
-                }
-                else if ("text".equals(propertyName) && (component instanceof JLabel)) {
-                    MnemonicText.configure(component, (String)value);
-                }
-                else {
+                    MnemonicText.configure(component, (String) value);
+                } else if ("text".equals(propertyName) && (component instanceof JLabel)) {
+                    MnemonicText.configure(component, (String) value);
+                } else {
                     setter.invoke(component, value);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 String pdn = pd.getName();
                 String msg = "property setter failed";
                 RuntimeException re = new PropertyInjectionException(msg, key, component, pdn);
                 re.initCause(e);
                 throw re;
             }
-        }
-        else if (type != null) {
+        } else if (type != null) {
             String pdn = pd.getName();
             String msg = "no value specified for resource";
             throw new PropertyInjectionException(msg, key, component, pdn);
+        } else if (setter == null) {
+            String pdn = pd.getName();
+            String msg = "can't set read-only property";
+            throw new PropertyInjectionException(msg, key, component, pdn);
         }
-	else if (setter == null) {
-	    String pdn = pd.getName();
-	    String msg = "can't set read-only property";
-	    throw new PropertyInjectionException(msg, key, component, pdn);
-	}
     }
 
     private void injectComponentProperties(Component component) {
-	String componentName = component.getName();
-	if (componentName != null) {
-	    /* Optimization: punt early if componentName doesn't 
-	     * appear in any componentName.propertyName resource keys
-	     */
-	    boolean matchingResourceFound = false;
-	    for(String key : keySet()) {
+        String componentName = component.getName();
+        if (componentName != null) {
+            /* Optimization: punt early if componentName doesn't
+             * appear in any componentName.propertyName resource keys
+             */
+            boolean matchingResourceFound = false;
+            for (String key : keySet()) {
                 int i = key.lastIndexOf(".");
                 if ((i != -1) && componentName.equals(key.substring(0, i))) {
-		    matchingResourceFound = true;
-		    break;
-		}
-	    }
-	    if (!matchingResourceFound) {
-		return;
-	    }
-	    BeanInfo beanInfo = null;
-	    try {
-		beanInfo = Introspector.getBeanInfo(component.getClass());
- 	    }
-	    catch (IntrospectionException e) {
-		String msg = "introspection failed";
-		RuntimeException re = new PropertyInjectionException(msg, null, component, null);
-		re.initCause(e);
-		throw re;
-	    }
-	    PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-	    if ((pds != null) && (pds.length > 0)) {
-		for (String key : keySet()) {
+                    matchingResourceFound = true;
+                    break;
+                }
+            }
+            if (!matchingResourceFound) {
+                return;
+            }
+            BeanInfo beanInfo = null;
+            try {
+                beanInfo = Introspector.getBeanInfo(component.getClass());
+            } catch (IntrospectionException e) {
+                String msg = "introspection failed";
+                RuntimeException re = new PropertyInjectionException(msg, null, component, null);
+                re.initCause(e);
+                throw re;
+            }
+            PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+            if ((pds != null) && (pds.length > 0)) {
+                for (String key : keySet()) {
                     int i = key.lastIndexOf(".");
                     String keyComponentName = (i == -1) ? null : key.substring(0, i);
-		    if (componentName.equals(keyComponentName)) {
-			if ((i+1) == key.length()) {  
-			    /* key has no property name suffix, e.g. "myComponentName."
-			     * This is probably a mistake.
-			     */
-			    String msg = "component resource lacks property name suffix";
-			    logger.warning(msg);
-			    break;
-			}
-			String propertyName = key.substring(i+1);
-			boolean matchingPropertyFound = false;
-			for(PropertyDescriptor pd : pds) {
-			    if (pd.getName().equals(propertyName)) {
-				injectComponentProperty(component, pd, key); 
-				matchingPropertyFound = true;
-				break;
-			    }
-			}
-			if (!matchingPropertyFound) {
-			    String msg = String.format(
-			        "[resource %s] component named %s doesn't have a property named %s",
-				key, componentName, propertyName);
-			    logger.warning(msg);
-			}
-		    }
-		}
-	    }
-	}
+                    if (componentName.equals(keyComponentName)) {
+                        if ((i + 1) == key.length()) {
+                            /* key has no property name suffix, e.g. "myComponentName."
+                             * This is probably a mistake.
+                             */
+                            String msg = "component resource lacks property name suffix";
+                            logger.warning(msg);
+                            break;
+                        }
+                        String propertyName = key.substring(i + 1);
+                        boolean matchingPropertyFound = false;
+                        for (PropertyDescriptor pd : pds) {
+                            if (pd.getName().equals(propertyName)) {
+                                injectComponentProperty(component, pd, key);
+                                matchingPropertyFound = true;
+                                break;
+                            }
+                        }
+                        if (!matchingPropertyFound) {
+                            String msg = String.format(
+                                    "[resource %s] component named %s doesn't have a property named %s",
+                                    key, componentName, propertyName);
+                            logger.warning(msg);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1119,12 +1119,11 @@ public class ResourceMap {
      * @throws IllegalArgumentException if target is null
      */
     public void injectComponent(Component target) {
-	if (target == null) {
-	    throw new IllegalArgumentException("null target");
-	}
-	injectComponentProperties(target);
+        if (target == null) {
+            throw new IllegalArgumentException("null target");
+        }
+        injectComponentProperties(target);
     }
-
 
     /**
      * Applies {@link #injectComponent} to each Component in the
@@ -1136,25 +1135,24 @@ public class ResourceMap {
      * @see #injectComponent
      */
     public void injectComponents(Component root) {
-	injectComponent(root);
-	if (root instanceof JMenu) {
-	    /* Warning: we're bypassing the popupMenu here because
-	     * JMenu#getPopupMenu creates it; doesn't seem right
-	     * to do so at injection time.  Unfortunately, this
-	     * means that attempts to inject the popup menu's 
-	     * "label" property will fail.
-	     */
-	    JMenu menu = (JMenu)root;
-	    for(Component child : menu.getMenuComponents()) {
-		injectComponents(child);
-	    }
-	}
-	else if (root instanceof Container) {
-	    Container container = (Container)root;
-	    for(Component child : container.getComponents()) {
-		injectComponents(child);
-	    }
-	}
+        injectComponent(root);
+        if (root instanceof JMenu) {
+            /* Warning: we're bypassing the popupMenu here because
+             * JMenu#getPopupMenu creates it; doesn't seem right
+             * to do so at injection time.  Unfortunately, this
+             * means that attempts to inject the popup menu's
+             * "label" property will fail.
+             */
+            JMenu menu = (JMenu) root;
+            for (Component child : menu.getMenuComponents()) {
+                injectComponents(child);
+            }
+        } else if (root instanceof Container) {
+            Container container = (Container) root;
+            for (Component child : container.getComponents()) {
+                injectComponents(child);
+            }
+        }
     }
 
     /** 
@@ -1165,106 +1163,102 @@ public class ResourceMap {
      * @see #injectFields
      */
     public static class InjectFieldException extends RuntimeException {
-	private final Field field;
-	private final Object target;
-	private final String key;
 
-	/**
-	 * Constructs an instance of this class with some useful information 
-	 * about the failure.
-	 * 
-	 * @param msg the detail message
-	 * @param field the Field we were attempting to set
-	 * @param target the object whose field we were attempting to set
-	 * @param key the name of the resource
-	 */
-	public InjectFieldException(String msg, Field field, Object target, String key) {
-	    super(String.format("%s: resource %s, field %s, target %s", msg, key, field, target));
-	    this.field = field;
-	    this.target = target;
+        private final Field field;
+        private final Object target;
+        private final String key;
+
+        /**
+         * Constructs an instance of this class with some useful information
+         * about the failure.
+         *
+         * @param msg the detail message
+         * @param field the Field we were attempting to set
+         * @param target the object whose field we were attempting to set
+         * @param key the name of the resource
+         */
+        public InjectFieldException(String msg, Field field, Object target, String key) {
+            super(String.format("%s: resource %s, field %s, target %s", msg, key, field, target));
+            this.field = field;
+            this.target = target;
             this.key = key;
-	}
-	
-	/**
-	 * Return the Field whose value couldn't be set.
-	 * @return the field whose value couldn't be set
-	 */
-	public Field getField() {
-	    return field;
-	}
+        }
 
-	/**
-	 * Return the Object whose Field we were attempting to set
-	 * @return the Object whose Field we were attempting to set
-	 */
-	public Object getTarget() {
-	    return target;
-	}
+        /**
+         * Return the Field whose value couldn't be set.
+         * @return the field whose value couldn't be set
+         */
+        public Field getField() {
+            return field;
+        }
 
-	/**
-	 * Returns the type of the name of resource for which lookup failed.
-	 * @return the resource name
-	 */
-	public String getKey() {
-	    return key;
-	}
+        /**
+         * Return the Object whose Field we were attempting to set
+         * @return the Object whose Field we were attempting to set
+         */
+        public Object getTarget() {
+            return target;
+        }
+
+        /**
+         * Returns the type of the name of resource for which lookup failed.
+         * @return the resource name
+         */
+        public String getKey() {
+            return key;
+        }
     }
 
     private void injectField(Field field, Object target, String key) {
-	Class type = field.getType();
-	if (type.isArray()) {
-	    type = type.getComponentType();
-	    Pattern p = Pattern.compile(key + "\\[([\\d]+)\\]");  // matches key[12]
-	    List<String> arrayKeys = new ArrayList<String>();
-	    for(String arrayElementKey : keySet()) {
-		Matcher m = p.matcher(arrayElementKey);
-		if (m.matches()) {
-		    /* field's value is an array, arrayElementKey is a resource 
-		     * name of the form "MyClass.myArray[12]" and m.group(1) 
-		     * matches the array index.  Set the index element 
-		     * of the field's array to the value of the resource.
-		     */
-		    Object value = getObject(arrayElementKey, type);  
-		    if (!field.isAccessible()) {
-			field.setAccessible(true);
-		    }
-		    try {
-			int index = Integer.parseInt(m.group(1));
-			Array.set(field.get(target), index, value);
-		    } 
-		    /* Array.set throws IllegalArgumentException, ArrayIndexOutOfBoundsException
-		     * field.get throws IllegalAccessException(Checked), IllegalArgumentException
-		     * Integer.parseInt throws NumberFormatException (Checked)
-		     */
-		    catch (Exception e) {
-			String msg = "unable to set array element";
-			InjectFieldException ife = new InjectFieldException(msg, field, target, key);
-			ife.initCause(e);
-			throw ife;
-		    }
-		}
-	    }
-	}
-	else {  // field is not an array
-	    Object value = getObject(key, type);
-	    if (value != null) {
-		if (!field.isAccessible()) {
-		    field.setAccessible(true);
-		}
-		try {
-		    field.set(target, value);
-		} 
-		/* Field.set throws IllegalAccessException, IllegalArgumentException, 
-		 * ExceptionInInitializerError
-		 */
-		catch (Exception e) {
-		    String msg = "unable to set field's value";
-		    InjectFieldException ife = new InjectFieldException(msg, field, target, key);
-		    ife.initCause(e);
-		    throw ife;
-		}
-	    }
-	}
+        Class type = field.getType();
+        if (type.isArray()) {
+            type = type.getComponentType();
+            Pattern p = Pattern.compile(key + "\\[([\\d]+)\\]");  // matches key[12]
+            List<String> arrayKeys = new ArrayList<String>();
+            for (String arrayElementKey : keySet()) {
+                Matcher m = p.matcher(arrayElementKey);
+                if (m.matches()) {
+                    /* field's value is an array, arrayElementKey is a resource
+                     * name of the form "MyClass.myArray[12]" and m.group(1)
+                     * matches the array index.  Set the index element
+                     * of the field's array to the value of the resource.
+                     */
+                    Object value = getObject(arrayElementKey, type);
+                    if (!field.isAccessible()) {
+                        field.setAccessible(true);
+                    }
+                    try {
+                        int index = Integer.parseInt(m.group(1));
+                        Array.set(field.get(target), index, value);
+                    } /* Array.set throws IllegalArgumentException, ArrayIndexOutOfBoundsException
+                     * field.get throws IllegalAccessException(Checked), IllegalArgumentException
+                     * Integer.parseInt throws NumberFormatException (Checked)
+                     */ catch (Exception e) {
+                        String msg = "unable to set array element";
+                        InjectFieldException ife = new InjectFieldException(msg, field, target, key);
+                        ife.initCause(e);
+                        throw ife;
+                    }
+                }
+            }
+        } else {  // field is not an array
+            Object value = getObject(key, type);
+            if (value != null) {
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                try {
+                    field.set(target, value);
+                } /* Field.set throws IllegalAccessException, IllegalArgumentException,
+                 * ExceptionInInitializerError
+                 */ catch (Exception e) {
+                    String msg = "unable to set field's value";
+                    InjectFieldException ife = new InjectFieldException(msg, field, target, key);
+                    ife.initCause(e);
+                    throw ife;
+                }
+            }
+        }
     }
 
     /** 
@@ -1305,193 +1299,199 @@ public class ResourceMap {
      * @see #getObject
      */
     public void injectFields(Object target) {
-	if (target == null) {
-	    throw new IllegalArgumentException("null target");
-	}
-	Class targetType = target.getClass();
-	if (targetType.isArray()) {
-	    throw new IllegalArgumentException("array target");
-	}
-	String keyPrefix = targetType.getSimpleName() + ".";
-	for (Field field : targetType.getDeclaredFields()) {
-	    Resource resource = field.getAnnotation(Resource.class);
-	    if (resource != null) {
-		String rKey = resource.key();
-		String key = (rKey.length() > 0) ? rKey : keyPrefix + field.getName();
-		injectField(field, target, key);
-	    }
-	}
+        if (target == null) {
+            throw new IllegalArgumentException("null target");
+        }
+        Class targetType = target.getClass();
+        if (targetType.isArray()) {
+            throw new IllegalArgumentException("array target");
+        }
+        String keyPrefix = targetType.getSimpleName() + ".";
+        for (Field field : targetType.getDeclaredFields()) {
+            Resource resource = field.getAnnotation(Resource.class);
+            if (resource != null) {
+                String rKey = resource.key();
+                String key = (rKey.length() > 0) ? rKey : keyPrefix + field.getName();
+                injectField(field, target, key);
+            }
+        }
     }
 
     /* Register ResourceConverters that are defined in this class
      * and documented here.
      */
     static {
-	ResourceConverter[] stringConverters = {
-	    new ColorStringConverter(),
-	    new IconStringConverter(),
-	    new ImageStringConverter(),
-	    new FontStringConverter(),
-	    new KeyStrokeStringConverter(),
+        ResourceConverter[] stringConverters = {
+            new ColorStringConverter(),
+            new IconStringConverter(),
+            new ImageStringConverter(),
+            new FontStringConverter(),
+            new KeyStrokeStringConverter(),
             new DimensionStringConverter(),
             new PointStringConverter(),
             new RectangleStringConverter(),
             new InsetsStringConverter(),
             new EmptyBorderStringConverter()
-	};
-	for (ResourceConverter sc : stringConverters) {
-	    ResourceConverter.register(sc);
-	}
+        };
+        for (ResourceConverter sc : stringConverters) {
+            ResourceConverter.register(sc);
+        }
     }
 
     /* If path doesn't have a leading "/" then the resourcesDir
      * is prepended, otherwise the leading "/" is removed. 
      */
     private static String resourcePath(String path, ResourceMap resourceMap) {
-	String rPath = path;
-	if (path == null) {
-	    rPath = null;
-	}
-	else if (path.startsWith("/")) {
-	    rPath = (path.length() > 1) ? path.substring(1) : null;
-	}
-	else {
-	    rPath = resourceMap.getResourcesDir() + path;
-	}
-	return rPath;
+        String rPath = path;
+        if (path == null) {
+            rPath = null;
+        } else if (path.startsWith("/")) {
+            rPath = (path.length() > 1) ? path.substring(1) : null;
+        } else {
+            rPath = resourceMap.getResourcesDir() + path;
+        }
+        return rPath;
     }
 
     private static ImageIcon loadImageIcon(String s, ResourceMap resourceMap)
-        throws ResourceConverterException 
-    {
-	String rPath = resourcePath(s, resourceMap);
-	if (rPath == null) {
-	    String msg = String.format("invalid image/icon path \"%s\"", s);
-	    throw new ResourceConverterException(msg, s);
-	}
-	URL url = resourceMap.getClassLoader().getResource(rPath);
-	if (url != null) {
-	    return new ImageIcon(url);
-	}
-	else {
-	    String msg = String.format("couldn't find Icon resource \"%s\"", s);
-	    throw new ResourceConverterException(msg, s);
-	}
+            throws ResourceConverterException {
+        String rPath = resourcePath(s, resourceMap);
+        if (rPath == null) {
+            String msg = String.format("invalid image/icon path \"%s\"", s);
+            throw new ResourceConverterException(msg, s);
+        }
+        URL url = resourceMap.getClassLoader().getResource(rPath);
+        if (url != null) {
+            return new ImageIcon(url);
+        } else {
+            String msg = String.format("couldn't find Icon resource \"%s\"", s);
+            throw new ResourceConverterException(msg, s);
+        }
     }
 
     private static class FontStringConverter extends ResourceConverter {
-	FontStringConverter() {
-	    super(Font.class);
-	}
-	/* Just delegates to Font.decode.
-	 * Typical string is: face-STYLE-size, for example "Arial-PLAIN-12"
-	 */
-	@Override
-	public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
-	    return Font.decode(s);
-	}
+
+        FontStringConverter() {
+            super(Font.class);
+        }
+        /* Just delegates to Font.decode.
+         * Typical string is: face-STYLE-size, for example "Arial-PLAIN-12"
+         */
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+            return Font.decode(s);
+        }
     }
 
     private static class ColorStringConverter extends ResourceConverter {
-	ColorStringConverter() {
-	    super(Color.class);
-	}
-	private void error(String msg, String s, Exception e) throws ResourceConverterException  {
-	    throw new ResourceConverterException(msg, s, e);
-	}
 
-	private void error(String msg, String s) throws ResourceConverterException {
-	    error(msg, s, null);
-	}
-	/* An improved version of Color.decode() that supports colors
-	 * with an alpha channel and comma separated RGB[A] values.
-	 * Legal format for color resources are:
-	 * "#RRGGBB",  "#AARRGGBB", "R, G, B", "R, G, B, A"
-	 * Thanks to Romain Guy for the code.
-	 */
-	@Override
-	public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
-	    Color color = null;
-	    if (s.startsWith("#")) {
-		switch (s.length()) {
-		    // RGB/hex color
-		case 7:
-		    color = Color.decode(s);
-		    break;
-		    // ARGB/hex color
-		case 9:
-		    int alpha = Integer.decode(s.substring(0, 3));
-		    int rgb = Integer.decode("#" + s.substring(3));
-		    color = new Color(alpha << 24 | rgb, true);
-		    break;
-		default:
-		    throw new ResourceConverterException("invalid #RRGGBB or #AARRGGBB color string", s);
-		}
-	    } 
-	    else {
-		String[] parts = s.split(",");
-		if (parts.length < 3 || parts.length > 4) {
-		    throw new ResourceConverterException("invalid R, G, B[, A] color string", s);
-		}
-		try {
-		    // with alpha component
-		    if (parts.length == 4) {
-			int r = Integer.parseInt(parts[0].trim());
-			int g = Integer.parseInt(parts[1].trim());
-			int b = Integer.parseInt(parts[2].trim());
-			int a = Integer.parseInt(parts[3].trim());
-			color = new Color(r, g, b, a);
-		    } else {
-			int r = Integer.parseInt(parts[0].trim());
-			int g = Integer.parseInt(parts[1].trim());
-			int b = Integer.parseInt(parts[2].trim());
-			color = new Color(r, g, b);
-		    }
-		} 
-		catch (NumberFormatException e) {
-		    throw new ResourceConverterException("invalid R, G, B[, A] color string", s, e);
-		}
-	    }
-	    return color;
-	}
+        ColorStringConverter() {
+            super(Color.class);
+        }
+
+        private void error(String msg, String s, Exception e) throws ResourceConverterException {
+            throw new ResourceConverterException(msg, s, e);
+        }
+
+        private void error(String msg, String s) throws ResourceConverterException {
+            error(msg, s, null);
+        }
+        /* An improved version of Color.decode() that supports colors
+         * with an alpha channel and comma separated RGB[A] values.
+         * Legal format for color resources are:
+         * "#RRGGBB",  "#AARRGGBB", "R, G, B", "R, G, B, A"
+         * Thanks to Romain Guy for the code.
+         */
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+            Color color = null;
+            if (s.startsWith("#")) {
+                switch (s.length()) {
+                    // RGB/hex color
+                    case 7:
+                        color = Color.decode(s);
+                        break;
+                    // ARGB/hex color
+                    case 9:
+                        int alpha = Integer.decode(s.substring(0, 3));
+                        int rgb = Integer.decode("#" + s.substring(3));
+                        color = new Color(alpha << 24 | rgb, true);
+                        break;
+                    default:
+                        throw new ResourceConverterException("invalid #RRGGBB or #AARRGGBB color string", s);
+                }
+            } else {
+                String[] parts = s.split(",");
+                if (parts.length < 3 || parts.length > 4) {
+                    throw new ResourceConverterException("invalid R, G, B[, A] color string", s);
+                }
+                try {
+                    // with alpha component
+                    if (parts.length == 4) {
+                        int r = Integer.parseInt(parts[0].trim());
+                        int g = Integer.parseInt(parts[1].trim());
+                        int b = Integer.parseInt(parts[2].trim());
+                        int a = Integer.parseInt(parts[3].trim());
+                        color = new Color(r, g, b, a);
+                    } else {
+                        int r = Integer.parseInt(parts[0].trim());
+                        int g = Integer.parseInt(parts[1].trim());
+                        int b = Integer.parseInt(parts[2].trim());
+                        color = new Color(r, g, b);
+                    }
+                } catch (NumberFormatException e) {
+                    throw new ResourceConverterException("invalid R, G, B[, A] color string", s, e);
+                }
+            }
+            return color;
+        }
     }
 
     private static class IconStringConverter extends ResourceConverter {
-	IconStringConverter() {
-	    super(Icon.class);
-	}
-	@Override
-	public Object parseString(String s, ResourceMap resourceMap) throws ResourceConverterException {
-	    return loadImageIcon(s, resourceMap);
-	}
-	@Override
-	public boolean supportsType(Class testType) {
-	    return testType.equals(Icon.class) || testType.equals(ImageIcon.class);
-	}
+
+        IconStringConverter() {
+            super(Icon.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap resourceMap) throws ResourceConverterException {
+            return loadImageIcon(s, resourceMap);
+        }
+
+        @Override
+        public boolean supportsType(Class testType) {
+            return testType.equals(Icon.class) || testType.equals(ImageIcon.class);
+        }
     }
 
     private static class ImageStringConverter extends ResourceConverter {
-	ImageStringConverter() {
-	    super(Image.class);
-	}
-	@Override
-	public Object parseString(String s, ResourceMap resourceMap) throws ResourceConverterException {
-	    return loadImageIcon(s, resourceMap).getImage();
-	}
+
+        ImageStringConverter() {
+            super(Image.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap resourceMap) throws ResourceConverterException {
+            return loadImageIcon(s, resourceMap).getImage();
+        }
     }
 
     private static class KeyStrokeStringConverter extends ResourceConverter {
-	KeyStrokeStringConverter() {
-	    super(KeyStroke.class);
-	}
-	@Override
-	public Object parseString(String s, ResourceMap ignore) {
+
+        KeyStrokeStringConverter() {
+            super(KeyStroke.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) {
             if (s.contains("shortcut")) {
                 int k = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
                 s = s.replaceAll("shortcut", (k == Event.META_MASK) ? "meta" : "control");
             }
-	    return KeyStroke.getKeyStroke(s);
-	}
+            return KeyStroke.getKeyStroke(s);
+        }
     }
 
     /* String s is assumed to contain n number substrings separated by
@@ -1503,14 +1503,12 @@ public class ResourceMap {
         String[] doubleStrings = s.split(",", n + 1);
         if (doubleStrings.length != n) {
             throw new ResourceConverterException(errorMsg, s);
-        }
-        else {
+        } else {
             List<Double> doubles = new ArrayList<Double>(n);
-            for(String doubleString : doubleStrings) {
+            for (String doubleString : doubleStrings) {
                 try {
                     doubles.add(Double.valueOf(doubleString));
-                }
-                catch(NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     throw new ResourceConverterException(errorMsg, s, e);
                 }
             }
@@ -1519,58 +1517,73 @@ public class ResourceMap {
     }
 
     private static class DimensionStringConverter extends ResourceConverter {
-	DimensionStringConverter() {
-	    super(Dimension.class);
-	}
-	@Override public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+
+        DimensionStringConverter() {
+            super(Dimension.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
             List<Double> xy = parseDoubles(s, 2, "invalid x,y Dimension string");
             Dimension d = new Dimension();
             d.setSize(xy.get(0), xy.get(1));
             return d;
-	}
+        }
     }
 
     private static class PointStringConverter extends ResourceConverter {
-	PointStringConverter() {
-	    super(Point.class);
-	}
-	@Override public Object parseString(String s, ResourceMap ignore)  throws ResourceConverterException {
+
+        PointStringConverter() {
+            super(Point.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
             List<Double> xy = parseDoubles(s, 2, "invalid x,y Point string");
             Point p = new Point();
             p.setLocation(xy.get(0), xy.get(1));
             return p;
-	}
+        }
     }
 
     private static class RectangleStringConverter extends ResourceConverter {
-	RectangleStringConverter() {
-	    super(Rectangle.class);
-	}
-	@Override public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+
+        RectangleStringConverter() {
+            super(Rectangle.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
             List<Double> xywh = parseDoubles(s, 4, "invalid x,y,width,height Rectangle string");
             Rectangle r = new Rectangle();
             r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));
             return r;
-	}
+        }
     }
 
     private static class InsetsStringConverter extends ResourceConverter {
-	InsetsStringConverter() {
-	    super(Insets.class);
-	}
-	@Override public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+
+        InsetsStringConverter() {
+            super(Insets.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
             List<Double> tlbr = parseDoubles(s, 4, "invalid top,left,bottom,right Insets string");
             return new Insets(tlbr.get(0).intValue(), tlbr.get(1).intValue(), tlbr.get(2).intValue(), tlbr.get(3).intValue());
-	}
+        }
     }
 
     private static class EmptyBorderStringConverter extends ResourceConverter {
-	EmptyBorderStringConverter() {
-	    super(EmptyBorder.class);
-	}
-	@Override public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
+
+        EmptyBorderStringConverter() {
+            super(EmptyBorder.class);
+        }
+
+        @Override
+        public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
             List<Double> tlbr = parseDoubles(s, 4, "invalid top,left,bottom,right EmptyBorder string");
             return new EmptyBorder(tlbr.get(0).intValue(), tlbr.get(1).intValue(), tlbr.get(2).intValue(), tlbr.get(3).intValue());
-	}
+        }
     }
 }

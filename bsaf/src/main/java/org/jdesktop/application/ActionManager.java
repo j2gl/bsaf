@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.KeyboardFocusManager;
@@ -18,7 +17,6 @@ import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 
-
 /**
  * The application's {@code ActionManager} provides read-only cached
  * access to {@code ActionMaps} that contain one entry for each method
@@ -31,6 +29,7 @@ import javax.swing.JComponent;
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 public class ActionManager extends AbstractBean {
+
     private static final Logger logger = Logger.getLogger(ActionManager.class.getName());
     private final ApplicationContext context;
     private final WeakHashMap<Object, WeakReference<ApplicationActionMap>> actionMaps;
@@ -41,7 +40,7 @@ public class ActionManager extends AbstractBean {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
-	actionMaps = new WeakHashMap<Object, WeakReference<ApplicationActionMap>>();
+        actionMaps = new WeakHashMap<Object, WeakReference<ApplicationActionMap>>();
     }
 
     protected final ApplicationContext getContext() {
@@ -51,23 +50,24 @@ public class ActionManager extends AbstractBean {
     private ApplicationActionMap createActionMapChain(
             Class startClass, Class stopClass, Object actionsObject, ResourceMap resourceMap) {
         // All of the classes from stopClass to startClass, inclusive. 
-    	List<Class> classes = new ArrayList<Class>();
-	for(Class c = startClass;  ; c = c.getSuperclass()) {
-	    classes.add(c);
-            if (c.equals(stopClass)) { break; }
-	}
+        List<Class> classes = new ArrayList<Class>();
+        for (Class c = startClass;; c = c.getSuperclass()) {
+            classes.add(c);
+            if (c.equals(stopClass)) {
+                break;
+            }
+        }
         Collections.reverse(classes);
         // Create the ActionMap chain, one per class
         ApplicationContext ctx = getContext();
         ApplicationActionMap parent = null;
-        for(Class cls : classes) {
+        for (Class cls : classes) {
             ApplicationActionMap appAM = new ApplicationActionMap(ctx, cls, actionsObject, resourceMap);
             appAM.setParent(parent);
             parent = appAM;
         }
         return parent;
     }
-
 
     /** 
      * The {@code ActionMap} chain for the entire {@code Application}.
@@ -93,20 +93,20 @@ public class ActionManager extends AbstractBean {
      * @see ApplicationContext#getActionMap(Object)
      */
     public ApplicationActionMap getActionMap() {
-	if (globalActionMap == null) {
-	    ApplicationContext ctx = getContext();
-	    Object appObject = ctx.getApplication();
-	    Class appClass = ctx.getApplicationClass();
+        if (globalActionMap == null) {
+            ApplicationContext ctx = getContext();
+            Object appObject = ctx.getApplication();
+            Class appClass = ctx.getApplicationClass();
             ResourceMap resourceMap = ctx.getResourceMap();
-	    globalActionMap = createActionMapChain(appClass, Application.class, appObject, resourceMap);
-	    initProxyActionSupport();  // lazy initialization
-	}
-	return globalActionMap;
+            globalActionMap = createActionMapChain(appClass, Application.class, appObject, resourceMap);
+            initProxyActionSupport();  // lazy initialization
+        }
+        return globalActionMap;
     }
 
     private void initProxyActionSupport() {
         KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-	kfm.addPropertyChangeListener(new KeyboardFocusPCL());
+        kfm.addPropertyChangeListener(new KeyboardFocusPCL());
     }
 
     /**
@@ -143,6 +143,8 @@ public class ActionManager extends AbstractBean {
      * ApplicationActionMaps}, then the cached {@code ActionMap} entry
      * will be cleared.
      * 
+     * @param actionsClass
+     * @param actionsObject
      * @see #getActionMap()
      * @see ApplicationContext#getActionMap()
      * @see ApplicationContext#getActionMap(Class, Object)
@@ -150,49 +152,52 @@ public class ActionManager extends AbstractBean {
      * @return the {@code ApplicationActionMap} for {@code actionsClass} and {@code actionsObject}
      */
     public ApplicationActionMap getActionMap(Class actionsClass, Object actionsObject) {
-	if (actionsClass == null) {
-	    throw new IllegalArgumentException("null actionsClass");
-	}
-	if (actionsObject == null) {
-	    throw new IllegalArgumentException("null actionsObject");
-	}
-        if (!actionsClass.isAssignableFrom(actionsObject.getClass())) {  
-	    throw new IllegalArgumentException("actionsObject not instanceof actionsClass");
+        if (actionsClass == null) {
+            throw new IllegalArgumentException("null actionsClass");
         }
-	synchronized(actionMaps) {
-	    WeakReference<ApplicationActionMap> ref = actionMaps.get(actionsObject);
-	    ApplicationActionMap classActionMap = (ref != null) ? ref.get() : null;
-	    if ((classActionMap == null) || (classActionMap.getActionsClass() != actionsClass)) {
+        if (actionsObject == null) {
+            throw new IllegalArgumentException("null actionsObject");
+        }
+        if (!actionsClass.isAssignableFrom(actionsObject.getClass())) {
+            throw new IllegalArgumentException("actionsObject not instanceof actionsClass");
+        }
+        synchronized (actionMaps) {
+            WeakReference<ApplicationActionMap> ref = actionMaps.get(actionsObject);
+            ApplicationActionMap classActionMap = (ref != null) ? ref.get() : null;
+            if ((classActionMap == null) || (classActionMap.getActionsClass() != actionsClass)) {
                 ApplicationContext ctx = getContext();
                 Class actionsObjectClass = actionsObject.getClass();
                 ResourceMap resourceMap = ctx.getResourceMap(actionsObjectClass, actionsClass);
                 classActionMap = createActionMapChain(actionsObjectClass, actionsClass, actionsObject, resourceMap);
-                ActionMap lastActionMap = classActionMap; 
-                while(lastActionMap.getParent() != null) {
+                ActionMap lastActionMap = classActionMap;
+                while (lastActionMap.getParent() != null) {
                     lastActionMap = lastActionMap.getParent();
                 }
                 lastActionMap.setParent(getActionMap());
-		actionMaps.put(actionsObject, new WeakReference(classActionMap));
-	    }
-	    return classActionMap;
-	}
+                actionMaps.put(actionsObject, new WeakReference(classActionMap));
+            }
+            return classActionMap;
+        }
     }
 
     private final class KeyboardFocusPCL implements PropertyChangeListener {
-	private final TextActions textActions;
-	KeyboardFocusPCL() {
-	    textActions = new TextActions(getContext());
-	}
-	public void propertyChange(PropertyChangeEvent e) {
-	    if (e.getPropertyName() == "permanentFocusOwner") {
-		JComponent oldOwner = getContext().getFocusOwner();
-		Object newValue = e.getNewValue();
-		JComponent newOwner = (newValue instanceof JComponent) ? (JComponent)newValue : null;
-		textActions.updateFocusOwner(oldOwner, newOwner);
-		getContext().setFocusOwner(newOwner);
-		updateAllProxyActions(oldOwner, newOwner);
-	    }
-	}
+
+        private final TextActions textActions;
+
+        KeyboardFocusPCL() {
+            textActions = new TextActions(getContext());
+        }
+
+        public void propertyChange(PropertyChangeEvent e) {
+            if (e.getPropertyName() == "permanentFocusOwner") {
+                JComponent oldOwner = getContext().getFocusOwner();
+                Object newValue = e.getNewValue();
+                JComponent newOwner = (newValue instanceof JComponent) ? (JComponent) newValue : null;
+                textActions.updateFocusOwner(oldOwner, newOwner);
+                getContext().setFocusOwner(newOwner);
+                updateAllProxyActions(oldOwner, newOwner);
+            }
+        }
     }
 
     /* For each proxyAction in each ApplicationActionMap, if
@@ -201,19 +206,19 @@ public class ActionManager extends AbstractBean {
      * proxyBinding to null.  [TBD: synchronize access to actionMaps]
      */
     private void updateAllProxyActions(JComponent oldFocusOwner, JComponent newFocusOwner) {
-	if (newFocusOwner != null) {
-	    ActionMap ownerActionMap = newFocusOwner.getActionMap();
-	    if (ownerActionMap != null) {
-		updateProxyActions(getActionMap(), ownerActionMap, newFocusOwner);
-		for (WeakReference<ApplicationActionMap> appAMRef : actionMaps.values()) {
-		    ApplicationActionMap appAM = appAMRef.get();
-		    if (appAM == null) {
-			continue;
-		    }
-		    updateProxyActions(appAM, ownerActionMap, newFocusOwner);
-		}
-	    }
-	}
+        if (newFocusOwner != null) {
+            ActionMap ownerActionMap = newFocusOwner.getActionMap();
+            if (ownerActionMap != null) {
+                updateProxyActions(getActionMap(), ownerActionMap, newFocusOwner);
+                for (WeakReference<ApplicationActionMap> appAMRef : actionMaps.values()) {
+                    ApplicationActionMap appAM = appAMRef.get();
+                    if (appAM == null) {
+                        continue;
+                    }
+                    updateProxyActions(appAM, ownerActionMap, newFocusOwner);
+                }
+            }
+        }
     }
 
     /* For each proxyAction in appAM: if there's an action with the same
@@ -222,18 +227,17 @@ public class ActionManager extends AbstractBean {
      * (actionPerformed) will delegate to the matching Action.
      */
     private void updateProxyActions(ApplicationActionMap appAM, ActionMap ownerActionMap, JComponent focusOwner) {
-	for(ApplicationAction proxyAction : appAM.getProxyActions()) {
-	    String proxyActionName = proxyAction.getName();
-	    javax.swing.Action proxy = ownerActionMap.get(proxyActionName);
-	    if (proxy != null) {
-		proxyAction.setProxy(proxy);
-		proxyAction.setProxySource(focusOwner);
-	    }
-	    else {
-		proxyAction.setProxy(null);
-		proxyAction.setProxySource(null);
-	    }
-	}
+        for (ApplicationAction proxyAction : appAM.getProxyActions()) {
+            String proxyActionName = proxyAction.getName();
+            javax.swing.Action proxy = ownerActionMap.get(proxyActionName);
+            if (proxy != null) {
+                proxyAction.setProxy(proxy);
+                proxyAction.setProxySource(focusOwner);
+            } else {
+                proxyAction.setProxy(null);
+                proxyAction.setProxySource(null);
+            }
+        }
     }
 }
 

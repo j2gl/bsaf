@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.applet.Applet;
@@ -28,7 +27,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
-
 
 /**
  * Support for storing GUI state that persists between Application sessions.  
@@ -97,6 +95,7 @@ import javax.swing.table.TableColumn;
  * @see LocalStorage
  */
 public class SessionStorage {
+
     private static Logger logger = Logger.getLogger(SessionStorage.class.getName());
     private final Map<Class, Property> propertyMap;
     private final ApplicationContext context;
@@ -141,6 +140,7 @@ public class SessionStorage {
      * </pre>
      * 
      * FIXME - @param javadoc
+     * @param context
      * @see ApplicationContext#getSessionStorage
      * @see #getProperty(Class)
      * @see #getProperty(Component)
@@ -150,11 +150,11 @@ public class SessionStorage {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
-	propertyMap = new HashMap<Class, Property>();
-	propertyMap.put(Window.class, new WindowProperty());
-	propertyMap.put(JTabbedPane.class, new TabbedPaneProperty());
-	propertyMap.put(JSplitPane.class, new SplitPaneProperty());
-	propertyMap.put(JTable.class, new TableProperty());
+        propertyMap = new HashMap<Class, Property>();
+        propertyMap.put(Window.class, new WindowProperty());
+        propertyMap.put(JTabbedPane.class, new TabbedPaneProperty());
+        propertyMap.put(JSplitPane.class, new SplitPaneProperty());
+        propertyMap.put(JTable.class, new TableProperty());
     }
 
     // FIXME - documentation
@@ -163,18 +163,18 @@ public class SessionStorage {
     }
 
     private void checkSaveRestoreArgs(Component root, String fileName) {
-	if (root == null) {
-	    throw new IllegalArgumentException("null root");
-	}
-	if (fileName == null) {
-	    throw new IllegalArgumentException("null fileName");
-	}
+        if (root == null) {
+            throw new IllegalArgumentException("null root");
+        }
+        if (fileName == null) {
+            throw new IllegalArgumentException("null fileName");
+        }
     }
 
     /* At some point we may replace this with a more complex scheme.
      */
     private String getComponentName(Component c) {
-	return c.getName();
+        return c.getName();
     }
 
     /* Return a string that uniquely identifies this component, or null
@@ -203,34 +203,33 @@ public class SessionStorage {
      * JFrame a name, it's name would have been "frame0".
      */
     private String getComponentPathname(Component c) {
-	String name = getComponentName(c);
-	if (name == null) {
-	    return null;
-	}
-	StringBuilder path = new StringBuilder(name);
-	while((c.getParent() != null) && !(c instanceof Window) && !(c instanceof Applet)) {
-	    c = c.getParent();
-	    name = getComponentName(c);
-	    if (name == null) {
-		int n = c.getParent().getComponentZOrder(c);
-		if (n >= 0) {
-		    Class cls = c.getClass();
-		    name = cls.getSimpleName();
-		    if (name.length() == 0) {
-			name = "Anonymous" + cls.getSuperclass().getSimpleName();
-		    }
-		    name = name + n;
-		}
-		else {
-		    // Implies that the component tree is changing
-		    // while we're computing the path. Punt.
-		    logger.warning("Couldn't compute pathname for " + c);
-		    return null;
-		}
-	    }
-	    path.append("/").append(name);
-	}
-	return path.toString();
+        String name = getComponentName(c);
+        if (name == null) {
+            return null;
+        }
+        StringBuilder path = new StringBuilder(name);
+        while ((c.getParent() != null) && !(c instanceof Window) && !(c instanceof Applet)) {
+            c = c.getParent();
+            name = getComponentName(c);
+            if (name == null) {
+                int n = c.getParent().getComponentZOrder(c);
+                if (n >= 0) {
+                    Class cls = c.getClass();
+                    name = cls.getSimpleName();
+                    if (name.length() == 0) {
+                        name = "Anonymous" + cls.getSuperclass().getSimpleName();
+                    }
+                    name = name + n;
+                } else {
+                    // Implies that the component tree is changing
+                    // while we're computing the path. Punt.
+                    logger.warning("Couldn't compute pathname for " + c);
+                    return null;
+                }
+            }
+            path.append("/").append(name);
+        }
+        return path.toString();
     }
 
     /* Recursively walk the component tree, breadth first, storing the
@@ -241,30 +240,30 @@ public class SessionStorage {
      * structurally identical to restoreTree().
      */
     private void saveTree(List<Component> roots, Map<String, Object> stateMap) {
-	List<Component> allChildren = new ArrayList<Component>();
-	for (Component root : roots) {
-	    if (root != null) {
-		Property p = getProperty(root);
-		if (p != null) {
-		    String pathname = getComponentPathname(root);
-		    if (pathname != null) {
-			Object state = p.getSessionState(root);
-			if (state != null) {
-			    stateMap.put(pathname, state);
-			}
-		    }
-		}
-	    }
-	    if (root instanceof Container) {
-		Component[] children = ((Container)root).getComponents();
-		if ((children != null) && (children.length > 0)) {
-		    Collections.addAll(allChildren, children);
-		}
-	    }
-	}
-	if (allChildren.size() > 0) {
-	    saveTree(allChildren, stateMap);
-	}
+        List<Component> allChildren = new ArrayList<Component>();
+        for (Component root : roots) {
+            if (root != null) {
+                Property p = getProperty(root);
+                if (p != null) {
+                    String pathname = getComponentPathname(root);
+                    if (pathname != null) {
+                        Object state = p.getSessionState(root);
+                        if (state != null) {
+                            stateMap.put(pathname, state);
+                        }
+                    }
+                }
+            }
+            if (root instanceof Container) {
+                Component[] children = ((Container) root).getComponents();
+                if ((children != null) && (children.length > 0)) {
+                    Collections.addAll(allChildren, children);
+                }
+            }
+        }
+        if (allChildren.size() > 0) {
+            saveTree(allChildren, stateMap);
+        }
     }
 
     /**
@@ -309,17 +308,18 @@ public class SessionStorage {
      * 
      * @param root the root of the Component hierarchy to be saved.
      * @param fileName the {@code LocalStorage} filename.
+     * @throws IOException
      * @see #restore
      * @see ApplicationContext#getLocalStorage
      * @see LocalStorage#save
      * @see #getProperty(Component)
      */
     public void save(Component root, String fileName) throws IOException {
-	checkSaveRestoreArgs(root, fileName);
-	Map<String, Object> stateMap = new HashMap<String, Object>();
-	saveTree(Collections.singletonList(root), stateMap);
-	LocalStorage lst = getContext().getLocalStorage();
-	lst.save(stateMap, fileName);
+        checkSaveRestoreArgs(root, fileName);
+        Map<String, Object> stateMap = new HashMap<String, Object>();
+        saveTree(Collections.singletonList(root), stateMap);
+        LocalStorage lst = getContext().getLocalStorage();
+        lst.save(stateMap, fileName);
     }
 
     /* Recursively walk the component tree, breadth first, restoring the
@@ -331,33 +331,32 @@ public class SessionStorage {
      * structurally identical to saveTree().
      */
     private void restoreTree(List<Component> roots, Map<String, Object> stateMap) {
-	List<Component> allChildren = new ArrayList<Component>();
-	for (Component root : roots) {
-	    if (root != null) {
-		Property p = getProperty(root);
-		if (p != null) {
-		    String pathname = getComponentPathname(root);
-		    if (pathname != null) {
-			Object state = stateMap.get(pathname);
-			if (state != null) {
-			    p.setSessionState(root, state);
-			}
-			else {
-			    logger.warning("No saved state for " + root);
-			}
-		    }
-		}
-	    }
-	    if (root instanceof Container) {
-		Component[] children = ((Container)root).getComponents();
-		if ((children != null) && (children.length > 0)) {
-		    Collections.addAll(allChildren, children);
-		}
-	    }
-	}
-	if (allChildren.size() > 0) {
-	    restoreTree(allChildren, stateMap);
-	}
+        List<Component> allChildren = new ArrayList<Component>();
+        for (Component root : roots) {
+            if (root != null) {
+                Property p = getProperty(root);
+                if (p != null) {
+                    String pathname = getComponentPathname(root);
+                    if (pathname != null) {
+                        Object state = stateMap.get(pathname);
+                        if (state != null) {
+                            p.setSessionState(root, state);
+                        } else {
+                            logger.warning("No saved state for " + root);
+                        }
+                    }
+                }
+            }
+            if (root instanceof Container) {
+                Component[] children = ((Container) root).getComponents();
+                if ((children != null) && (children.length > 0)) {
+                    Collections.addAll(allChildren, children);
+                }
+            }
+        }
+        if (allChildren.size() > 0) {
+            restoreTree(allChildren, stateMap);
+        }
     }
 
     /**
@@ -371,18 +370,19 @@ public class SessionStorage {
      * 
      * @param root the root of the Component hierarchy to be restored.
      * @param fileName the {@code LocalStorage} filename.
+     * @throws IOException
      * @see #save
      * @see ApplicationContext#getLocalStorage
      * @see LocalStorage#save
      * @see #getProperty(Component)
      */
     public void restore(Component root, String fileName) throws IOException {
-	checkSaveRestoreArgs(root, fileName);
-	LocalStorage lst = getContext().getLocalStorage();
-	Map<String, Object> stateMap = (Map<String, Object>)(lst.load(fileName));
-	if (stateMap != null) {
-	    restoreTree(Collections.singletonList(root), stateMap);
-	}
+        checkSaveRestoreArgs(root, fileName);
+        LocalStorage lst = getContext().getLocalStorage();
+        Map<String, Object> stateMap = (Map<String, Object>) (lst.load(fileName));
+        if (stateMap != null) {
+            restoreTree(Collections.singletonList(root), stateMap);
+        }
     }
 
     /**
@@ -400,29 +400,30 @@ public class SessionStorage {
      * @see #getProperty(Component)
      */
     public interface Property {
-	/**
-	 * Return the value of the {@code sessionState} property, typically
-	 * a Java bean or a Collection the defines the {@code Component} state
-	 * that should be preserved across Application sessions.  This 
-	 * value will be stored with {@link java.beans.XMLEncoder XMLEncoder},
-	 * loaded with {@link java.beans.XMLDecoder XMLDecoder}, and 
-	 * passed to {@code setSessionState} to restore the Component's 
-	 * state.
-	 * 
-	 * @param c the Component.
-	 * @return the {@code sessionState} object for Component {@code c}.
-	 * @see #setSessionState
-	 */
+
+        /**
+         * Return the value of the {@code sessionState} property, typically
+         * a Java bean or a Collection the defines the {@code Component} state
+         * that should be preserved across Application sessions.  This
+         * value will be stored with {@link java.beans.XMLEncoder XMLEncoder},
+         * loaded with {@link java.beans.XMLDecoder XMLDecoder}, and
+         * passed to {@code setSessionState} to restore the Component's
+         * state.
+         *
+         * @param c the Component.
+         * @return the {@code sessionState} object for Component {@code c}.
+         * @see #setSessionState
+         */
         Object getSessionState(Component c);
 
-	/**
-	 * Restore Component {@code c's} {@code sessionState} from the specified
-	 * object.
-	 * 
-	 * @param c the Component.
-	 * @param state the value of the {@code sessionState} property.
-	 * @see #getSessionState
-	 */
+        /**
+         * Restore Component {@code c's} {@code sessionState} from the specified
+         * object.
+         *
+         * @param c the Component.
+         * @param state the value of the {@code sessionState} property.
+         * @see #getSessionState
+         */
         void setSessionState(Component c, Object state);
     }
 
@@ -440,49 +441,60 @@ public class SessionStorage {
      * @see #restore
      */
     public static class WindowState {
-	private final Rectangle bounds;
-	private Rectangle gcBounds = null;
-	private int screenCount;
+
+        private final Rectangle bounds;
+        private Rectangle gcBounds = null;
+        private int screenCount;
         private int frameState = Frame.NORMAL;
-	public WindowState() {
-	    bounds = new Rectangle();
-	}
-	public WindowState(Rectangle bounds, Rectangle gcBounds, int screenCount, int frameState) {
-	    if (bounds == null) {
-		throw new IllegalArgumentException("null bounds");
-	    }
-	    if (screenCount < 1) {
-		throw new IllegalArgumentException("invalid screenCount");
-	    }
-	    this.bounds = bounds;
-	    this.gcBounds = gcBounds;  // can be null
-	    this.screenCount = screenCount;
+
+        public WindowState() {
+            bounds = new Rectangle();
+        }
+
+        public WindowState(Rectangle bounds, Rectangle gcBounds, int screenCount, int frameState) {
+            if (bounds == null) {
+                throw new IllegalArgumentException("null bounds");
+            }
+            if (screenCount < 1) {
+                throw new IllegalArgumentException("invalid screenCount");
+            }
+            this.bounds = bounds;
+            this.gcBounds = gcBounds;  // can be null
+            this.screenCount = screenCount;
             this.frameState = frameState;
-	}
-	public Rectangle getBounds() { 
-	    return new Rectangle(bounds);
-	}
-	public void setBounds(Rectangle bounds) {
-	    this.bounds.setBounds(bounds);
-	}
-	public int getScreenCount() {
-	    return screenCount;
-	}
-	public void setScreenCount(int screenCount) {
-	    this.screenCount = screenCount;
-	}
-	public int getFrameState() {
-	    return frameState;
-	}
-	public void setFrameState(int frameState) {
-	    this.frameState = frameState;
-	}
-	public Rectangle getGraphicsConfigurationBounds() {
-	    return (gcBounds == null) ? null : new Rectangle(gcBounds);
-	}
-	public void setGraphicsConfigurationBounds(Rectangle gcBounds) {
-	    this.gcBounds = (gcBounds == null) ? null : new Rectangle(gcBounds);
-	}
+        }
+
+        public Rectangle getBounds() {
+            return new Rectangle(bounds);
+        }
+
+        public void setBounds(Rectangle bounds) {
+            this.bounds.setBounds(bounds);
+        }
+
+        public int getScreenCount() {
+            return screenCount;
+        }
+
+        public void setScreenCount(int screenCount) {
+            this.screenCount = screenCount;
+        }
+
+        public int getFrameState() {
+            return frameState;
+        }
+
+        public void setFrameState(int frameState) {
+            this.frameState = frameState;
+        }
+
+        public Rectangle getGraphicsConfigurationBounds() {
+            return (gcBounds == null) ? null : new Rectangle(gcBounds);
+        }
+
+        public void setGraphicsConfigurationBounds(Rectangle gcBounds) {
+            this.gcBounds = (gcBounds == null) ? null : new Rectangle(gcBounds);
+        }
     }
 
     /**
@@ -506,40 +518,42 @@ public class SessionStorage {
      * @see WindowState
      */
     public static class WindowProperty implements Property {
-	private void checkComponent(Component component) {
-	    if (component == null) {
-		throw new IllegalArgumentException("null component");
-	    }
-	    if (!(component instanceof Window)) {
-		throw new IllegalArgumentException("invalid component");
-	    }
-	}
 
-	private int getScreenCount() {
-	    return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
-	}
+        private void checkComponent(Component component) {
+            if (component == null) {
+                throw new IllegalArgumentException("null component");
+            }
+            if (!(component instanceof Window)) {
+                throw new IllegalArgumentException("invalid component");
+            }
+        }
 
-	/**
-	 * Returns a {@link WindowState WindowState} object
-	 * for {@code Window c}.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code Component c}
-	 * isn't a non-null {@code Window}.
-	 * 
-	 * @param c the {@code Window} whose bounds will be stored
-	 *     in a {@code WindowState} object.
-	 * @return the {@code WindowState} object
-	 * @see #setSessionState
-	 * @see WindowState
-	 */
+        private int getScreenCount() {
+            return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
+        }
+
+        /**
+         * Returns a {@link WindowState WindowState} object
+         * for {@code Window c}.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code Component c}
+         * isn't a non-null {@code Window}.
+         *
+         * @param c the {@code Window} whose bounds will be stored
+         *     in a {@code WindowState} object.
+         * @return the {@code WindowState} object
+         * @see #setSessionState
+         * @see WindowState
+         */
+        @Override
         public Object getSessionState(Component c) {
-	    checkComponent(c);
+            checkComponent(c);
             int frameState = Frame.NORMAL;
             if (c instanceof Frame) {
-                frameState = ((Frame)c).getExtendedState();
+                frameState = ((Frame) c).getExtendedState();
             }
-	    GraphicsConfiguration gc = c.getGraphicsConfiguration();
-	    Rectangle gcBounds = (gc == null) ? null : gc.getBounds();
+            GraphicsConfiguration gc = c.getGraphicsConfiguration();
+            Rectangle gcBounds = (gc == null) ? null : gc.getBounds();
             Rectangle frameBounds = c.getBounds();
             /* If this is a JFrame created by FrameView and it's been maximized,
              * retrieve the frame's normal (not maximized) bounds.  More info:
@@ -547,70 +561,70 @@ public class SessionStorage {
              */
             if ((c instanceof JFrame) && (0 != (frameState & Frame.MAXIMIZED_BOTH))) {
                 String clientPropertyKey = "WindowState.normalBounds";
-                Object r = ((JFrame)c).getRootPane().getClientProperty(clientPropertyKey);
+                Object r = ((JFrame) c).getRootPane().getClientProperty(clientPropertyKey);
                 if (r instanceof Rectangle) {
-                    frameBounds = (Rectangle)r;
+                    frameBounds = (Rectangle) r;
                 }
             }
-	    return new WindowState(frameBounds, gcBounds, getScreenCount(), frameState);
-	}
+            return new WindowState(frameBounds, gcBounds, getScreenCount(), frameState);
+        }
 
-	/**
-	 * Restore the {@code Window's} bounds if the dimensions of its
-	 * screen ({@code GraphicsConfiguration}) haven't changed, the 
-	 * number of screens hasn't changed, and the 
-	 * {@link Window#isLocationByPlatform isLocationByPlatform}
-	 * property, which indicates that native Window manager should
-	 * pick the Window's location, is false.  More precisely:
-	 * <p>
-	 * If {@code state} is non-null, and Window {@code c's} 
-	 * {@code GraphicsConfiguration} 
-	 * {@link GraphicsConfiguration#getBounds bounds} matches
-	 * the {@link WindowState#getGraphicsConfigurationBounds WindowState's value},
-	 * and Window {@code c's} 
-	 * {@link Window#isLocationByPlatform isLocationByPlatform}
-	 * property is false, then set the Window's to the 
-	 * {@link WindowState#getBounds saved value}.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code c} is 
-	 * not a {@code Window} or if {@code state} is non-null
-	 * but not an instance of {@link WindowState}.
-	 * 
-	 * @param c the Window whose state is to be restored
-	 * @param state the {@code WindowState} to be restored
-	 * @see #getSessionState
-	 * @see WindowState
-	 */
+        /**
+         * Restore the {@code Window's} bounds if the dimensions of its
+         * screen ({@code GraphicsConfiguration}) haven't changed, the
+         * number of screens hasn't changed, and the
+         * {@link Window#isLocationByPlatform isLocationByPlatform}
+         * property, which indicates that native Window manager should
+         * pick the Window's location, is false.  More precisely:
+         * <p>
+         * If {@code state} is non-null, and Window {@code c's}
+         * {@code GraphicsConfiguration}
+         * {@link GraphicsConfiguration#getBounds bounds} matches
+         * the {@link WindowState#getGraphicsConfigurationBounds WindowState's value},
+         * and Window {@code c's}
+         * {@link Window#isLocationByPlatform isLocationByPlatform}
+         * property is false, then set the Window's to the
+         * {@link WindowState#getBounds saved value}.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code c} is
+         * not a {@code Window} or if {@code state} is non-null
+         * but not an instance of {@link WindowState}.
+         *
+         * @param c the Window whose state is to be restored
+         * @param state the {@code WindowState} to be restored
+         * @see #getSessionState
+         * @see WindowState
+         */
+        @Override
         public void setSessionState(Component c, Object state) {
-	    checkComponent(c);
-	    if ((state != null) && !(state instanceof WindowState)) {
-		throw new IllegalArgumentException("invalid state");
-	    }
-	    Window w = (Window)c;
-	    if (!w.isLocationByPlatform() && (state != null)) {
-		WindowState windowState = (WindowState)state;
-		Rectangle gcBounds0 = windowState.getGraphicsConfigurationBounds();
-		int sc0 = windowState.getScreenCount();
-		GraphicsConfiguration gc = c.getGraphicsConfiguration();
-		Rectangle gcBounds1 = (gc == null) ? null : gc.getBounds();
-		int sc1 = getScreenCount();
-		if ((gcBounds0 != null) && (gcBounds0.equals(gcBounds1)) && (sc0 == sc1)) {
+            checkComponent(c);
+            if ((state != null) && !(state instanceof WindowState)) {
+                throw new IllegalArgumentException("invalid state");
+            }
+            Window w = (Window) c;
+            if (!w.isLocationByPlatform() && (state != null)) {
+                WindowState windowState = (WindowState) state;
+                Rectangle gcBounds0 = windowState.getGraphicsConfigurationBounds();
+                int sc0 = windowState.getScreenCount();
+                GraphicsConfiguration gc = c.getGraphicsConfiguration();
+                Rectangle gcBounds1 = (gc == null) ? null : gc.getBounds();
+                int sc1 = getScreenCount();
+                if ((gcBounds0 != null) && (gcBounds0.equals(gcBounds1)) && (sc0 == sc1)) {
                     boolean resizable = true;
                     if (w instanceof Frame) {
-                        resizable = ((Frame)w).isResizable();
-                    }
-                    else if (w instanceof Dialog) {
-                        resizable = ((Dialog)w).isResizable();
+                        resizable = ((Frame) w).isResizable();
+                    } else if (w instanceof Dialog) {
+                        resizable = ((Dialog) w).isResizable();
                     }
                     if (resizable) {
                         w.setBounds(windowState.getBounds());
                     }
-		}
-                if (w instanceof Frame) {
-                    ((Frame)w).setExtendedState(windowState.getFrameState());
                 }
-	    }
-	}
+                if (w instanceof Frame) {
+                    ((Frame) w).setExtendedState(windowState.getFrameState());
+                }
+            }
+        }
     }
 
     /**
@@ -625,36 +639,47 @@ public class SessionStorage {
      * @see #restore
      */
     public static class TabbedPaneState {
-	private int selectedIndex;
-	private int tabCount;
-	public TabbedPaneState() {
-	    selectedIndex = -1;
-	    tabCount = 0;
-	}
-	public TabbedPaneState(int selectedIndex, int tabCount) {
-	    if (tabCount < 0) {
-		throw new IllegalArgumentException("invalid tabCount");
-	    }
-	    if ((selectedIndex < -1) || (selectedIndex > tabCount)) {
-		throw new IllegalArgumentException("invalid selectedIndex");
-	    }
-	    this.selectedIndex = selectedIndex;
-	    this.tabCount = tabCount;
-	}
-	public int getSelectedIndex() { return selectedIndex; }
-	public void setSelectedIndex(int selectedIndex) {
-	    if (selectedIndex < -1) {
-		throw new IllegalArgumentException("invalid selectedIndex");
-	    }
-	    this.selectedIndex = selectedIndex;
-	}
-	public int getTabCount() { return tabCount; }
-	public void setTabCount(int tabCount) {
-	    if (tabCount < 0) {
-		throw new IllegalArgumentException("invalid tabCount");
-	    }
-	    this.tabCount = tabCount;
-	}
+
+        private int selectedIndex;
+        private int tabCount;
+
+        public TabbedPaneState() {
+            selectedIndex = -1;
+            tabCount = 0;
+        }
+
+        public TabbedPaneState(int selectedIndex, int tabCount) {
+            if (tabCount < 0) {
+                throw new IllegalArgumentException("invalid tabCount");
+            }
+            if ((selectedIndex < -1) || (selectedIndex > tabCount)) {
+                throw new IllegalArgumentException("invalid selectedIndex");
+            }
+            this.selectedIndex = selectedIndex;
+            this.tabCount = tabCount;
+        }
+
+        public int getSelectedIndex() {
+            return selectedIndex;
+        }
+
+        public void setSelectedIndex(int selectedIndex) {
+            if (selectedIndex < -1) {
+                throw new IllegalArgumentException("invalid selectedIndex");
+            }
+            this.selectedIndex = selectedIndex;
+        }
+
+        public int getTabCount() {
+            return tabCount;
+        }
+
+        public void setTabCount(int tabCount) {
+            if (tabCount < 0) {
+                throw new IllegalArgumentException("invalid tabCount");
+            }
+            this.tabCount = tabCount;
+        }
     }
 
     /**
@@ -678,61 +703,63 @@ public class SessionStorage {
      * @see #restore
      */
     public static class TabbedPaneProperty implements Property {
-	private void checkComponent(Component component) {
-	    if (component == null) {
-		throw new IllegalArgumentException("null component");
-	    }
-	    if (!(component instanceof JTabbedPane)) {
-		throw new IllegalArgumentException("invalid component");
-	    }
-	}
 
-	/**
-	 * Returns a {@link TabbedPaneState TabbedPaneState} object
-	 * for {@code JTabbedPane c}.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code Component c}
-	 * isn't a non-null {@code JTabbedPane}.
-	 * 
-	 * @param c the {@code JTabbedPane} whose selectedIndex will
-	 *     recoreded in a {@code TabbedPaneState} object.
-	 * @return the {@code TabbedPaneState} object
-	 * @see #setSessionState
-	 * @see TabbedPaneState
-	 */
+        private void checkComponent(Component component) {
+            if (component == null) {
+                throw new IllegalArgumentException("null component");
+            }
+            if (!(component instanceof JTabbedPane)) {
+                throw new IllegalArgumentException("invalid component");
+            }
+        }
+
+        /**
+         * Returns a {@link TabbedPaneState TabbedPaneState} object
+         * for {@code JTabbedPane c}.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code Component c}
+         * isn't a non-null {@code JTabbedPane}.
+         *
+         * @param c the {@code JTabbedPane} whose selectedIndex will
+         *     recoreded in a {@code TabbedPaneState} object.
+         * @return the {@code TabbedPaneState} object
+         * @see #setSessionState
+         * @see TabbedPaneState
+         */
+        @Override
         public Object getSessionState(Component c) {
-	    checkComponent(c);
-	    JTabbedPane p = (JTabbedPane)c;
-	    return new TabbedPaneState(p.getSelectedIndex(), p.getTabCount());
-	}
+            checkComponent(c);
+            JTabbedPane p = (JTabbedPane) c;
+            return new TabbedPaneState(p.getSelectedIndex(), p.getTabCount());
+        }
 
-	/**
-	 * Restore the {@code JTabbedPane's} {@code selectedIndex}
-	 * property if the number of {@link JTabbedPane#getTabCount tabs}
-	 * has not changed.  
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code c} is 
-	 * not a {@code JTabbedPane} or if {@code state} is non-null
-	 * but not an instance of {@link TabbedPaneState}.
-	 * 
-	 * @param c the JTabbedPane whose state is to be restored
-	 * @param state the {@code TabbedPaneState} to be restored
-	 * @see #getSessionState
-	 * @see TabbedPaneState
-	 */
-	public void setSessionState(Component c, Object state) {
-	    checkComponent(c);
-	    if ((state != null) && !(state instanceof TabbedPaneState)) {
-		throw new IllegalArgumentException("invalid state");
-	    }
-	    JTabbedPane p = (JTabbedPane)c;
-	    TabbedPaneState tps = (TabbedPaneState)state;
-	    if (p.getTabCount() == tps.getTabCount()) {
-		p.setSelectedIndex(tps.getSelectedIndex());
-	    }
-	}
+        /**
+         * Restore the {@code JTabbedPane's} {@code selectedIndex}
+         * property if the number of {@link JTabbedPane#getTabCount tabs}
+         * has not changed.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code c} is
+         * not a {@code JTabbedPane} or if {@code state} is non-null
+         * but not an instance of {@link TabbedPaneState}.
+         *
+         * @param c the JTabbedPane whose state is to be restored
+         * @param state the {@code TabbedPaneState} to be restored
+         * @see #getSessionState
+         * @see TabbedPaneState
+         */
+        @Override
+        public void setSessionState(Component c, Object state) {
+            checkComponent(c);
+            if ((state != null) && !(state instanceof TabbedPaneState)) {
+                throw new IllegalArgumentException("invalid state");
+            }
+            JTabbedPane p = (JTabbedPane) c;
+            TabbedPaneState tps = (TabbedPaneState) state;
+            if (p.getTabCount() == tps.getTabCount()) {
+                p.setSelectedIndex(tps.getSelectedIndex());
+            }
+        }
     }
-
 
     /**
      * This Java Bean records the {@code dividerLocation} and {@code
@@ -746,35 +773,48 @@ public class SessionStorage {
      * @see #restore
      */
     public static class SplitPaneState {
-	private int dividerLocation = -1;
-	private int orientation = JSplitPane.HORIZONTAL_SPLIT;
-	private void checkOrientation(int orientation) {
-	    if ((orientation != JSplitPane.HORIZONTAL_SPLIT) &&
-		(orientation != JSplitPane.VERTICAL_SPLIT)) {
-		throw new IllegalArgumentException("invalid orientation");
-	    }
-	}
-	public SplitPaneState() { }
-	public SplitPaneState(int dividerLocation, int orientation) {
-	    checkOrientation(orientation);
-	    if (dividerLocation < -1) {
-		throw new IllegalArgumentException("invalid dividerLocation");
-	    }
-	    this.dividerLocation = dividerLocation;
-	    this.orientation = orientation;
-	}
-	public int getDividerLocation() { return dividerLocation; }
-	public void setDividerLocation(int dividerLocation) {
-	    if (dividerLocation < -1) {
-		throw new IllegalArgumentException("invalid dividerLocation");
-	    }
-	    this.dividerLocation = dividerLocation;
-	}
-	public int getOrientation() { return orientation; }
-	public void setOrientation(int orientation) {
-	    checkOrientation(orientation);
-	    this.orientation = orientation;
-	}
+
+        private int dividerLocation = -1;
+        private int orientation = JSplitPane.HORIZONTAL_SPLIT;
+
+        private void checkOrientation(int orientation) {
+            if ((orientation != JSplitPane.HORIZONTAL_SPLIT) &&
+                    (orientation != JSplitPane.VERTICAL_SPLIT)) {
+                throw new IllegalArgumentException("invalid orientation");
+            }
+        }
+
+        public SplitPaneState() {
+        }
+
+        public SplitPaneState(int dividerLocation, int orientation) {
+            checkOrientation(orientation);
+            if (dividerLocation < -1) {
+                throw new IllegalArgumentException("invalid dividerLocation");
+            }
+            this.dividerLocation = dividerLocation;
+            this.orientation = orientation;
+        }
+
+        public int getDividerLocation() {
+            return dividerLocation;
+        }
+
+        public void setDividerLocation(int dividerLocation) {
+            if (dividerLocation < -1) {
+                throw new IllegalArgumentException("invalid dividerLocation");
+            }
+            this.dividerLocation = dividerLocation;
+        }
+
+        public int getOrientation() {
+            return orientation;
+        }
+
+        public void setOrientation(int orientation) {
+            checkOrientation(orientation);
+            this.orientation = orientation;
+        }
     }
 
     /**
@@ -798,62 +838,65 @@ public class SessionStorage {
      * @see #restore
      */
     public static class SplitPaneProperty implements Property {
-	private void checkComponent(Component component) {
-	    if (component == null) {
-		throw new IllegalArgumentException("null component");
-	    }
-	    if (!(component instanceof JSplitPane)) {
-		throw new IllegalArgumentException("invalid component");
-	    }
-	}
 
-	/**
-	 * Returns a {@link SplitPaneState SplitPaneState} object
-	 * for {@code JSplitPane c}.  If the split pane's 
-	 * {@code dividerLocation} is -1, indicating that either
-	 * the divider hasn't been moved, or it's been reset,
-	 * then return null.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code Component c}
-	 * isn't a non-null {@code JSplitPane}.
-	 * 
-	 * @param c the {@code JSplitPane} whose dividerLocation will
-	 *     recoreded in a {@code SplitPaneState} object.
-	 * @return the {@code SplitPaneState} object
-	 * @see #setSessionState
-	 * @see SplitPaneState
-	 */
+        private void checkComponent(Component component) {
+            if (component == null) {
+                throw new IllegalArgumentException("null component");
+            }
+            if (!(component instanceof JSplitPane)) {
+                throw new IllegalArgumentException("invalid component");
+            }
+        }
+
+        /**
+         * Returns a {@link SplitPaneState SplitPaneState} object
+         * for {@code JSplitPane c}.  If the split pane's
+         * {@code dividerLocation} is -1, indicating that either
+         * the divider hasn't been moved, or it's been reset,
+         * then return null.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code Component c}
+         * isn't a non-null {@code JSplitPane}.
+         *
+         * @param c the {@code JSplitPane} whose dividerLocation will
+         *     recoreded in a {@code SplitPaneState} object.
+         * @return the {@code SplitPaneState} object
+         * @see #setSessionState
+         * @see SplitPaneState
+         */
+        @Override
         public Object getSessionState(Component c) {
-	    checkComponent(c);
-	    JSplitPane p = (JSplitPane)c;
+            checkComponent(c);
+            JSplitPane p = (JSplitPane) c;
             return new SplitPaneState(p.getUI().getDividerLocation(p), p.getOrientation());
-	}
+        }
 
-	/**
-	 * Restore the {@code JSplitPane's} {@code dividerLocation}
-	 * property if its {@link JSplitPane#getOrientation orientation}
-	 * has not changed.  
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code c} is 
-	 * not a {@code JSplitPane} or if {@code state} is non-null
-	 * but not an instance of {@link SplitPaneState}.
-	 * 
-	 * @param c the JSplitPane whose state is to be restored
-	 * @param state the {@code SplitPaneState} to be restored
-	 * @see #getSessionState
-	 * @see SplitPaneState
-	 */
-	public void setSessionState(Component c, Object state) {
-	    checkComponent(c);
-	    if ((state != null) && !(state instanceof SplitPaneState)) {
-		throw new IllegalArgumentException("invalid state");
-	    }
-	    JSplitPane p = (JSplitPane)c;
-	    SplitPaneState sps = (SplitPaneState)state;
-	    if (p.getOrientation() == sps.getOrientation()) {
-		p.setDividerLocation(sps.getDividerLocation());
-	    }
-	}
+        /**
+         * Restore the {@code JSplitPane's} {@code dividerLocation}
+         * property if its {@link JSplitPane#getOrientation orientation}
+         * has not changed.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code c} is
+         * not a {@code JSplitPane} or if {@code state} is non-null
+         * but not an instance of {@link SplitPaneState}.
+         *
+         * @param c the JSplitPane whose state is to be restored
+         * @param state the {@code SplitPaneState} to be restored
+         * @see #getSessionState
+         * @see SplitPaneState
+         */
+        @Override
+        public void setSessionState(Component c, Object state) {
+            checkComponent(c);
+            if ((state != null) && !(state instanceof SplitPaneState)) {
+                throw new IllegalArgumentException("invalid state");
+            }
+            JSplitPane p = (JSplitPane) c;
+            SplitPaneState sps = (SplitPaneState) state;
+            if (p.getOrientation() == sps.getOrientation()) {
+                p.setDividerLocation(sps.getDividerLocation());
+            }
+        }
     }
 
     /**
@@ -866,25 +909,33 @@ public class SessionStorage {
      * @see #restore
      */
     public static class TableState {
-	private int[] columnWidths = new int[0];
-	private int[] copyColumnWidths(int[] columnWidths) {
-	    if (columnWidths == null) {
-		throw new IllegalArgumentException("invalid columnWidths");
-	    }
-	    int[] copy = new int[columnWidths.length];
-	    System.arraycopy(columnWidths, 0, copy, 0, columnWidths.length);
-	    return copy;
-	}
-	public TableState() { }
-	public TableState(int[] columnWidths) {
-	    this.columnWidths = copyColumnWidths(columnWidths);
-	}
-	public int[] getColumnWidths() { return copyColumnWidths(columnWidths); }
-	public void setColumnWidths(int[] columnWidths) {
-	    this.columnWidths = copyColumnWidths(columnWidths);
-	}
-    }
 
+        private int[] columnWidths = new int[0];
+
+        private int[] copyColumnWidths(int[] columnWidths) {
+            if (columnWidths == null) {
+                throw new IllegalArgumentException("invalid columnWidths");
+            }
+            int[] copy = new int[columnWidths.length];
+            System.arraycopy(columnWidths, 0, copy, 0, columnWidths.length);
+            return copy;
+        }
+
+        public TableState() {
+        }
+
+        public TableState(int[] columnWidths) {
+            this.columnWidths = copyColumnWidths(columnWidths);
+        }
+
+        public int[] getColumnWidths() {
+            return copyColumnWidths(columnWidths);
+        }
+
+        public void setColumnWidths(int[] columnWidths) {
+            this.columnWidths = copyColumnWidths(columnWidths);
+        }
+    }
 
     /**
      * A {@code sessionState} property for JTable
@@ -908,83 +959,86 @@ public class SessionStorage {
      * @see #restore
      */
     public static class TableProperty implements Property {
-	private void checkComponent(Component component) {
-	    if (component == null) {
-		throw new IllegalArgumentException("null component");
-	    }
-	    if (!(component instanceof JTable)) {
-		throw new IllegalArgumentException("invalid component");
-	    }
-	}
 
-	/**
-	 * Returns a {@link TableState TableState} object
-	 * for {@code JTable c} or null, if none of the JTable's
-	 * columns are {@link TableColumn#getResizable resizable}.
-	 * A width of -1 is used to mark {@code TableColumns} 
-	 * that are not resizable.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code Component c}
-	 * isn't a non-null {@code JTable}.
-	 * 
-	 * @param c the {@code JTable} whose columnWidths will be 
-	 *     saved in a {@code TableState} object.
-	 * @return the {@code TableState} object or null
-	 * @see #setSessionState
-	 * @see TableState
-	 */
+        private void checkComponent(Component component) {
+            if (component == null) {
+                throw new IllegalArgumentException("null component");
+            }
+            if (!(component instanceof JTable)) {
+                throw new IllegalArgumentException("invalid component");
+            }
+        }
+
+        /**
+         * Returns a {@link TableState TableState} object
+         * for {@code JTable c} or null, if none of the JTable's
+         * columns are {@link TableColumn#getResizable resizable}.
+         * A width of -1 is used to mark {@code TableColumns}
+         * that are not resizable.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code Component c}
+         * isn't a non-null {@code JTable}.
+         *
+         * @param c the {@code JTable} whose columnWidths will be
+         *     saved in a {@code TableState} object.
+         * @return the {@code TableState} object or null
+         * @see #setSessionState
+         * @see TableState
+         */
+        @Override
         public Object getSessionState(Component c) {
-	    checkComponent(c);
-	    JTable table = (JTable)c;
-	    int[] columnWidths = new int[table.getColumnCount()];
-	    boolean resizableColumnExists = false;
-	    for (int i = 0; i < columnWidths.length; i++) {
-		TableColumn tc = table.getColumnModel().getColumn(i);
-		columnWidths[i] = (tc.getResizable()) ? tc.getWidth() : -1;
-		if (tc.getResizable()) {
-		    resizableColumnExists = true;
-		}
-	    }
-	    return (resizableColumnExists) ? new TableState(columnWidths) : null;
-	}
+            checkComponent(c);
+            JTable table = (JTable) c;
+            int[] columnWidths = new int[table.getColumnCount()];
+            boolean resizableColumnExists = false;
+            for (int i = 0; i < columnWidths.length; i++) {
+                TableColumn tc = table.getColumnModel().getColumn(i);
+                columnWidths[i] = (tc.getResizable()) ? tc.getWidth() : -1;
+                if (tc.getResizable()) {
+                    resizableColumnExists = true;
+                }
+            }
+            return (resizableColumnExists) ? new TableState(columnWidths) : null;
+        }
 
-	/**
-	 * Restore the width of each resizable {@code TableColumn}, if
-	 * the number of columns haven't changed.
-	 * <p>
-	 * Throws an {@code IllegalArgumentException} if {@code c} is 
-	 * not a {@code JTable} or if {@code state} is not an instance 
-	 * of {@link TableState}.
-	 * 
-	 * @param c the JTable whose column widths are to be restored
-	 * @param state the {@code TableState} to be restored
-	 * @see #getSessionState
-	 * @see TableState
-	 */
-	public void setSessionState(Component c, Object state) {
-	    checkComponent(c);
-	    if (!(state instanceof TableState)) {
-		throw new IllegalArgumentException("invalid state");
-	    }
-	    JTable table = (JTable)c;
-	    int[] columnWidths = ((TableState)state).getColumnWidths();
-	    if (table.getColumnCount() == columnWidths.length) {
-		for (int i = 0; i < columnWidths.length; i++) {
-		    if (columnWidths[i] != -1) {
-			TableColumn tc = table.getColumnModel().getColumn(i);
-			if (tc.getResizable()) {
-			    tc.setPreferredWidth(columnWidths[i]);
-			}
-		    }
-		}
-	    }
-	}
+        /**
+         * Restore the width of each resizable {@code TableColumn}, if
+         * the number of columns haven't changed.
+         * <p>
+         * Throws an {@code IllegalArgumentException} if {@code c} is
+         * not a {@code JTable} or if {@code state} is not an instance
+         * of {@link TableState}.
+         *
+         * @param c the JTable whose column widths are to be restored
+         * @param state the {@code TableState} to be restored
+         * @see #getSessionState
+         * @see TableState
+         */
+        @Override
+        public void setSessionState(Component c, Object state) {
+            checkComponent(c);
+            if (!(state instanceof TableState)) {
+                throw new IllegalArgumentException("invalid state");
+            }
+            JTable table = (JTable) c;
+            int[] columnWidths = ((TableState) state).getColumnWidths();
+            if (table.getColumnCount() == columnWidths.length) {
+                for (int i = 0; i < columnWidths.length; i++) {
+                    if (columnWidths[i] != -1) {
+                        TableColumn tc = table.getColumnModel().getColumn(i);
+                        if (tc.getResizable()) {
+                            tc.setPreferredWidth(columnWidths[i]);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void checkClassArg(Class cls) {
-	if (cls == null) {
-	    throw new IllegalArgumentException("null class");
-	}
+        if (cls == null) {
+            throw new IllegalArgumentException("null class");
+        }
     }
 
     /**
@@ -1006,16 +1060,17 @@ public class SessionStorage {
      * @see #restore
      */
     public Property getProperty(Class cls) {
-	checkClassArg(cls);
-	while(cls != null) {
-	    Property p = propertyMap.get(cls);
-	    if (p != null) { return p; }
-	    cls = cls.getSuperclass();
-	}
-	return null;
+        checkClassArg(cls);
+        while (cls != null) {
+            Property p = propertyMap.get(cls);
+            if (p != null) {
+                return p;
+            }
+            cls = cls.getSuperclass();
+        }
+        return null;
     }
 
-    
     /**
      * Register a {@code Property} for the specified class.  One can clear
      * the {@code Property} for a class by setting the entry to null:
@@ -1032,9 +1087,9 @@ public class SessionStorage {
      * @see #save
      * @see #restore
      */
-    public void putProperty (Class cls, Property property) {
-	checkClassArg(cls);
-	propertyMap.put(cls, property);
+    public void putProperty(Class cls, Property property) {
+        checkClassArg(cls);
+        propertyMap.put(cls, property);
     }
 
     /**
@@ -1053,7 +1108,8 @@ public class SessionStorage {
      * One can also create components that implement the 
      * {@code SessionState.Property} interface directly.
      * 
-     * @return if  {@code Component c} implements {@code Session.Property}, then 
+     * @param c
+     * @return if  {@code Component c} implements {@code Session.Property}, then
      *     {@code c}, if {@code c} is a {@code JComponent} with a 
      *     {@code Property} valued 
      *     {@link javax.swing.JComponent#getClientProperty client property} under
@@ -1070,19 +1126,18 @@ public class SessionStorage {
      * @see #restore
      */
     public final Property getProperty(Component c) {
-	if (c == null) {
-	    throw new IllegalArgumentException("null component");
-	}
-	if (c instanceof Property) {
-	    return (Property)c;
-	}
-	else {
-	    Property p = null;
-	    if (c instanceof JComponent) {
-		Object v = ((JComponent)c).getClientProperty(Property.class);
-		p = (v instanceof Property) ? (Property)v : null;
-	    }
-	    return (p != null) ? p : getProperty(c.getClass());
-	}
+        if (c == null) {
+            throw new IllegalArgumentException("null component");
+        }
+        if (c instanceof Property) {
+            return (Property) c;
+        } else {
+            Property p = null;
+            if (c instanceof JComponent) {
+                Object v = ((JComponent) c).getClientProperty(Property.class);
+                p = (v instanceof Property) ? (Property) v : null;
+            }
+            return (p != null) ? p : getProperty(c.getClass());
+        }
     }
 }

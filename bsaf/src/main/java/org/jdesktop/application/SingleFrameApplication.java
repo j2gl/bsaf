@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import java.awt.BorderLayout;
@@ -17,7 +16,6 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
 import javax.swing.RootPaneContainer;
-
 
 /**
  * An application base class for simple GUIs with one primary JFrame.
@@ -93,6 +90,7 @@ import javax.swing.RootPaneContainer;
  * </pre>
  */
 public abstract class SingleFrameApplication extends Application {
+
     private static final Logger logger = Logger.getLogger(SingleFrameApplication.class.getName());
     private ResourceMap appResources = null;
 
@@ -150,13 +148,12 @@ public abstract class SingleFrameApplication extends Application {
     }
 
     private String sessionFilename(Window window) {
-	if (window == null) {
-	    return null; 
-	}
-	else {
-	    String name = window.getName();
-	    return (name == null) ? null : name + ".session.xml";
-	}
+        if (window == null) {
+            return null;
+        } else {
+            String name = window.getName();
+            return (name == null) ? null : name + ".session.xml";
+        }
     }
 
     /**
@@ -179,63 +176,61 @@ public abstract class SingleFrameApplication extends Application {
      * @see #show(JDialog)
      */
     protected void configureWindow(Window root) {
-	getContext().getResourceMap().injectComponents(root);
+        getContext().getResourceMap().injectComponents(root);
     }
 
     private void initRootPaneContainer(RootPaneContainer c) {
-	JComponent rootPane = c.getRootPane();
-	// These initializations are only done once
-	Object k = "SingleFrameApplication.initRootPaneContainer";
-	if (rootPane.getClientProperty(k) != null) {
-	    return;
-	}
-	rootPane.putClientProperty(k, Boolean.TRUE);
-	// Inject resources
-	Container root = rootPane.getParent();
-	if (root instanceof Window) {
-	    configureWindow((Window)root);
-	}
-	// If this is the mainFrame, then close == exit
+        JComponent rootPane = c.getRootPane();
+        // These initializations are only done once
+        Object k = "SingleFrameApplication.initRootPaneContainer";
+        if (rootPane.getClientProperty(k) != null) {
+            return;
+        }
+        rootPane.putClientProperty(k, Boolean.TRUE);
+        // Inject resources
+        Container root = rootPane.getParent();
+        if (root instanceof Window) {
+            configureWindow((Window) root);
+        }
+        // If this is the mainFrame, then close == exit
         JFrame mainFrame = getMainFrame();
-	if (c == mainFrame) {
-	    mainFrame.addWindowListener(new MainFrameListener());
-	    mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-	}
-	else if (root instanceof Window) { // close == save session state
-	    Window window = (Window)root;
-	    window.addHierarchyListener(new SecondaryWindowListener());
-	}
+        if (c == mainFrame) {
+            mainFrame.addWindowListener(new MainFrameListener());
+            mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        } else if (root instanceof Window) { // close == save session state
+            Window window = (Window) root;
+            window.addHierarchyListener(new SecondaryWindowListener());
+        }
         // If this is a JFrame monitor "normal" (not maximized) bounds
         if (root instanceof JFrame) {
             root.addComponentListener(new FrameBoundsListener());
         }
-	// If the window's bounds don't appear to have been set, do it
-	if (root instanceof Window) {
-	    Window window = (Window)root;
+        // If the window's bounds don't appear to have been set, do it
+        if (root instanceof Window) {
+            Window window = (Window) root;
             if (!root.isValid() || (root.getWidth() == 0) || (root.getHeight() == 0)) {
                 window.pack();
             }
-	    if (!window.isLocationByPlatform() && (root.getX() == 0) && (root.getY() == 0)) {
-		Component owner = window.getOwner();
+            if (!window.isLocationByPlatform() && (root.getX() == 0) && (root.getY() == 0)) {
+                Component owner = window.getOwner();
                 if (owner == null) {
                     owner = (window != mainFrame) ? mainFrame : null;
                 }
-		window.setLocationRelativeTo(owner);  // center the window
-	    }
-	}
-	// Restore session state
-	if (root instanceof Window) {
-	    String filename = sessionFilename((Window)root);
-	    if (filename != null) {
-		try {
-		    getContext().getSessionStorage().restore(root, filename);
-		}
-		catch (Exception e) {
+                window.setLocationRelativeTo(owner);  // center the window
+            }
+        }
+        // Restore session state
+        if (root instanceof Window) {
+            String filename = sessionFilename((Window) root);
+            if (filename != null) {
+                try {
+                    getContext().getSessionStorage().restore(root, filename);
+                } catch (Exception e) {
                     String msg = String.format("couldn't restore sesssion [%s]", filename);
-		    logger.log(Level.WARNING, msg , e);
-		}
-	    }
-	}
+                    logger.log(Level.WARNING, msg, e);
+                }
+            }
+        }
     }
 
     /**
@@ -261,13 +256,13 @@ public abstract class SingleFrameApplication extends Application {
      * @param c the main frame's contentPane child
      */
     protected void show(JComponent c) {
-	if (c == null) {
-	    throw new IllegalArgumentException("null JComponent");
-	}
-	JFrame f = getMainFrame();
-	f.getContentPane().add(c, BorderLayout.CENTER);
-	initRootPaneContainer(f);
-	f.setVisible(true);
+        if (c == null) {
+            throw new IllegalArgumentException("null JComponent");
+        }
+        JFrame f = getMainFrame();
+        f.getContentPane().add(c, BorderLayout.CENTER);
+        initRootPaneContainer(f);
+        f.setVisible(true);
     }
 
     /**
@@ -289,11 +284,11 @@ public abstract class SingleFrameApplication extends Application {
      * @see #configureWindow
      */
     public void show(JDialog c) {
-	if (c == null) {
-	    throw new IllegalArgumentException("null JDialog");
-	}
-	initRootPaneContainer(c);
-	c.setVisible(true);
+        if (c == null) {
+            throw new IllegalArgumentException("null JDialog");
+        }
+        initRootPaneContainer(c);
+        c.setVisible(true);
     }
 
     /**
@@ -309,33 +304,33 @@ public abstract class SingleFrameApplication extends Application {
      * <p>
      * Throws an IllegalArgumentException if {@code c} is null
      * 
+     * @param c
      * @see #show(JComponent)
      * @see #show(JDialog)
      * @see #configureWindow
      */
     public void show(JFrame c) {
-	if (c == null) {
-	    throw new IllegalArgumentException("null JFrame");
-	}
-	initRootPaneContainer(c);
-	c.setVisible(true);
+        if (c == null) {
+            throw new IllegalArgumentException("null JFrame");
+        }
+        initRootPaneContainer(c);
+        c.setVisible(true);
     }
 
     private void saveSession(Window window) {
-	String filename = sessionFilename(window);
-	if (filename != null) {
-	    try {
-		getContext().getSessionStorage().save(window, filename);
-	    }
-	    catch (IOException e) {
-		logger.log(Level.WARNING, "couldn't save sesssion", e);
-	    }
-	}
+        String filename = sessionFilename(window);
+        if (filename != null) {
+            try {
+                getContext().getSessionStorage().save(window, filename);
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "couldn't save sesssion", e);
+            }
+        }
     }
 
     private boolean isVisibleWindow(Window w) {
-	return w.isVisible() && 
-	    ((w instanceof JFrame) || (w instanceof JDialog) || (w instanceof JWindow));
+        return w.isVisible() &&
+                ((w instanceof JFrame) || (w instanceof JDialog) || (w instanceof JWindow));
     }
 
     /**
@@ -344,40 +339,37 @@ public abstract class SingleFrameApplication extends Application {
      * Java versions.
      */
     private List<Window> getVisibleSecondaryWindows() {
-	List<Window> rv = new ArrayList<Window>();
-	Method getWindowsM = null;
-	try {
-	    getWindowsM = Window.class.getMethod("getWindows");
-	}
-	catch(Exception ignore) {
-	}
-	if (getWindowsM != null) {
-	    Window[] windows = null;
-	    try {
-		windows = (Window[])getWindowsM.invoke(null);
-	    }
-	    catch(Exception e) {
-		throw new Error("HCTB - can't get top level windows list", e);
-	    }
-	    if (windows != null) {
-		for(Window window : windows) {
-		    if (isVisibleWindow(window)) {
-			rv.add(window);
-		    }
-		}
-	    }
-	}
-	else {
-	    Frame[] frames = Frame.getFrames();
-	    if (frames != null) {
-		for(Frame frame : frames) {
-		    if (isVisibleWindow(frame)) {
-			rv.add(frame);
-		    }
-		}
-	    }
-	}
-	return rv;
+        List<Window> rv = new ArrayList<Window>();
+        Method getWindowsM = null;
+        try {
+            getWindowsM = Window.class.getMethod("getWindows");
+        } catch (Exception ignore) {
+        }
+        if (getWindowsM != null) {
+            Window[] windows = null;
+            try {
+                windows = (Window[]) getWindowsM.invoke(null);
+            } catch (Exception e) {
+                throw new Error("HCTB - can't get top level windows list", e);
+            }
+            if (windows != null) {
+                for (Window window : windows) {
+                    if (isVisibleWindow(window)) {
+                        rv.add(window);
+                    }
+                }
+            }
+        } else {
+            Frame[] frames = Frame.getFrames();
+            if (frames != null) {
+                for (Frame frame : frames) {
+                    if (isVisibleWindow(frame)) {
+                        rv.add(frame);
+                    }
+                }
+            }
+        }
+        return rv;
     }
 
     /**
@@ -385,17 +377,20 @@ public abstract class SingleFrameApplication extends Application {
      * the mainFrame.  SingleFrameApplication subclasses that override 
      * shutdown need to remember call {@code super.shutdown()}.
      */
-    @Override protected void shutdown() {
-	saveSession(getMainFrame());
-	for(Window window : getVisibleSecondaryWindows()) {
-	    saveSession(window);
-	}
+    @Override
+    protected void shutdown() {
+        saveSession(getMainFrame());
+        for (Window window : getVisibleSecondaryWindows()) {
+            saveSession(window);
+        }
     }
 
     private class MainFrameListener extends WindowAdapter {
-	public void windowClosing(WindowEvent e) {
-	    exit(e);
-	}
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            exit(e);
+        }
     }
 
     /* Although it would have been simpler to listen for changes in
@@ -407,16 +402,18 @@ public abstract class SingleFrameApplication extends Application {
      * cases, so we use that.
      */
     private class SecondaryWindowListener implements HierarchyListener {
-	public void hierarchyChanged(HierarchyEvent e) {
-	    if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-		if (e.getSource() instanceof Window) {
-		    Window secondaryWindow = (Window)e.getSource();
-		    if (!secondaryWindow.isShowing()) {
-			saveSession(secondaryWindow);
-		    }
-		}
-	    }
-	}
+
+        @Override
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                if (e.getSource() instanceof Window) {
+                    Window secondaryWindow = (Window) e.getSource();
+                    if (!secondaryWindow.isShowing()) {
+                        saveSession(secondaryWindow);
+                    }
+                }
+            }
+        }
     }
 
     /* In order to properly restore a maximized JFrame, we need to 
@@ -425,27 +422,37 @@ public abstract class SingleFrameApplication extends Application {
      * session-saved by WindowProperty#getSessionState().
      */
     private static class FrameBoundsListener implements ComponentListener {
-        private void maybeSaveFrameSize(ComponentEvent e) { 
+
+        private void maybeSaveFrameSize(ComponentEvent e) {
             if (e.getComponent() instanceof JFrame) {
-                JFrame f = (JFrame)e.getComponent();
+                JFrame f = (JFrame) e.getComponent();
                 if ((f.getExtendedState() & Frame.MAXIMIZED_BOTH) == 0) {
                     String clientPropertyKey = "WindowState.normalBounds";
                     f.getRootPane().putClientProperty(clientPropertyKey, f.getBounds());
                 }
             }
         }
-        public void componentResized(ComponentEvent e) { maybeSaveFrameSize(e); }
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            maybeSaveFrameSize(e);
+        }
         /* BUG: on Windows XP, with JDK6, this method is called once when the 
          * frame is a maximized, with x,y=-4 and getExtendedState() == 0.
          */
+
+        @Override
         public void componentMoved(ComponentEvent e) { /* maybeSaveFrameSize(e); */ }
-        public void componentHidden(ComponentEvent e) { }
-        public void componentShown(ComponentEvent e) { }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+        }
+
+        @Override
+        public void componentShown(ComponentEvent e) {
+        }
     }
-
-
     /* Prototype support for the View type */
-    
     private FrameView mainView = null;
 
     public FrameView getMainView() {
@@ -455,13 +462,13 @@ public abstract class SingleFrameApplication extends Application {
         return mainView;
     }
 
+    @Override
     public void show(View view) {
         if ((mainView == null) && (view instanceof FrameView)) {
-            mainView = (FrameView)view;
+            mainView = (FrameView) view;
         }
-        RootPaneContainer c = (RootPaneContainer)view.getRootPane().getParent();
+        RootPaneContainer c = (RootPaneContainer) view.getRootPane().getParent();
         initRootPaneContainer(c);
-	((Window)c).setVisible(true);
+        ((Window) c).setVisible(true);
     }
-
 }
