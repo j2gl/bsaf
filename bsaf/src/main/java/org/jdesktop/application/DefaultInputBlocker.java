@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+ * Copyright (C) 2006-2009 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
  */ 
 
@@ -37,10 +37,11 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
-
-
 final class DefaultInputBlocker extends Task.InputBlocker {
     private static final Logger logger = Logger.getLogger(DefaultInputBlocker.class.getName());
+	
+    private static final String PB_STRING_FORMAT_KEY = "progressBarStringFormat";
+
     private JDialog modalDialog = null;
 
     DefaultInputBlocker(Task task, Task.BlockingScope scope, Object target, ApplicationAction action) {
@@ -72,6 +73,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             }
         }
     }
+
     private List<Component> blockingDialogComponents(Component root) {
         List<Component> rv = new ArrayList<Component>();
         blockingDialogComponents(root, rv);
@@ -132,8 +134,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
                 };
             cancelButton.addActionListener(doCancelTask);
             optionPane.setOptions(new Object[]{cancelButton});
-        }
-        else {
+        } else {
             optionPane.setOptions(new Object[]{}); // no OK button
         }
         /* Create the JDialog.  If the task can be canceled, then 
@@ -194,8 +195,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
                         progressBar.setIndeterminate(false);
                         progressBar.setValue((Integer)e.getNewValue());
                         updateStatusBarString(progressBar);
-                    }
-                    else if ("message".equals(e.getPropertyName())) {
+                    } else if ("message".equals(e.getPropertyName())) {
                         textArea.setText((String)e.getNewValue());
                     }
                 }
@@ -203,42 +203,44 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             getTask().addPropertyChangeListener(taskPCL);
             panel.add(progressBar, BorderLayout.SOUTH);
             injectBlockingDialogComponents(panel);
+
+             /* The initial value of the progressBar string is the format.
+             * We save the format string in a client property.  The format
+             * String will be applied four values (see below).  The default
+             * format String is in resources/Application.properties, it's:
+             * "%02d:%02d, %02d:%02d remaining"
+             * FIXED: BSAF-12
+             */
+
+            if (progressBar.getClientProperty(PB_STRING_FORMAT_KEY) == null) {
+                progressBar.putClientProperty(PB_STRING_FORMAT_KEY, progressBar.getString());
+            }
+            progressBar.setString("");
+
             optionPane.setMessage(panel);
         }
     }
-    
+
     private void updateStatusBarString(JProgressBar progressBar) {
         if (!progressBar.isStringPainted()) {
             return;
         }
-        /* The initial value of the progressBar string is the format.
-         * We save the format string in a client property.  The format
-         * String will be applied four values (see below).  The default 
-         * format String is in resources/Application.properties, it's:
-         * "%02d:%02d, %02d:%02d remaining"
-         */
-        String key = "progressBarStringFormat";
-        if (progressBar.getClientProperty(key) == null) {
-            progressBar.putClientProperty(key, progressBar.getString());
-        }
-        String fmt = (String)progressBar.getClientProperty(key);
+        final String fmt = (String) progressBar.getClientProperty(PB_STRING_FORMAT_KEY);
         if  (progressBar.getValue() <= 0) {
             progressBar.setString("");
-        }
-        else if (fmt == null) {
+        } else if (fmt == null) {
             progressBar.setString(null);
-        }
-        else {
+        } else {
             double pctComplete = progressBar.getValue() / 100.0;
             long durSeconds = getTask().getExecutionDuration(TimeUnit.SECONDS);
             long durMinutes = durSeconds / 60;
             long remSeconds = (long)(0.5 + ((double)durSeconds / pctComplete)) - durSeconds;
             long remMinutes = remSeconds / 60;
             String s = String.format(fmt, durMinutes, durSeconds - (durMinutes * 60), 
-                                          remMinutes, remSeconds - (remMinutes * 60));
+                    remMinutes, remSeconds - (remMinutes * 60));
             progressBar.setString(s);
         }
-        
+
     }
 
     private void showBusyGlassPane(boolean f) {
@@ -270,8 +272,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
                 rpc.setGlassPane(glassPane);
                 glassPane.setVisible(true);
                 glassPane.revalidate();
-            }
-            else {
+            } else {
                 JMenuBar menuBar = rpc.getRootPane().getJMenuBar();
                 if (menuBar != null) {
                     boolean enabled = (Boolean)menuBar.getClientProperty(this);
@@ -343,20 +344,19 @@ final class DefaultInputBlocker extends Task.InputBlocker {
             Timer showModalDialogTimer = new Timer(blockingDialogDelay(), showModalDialog);
             showModalDialogTimer.setRepeats(false);
             showModalDialogTimer.start();
-        }
-        else {
+        } else {
             if (modalDialog != null) {
                 modalDialog.dispose();
                 modalDialog = null;
-            }
-            else {
+            } else {
                 String msg = String.format("unexpected InputBlocker state [%s] %s", f, this);
                 logger.warning(msg);
             }
         }
     }
 
-    @Override protected void block() {
+    @Override
+    protected void block() {
         switch (getScope()) {
         case ACTION:      
             setActionTargetBlocked(true); 
