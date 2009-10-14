@@ -6,11 +6,7 @@
 
 package org.jdesktop.application;
 
-import org.jdesktop.application.Task.InputBlocker;
-import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.annotation.Annotation;
@@ -19,9 +15,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 /**
@@ -478,7 +471,7 @@ public class ApplicationAction extends AbstractAction {
     }
 
     private String propertyMethodName(String prefix, String propertyName) {
-	return prefix + propertyName.substring(0,1).toUpperCase() + propertyName.substring(1);
+	return prefix + propertyName.substring(0, 1).toUpperCase(java.util.Locale.ENGLISH) + propertyName.substring(1);
     }
 
     private Method propertyGetMethod(String propertyName) {
