@@ -4,7 +4,7 @@
   <groupId>org.jdesktop.bsaf</groupId>
   <artifactId>bsaf</artifactId>
   <packaging>jar</packaging>
-  <version>${bsaf.version}</version>
+  <version>1.9-SNAPSHOT</version>
   <name>bsaf</name>
   <url>http://kenai.com/projects/bsaf</url>
     <build>

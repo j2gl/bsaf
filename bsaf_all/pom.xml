@@ -9,7 +9,6 @@
     <url>http://kenai.com/projects/bsaf</url>
 
 	<properties>
-		<bsaf.version>1.9-SNAPSHOT</bsaf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
