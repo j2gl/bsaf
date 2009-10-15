@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 import javax.swing.LookAndFeel;
@@ -23,23 +22,23 @@ public class ApplicationSystemLNFResourceTest extends TestCase {
      */
     public static class ApplicationSystemLNF extends WaitForStartupApplication {
     }
-
     private static boolean isAppLaunched = false;
 
     public ApplicationSystemLNFResourceTest(String testName) {
         super(testName);
-	if (!isAppLaunched) {
-	    ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
-	    isAppLaunched = true;
-	}
+        if (!isAppLaunched) {
+            ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
+            isAppLaunched = true;
+        }
     }
 
     public void testApplicationLookAndFeelResource() {
-	ApplicationContext ctx = Application.getInstance(ApplicationSystemLNF.class).getContext();
-	String lnfResource = ctx.getResourceMap().getString("Application.lookAndFeel");
-	assertEquals("Application.lookAndFeel resource", "system", lnfResource);
-	LookAndFeel lnf = UIManager.getLookAndFeel();
-	assertTrue("Look and Feel should be native", lnf.isNativeLookAndFeel());
+        ApplicationContext ctx = Application.getInstance(ApplicationSystemLNF.class).getContext();
+        String lnfResource = ctx.getResourceMap().getString("Application.lookAndFeel");
+        assertEquals("Application.lookAndFeel resource", "system", lnfResource);
+        LookAndFeel lnf = UIManager.getLookAndFeel();
+        // On Linux sestemLaF could not be native
+        assertTrue("Look and Feel should be native", UIManager.getSystemLookAndFeelClassName().equals(lnf.getClass().getName()));
     }
 }
 
