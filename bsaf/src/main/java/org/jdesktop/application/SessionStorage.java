@@ -1,7 +1,7 @@
 
 /*
- * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
- * subject to license terms.
+ * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
  */
 package org.jdesktop.application;
 
@@ -9,15 +9,10 @@ import org.jdesktop.application.session.SplitPaneProperty;
 import org.jdesktop.application.session.WindowProperty;
 import org.jdesktop.application.session.TableProperty;
 import org.jdesktop.application.session.TabbedPaneProperty;
-import org.jdesktop.application.session.Property;
+import org.jdesktop.application.session.PropertySupport;
 import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,11 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.table.TableColumn;
 
 /**
  * Support for storing GUI state that persists between Application sessions.  
@@ -102,7 +95,7 @@ import javax.swing.table.TableColumn;
 public class SessionStorage {
 
     private static Logger logger = Logger.getLogger(SessionStorage.class.getName());
-    private final Map<Class, Property> propertyMap;
+    private final Map<Class, PropertySupport> propertyMap;
     private final ApplicationContext context;
 
     /**
@@ -144,7 +137,7 @@ public class SessionStorage {
      * SessionStorage ss = ctx.getSesssionStorage();
      * </pre>
      * 
-     * FIXME - @param javadoc
+     * 
      * @param context
      * @see ApplicationContext#getSessionStorage
      * @see #getProperty(Class)
@@ -155,7 +148,7 @@ public class SessionStorage {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
-        propertyMap = new HashMap<Class, Property>();
+        propertyMap = new HashMap<Class, PropertySupport>();
         propertyMap.put(Window.class, new WindowProperty());
         propertyMap.put(JTabbedPane.class, new TabbedPaneProperty());
         propertyMap.put(JSplitPane.class, new SplitPaneProperty());
@@ -165,6 +158,34 @@ public class SessionStorage {
     // FIXME - documentation
     protected final ApplicationContext getContext() {
         return context;
+    }
+
+    /**
+     * Registers custom {@link Property Property} for
+     * specified class.
+     * <p>
+     *
+     * <pre>
+     * ApplicationContext ctx = Application.getInstance(MyApplication.class).getContext();
+     * SessionStorage ss = ctx.getSesssionStorage();
+     * ctx.registerPropertySupport(JTable.class, new ExtendedTableProperty());
+     * </pre>
+     *
+     * @exception IllegalArgumentException - in case clazz == null
+     * @since 1.9
+     * @param clazz
+     * @param property
+     */
+    public void registerPropertySupport(Class clazz, PropertySupport property) {
+        if (clazz == null) throw new IllegalArgumentException("Class argument must not ne null.");
+
+        // Remove property support for the clazz in case property argument is null
+        if (property == null) {
+            propertyMap.remove(clazz);
+            return;
+        }
+
+        propertyMap.put(clazz, property);
     }
 
     private void checkSaveRestoreArgs(Component root, String fileName) {
@@ -248,7 +269,7 @@ public class SessionStorage {
         List<Component> allChildren = new ArrayList<Component>();
         for (Component root : roots) {
             if (root != null) {
-                Property p = getProperty(root);
+                PropertySupport p = getProperty(root);
                 if (p != null) {
                     String pathname = getComponentPathname(root);
                     if (pathname != null) {
@@ -339,7 +360,7 @@ public class SessionStorage {
         List<Component> allChildren = new ArrayList<Component>();
         for (Component root : roots) {
             if (root != null) {
-                Property p = getProperty(root);
+                PropertySupport p = getProperty(root);
                 if (p != null) {
                     String pathname = getComponentPathname(root);
                     if (pathname != null) {
@@ -414,10 +435,10 @@ public class SessionStorage {
      * @see #save
      * @see #restore
      */
-    public Property getProperty(Class cls) {
+    public PropertySupport getProperty(Class cls) {
         checkClassArg(cls);
         while (cls != null) {
-            Property p = propertyMap.get(cls);
+            PropertySupport p = propertyMap.get(cls);
             if (p != null) {
                 return p;
             }
@@ -442,7 +463,7 @@ public class SessionStorage {
      * @see #save
      * @see #restore
      */
-    public void putProperty(Class cls, Property property) {
+    public void putProperty(Class cls, PropertySupport property) {
         checkClassArg(cls);
         propertyMap.put(cls, property);
     }
@@ -480,17 +501,17 @@ public class SessionStorage {
      * @see #save
      * @see #restore
      */
-    public final Property getProperty(Component c) {
+    public final PropertySupport getProperty(Component c) {
         if (c == null) {
             throw new IllegalArgumentException("null component");
         }
-        if (c instanceof Property) {
-            return (Property) c;
+        if (c instanceof PropertySupport) {
+            return (PropertySupport) c;
         } else {
-            Property p = null;
+            PropertySupport p = null;
             if (c instanceof JComponent) {
-                Object v = ((JComponent) c).getClientProperty(Property.class);
-                p = (v instanceof Property) ? (Property) v : null;
+                Object v = ((JComponent) c).getClientProperty(PropertySupport.class);
+                p = (v instanceof PropertySupport) ? (PropertySupport) v : null;
             }
             return (p != null) ? p : getProperty(c.getClass());
         }

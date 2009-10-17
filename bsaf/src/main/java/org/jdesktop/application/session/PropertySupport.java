@@ -16,7 +16,7 @@ import java.awt.Component;
  * @see #getProperty(Class)
  * @see #getProperty(Component)
  */
-public interface Property {
+public interface PropertySupport {
 
     /**
      * Return the value of the {@code sessionState} property, typically

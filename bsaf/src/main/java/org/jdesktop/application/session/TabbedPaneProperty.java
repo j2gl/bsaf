@@ -2,7 +2,6 @@ package org.jdesktop.application.session;
 
 import java.awt.Component;
 import javax.swing.JTabbedPane;
-import org.jdesktop.application.session.Property;
 
 /**
  * A {@code sessionState} property for JTabbedPane.
@@ -24,7 +23,7 @@ import org.jdesktop.application.session.Property;
  * @see #save
  * @see #restore
  */
-public class TabbedPaneProperty implements Property {
+public class TabbedPaneProperty implements PropertySupport {
 
     private void checkComponent(Component component) {
         if (component == null) {

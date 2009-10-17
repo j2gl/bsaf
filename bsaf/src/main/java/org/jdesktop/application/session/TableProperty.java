@@ -3,7 +3,6 @@ package org.jdesktop.application.session;
 import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
-import org.jdesktop.application.session.Property;
 
 /**
  * A {@code sessionState} property for JTable
@@ -26,7 +25,7 @@ import org.jdesktop.application.session.Property;
  * @see #save
  * @see #restore
  */
-public class TableProperty implements Property {
+public class TableProperty implements PropertySupport {
 
     private void checkComponent(Component component) {
         if (component == null) {

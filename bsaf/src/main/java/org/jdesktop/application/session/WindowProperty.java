@@ -8,7 +8,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
 import javax.swing.JFrame;
-import org.jdesktop.application.session.Property;
 
 /**
  * A {@code sessionState} property for Window.
@@ -30,7 +29,7 @@ import org.jdesktop.application.session.Property;
  * @see #restore
  * @see WindowState
  */
-public class WindowProperty implements Property {
+public class WindowProperty implements PropertySupport {
 
     private void checkComponent(Component component) {
         if (component == null) {
