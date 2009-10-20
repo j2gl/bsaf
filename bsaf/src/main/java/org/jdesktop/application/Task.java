@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 /**
@@ -125,6 +126,15 @@ import javax.swing.SwingWorker;
  */
 public abstract class Task<T, V> extends SwingWorker<T, V> {
 
+    public static final String PROP_DESCRIPTION = "description";
+    public static final String PROP_INPUTBLOCKER = "inputBlocker";
+    public static final String PROP_MESSAGE = "message";
+    public static final String PROP_TASKSERVICE = "taskService";
+    public static final String PROP_TITLE = "title";
+    public static final String PROP_USERCANCANCEL = "userCanCancel";
+    public static final String PROP_COMPLETED = "completed";
+    public static final String PROP_DONE = "done";
+    public static final String PROP_STARTED = "started";
     private static final Logger logger = Logger.getLogger(Task.class.getName());
     private final Application application;
     private String resourcePrefix;
@@ -188,9 +198,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             resourcePrefix = prefix + ".";
         }
         if (resourceMap != null) {
-            title = resourceMap.getString(resourceName("title"));
-            description = resourceMap.getString(resourceName("description"));
-            message = resourceMap.getString(resourceName("message"));
+            title = resourceMap.getString(resourceName(PROP_TITLE));
+            description = resourceMap.getString(resourceName(PROP_DESCRIPTION));
+            message = resourceMap.getString(resourceName(PROP_MESSAGE));
             if (message != null) {
                 messageTime = System.currentTimeMillis();
             }
@@ -317,7 +327,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             this.taskService = taskService;
             newTaskService = this.taskService;
         }
-        firePropertyChange("taskService", oldTaskService, newTaskService);
+        firePropertyChange(PROP_TASKSERVICE, oldTaskService, newTaskService);
     }
 
     /**
@@ -395,7 +405,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             this.title = title;
             newTitle = this.title;
         }
-        firePropertyChange("title", oldTitle, newTitle);
+        firePropertyChange(PROP_TITLE, oldTitle, newTitle);
     }
 
     /**
@@ -437,7 +447,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             this.description = description;
             newDescription = this.description;
         }
-        firePropertyChange("description", oldDescription, newDescription);
+        firePropertyChange(PROP_DESCRIPTION, oldDescription, newDescription);
     }
 
     /** 
@@ -532,7 +542,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             newMessage = this.message;
             messageTime = System.currentTimeMillis();
         }
-        firePropertyChange("message", oldMessage, newMessage);
+        firePropertyChange(PROP_MESSAGE, oldMessage, newMessage);
     }
 
     /**
@@ -621,7 +631,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             this.userCanCancel = userCanCancel;
             newValue = this.userCanCancel;
         }
-        firePropertyChange("userCanCancel", oldValue, newValue);
+        firePropertyChange(PROP_USERCANCANCEL, oldValue, newValue);
     }
 
     /**
@@ -750,7 +760,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 cancelled();
             } else {
                 try {
-                    succeeded(get());
+                    final T result = get();
+                    succeeded(result);
                 } catch (InterruptedException e) {
                     interrupted(e);
                 } catch (ExecutionException e) {
@@ -998,7 +1009,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             synchronized (Task.this) {
                 startTime = System.currentTimeMillis();
             }
-            firePropertyChange("started", false, true);
+            firePropertyChange(PROP_STARTED, false, true);
             fireDoInBackgroundListeners();
         }
 
@@ -1008,10 +1019,10 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             }
             try {
                 task.removePropertyChangeListener(this);
-                firePropertyChange("done", false, true);
+                firePropertyChange(PROP_DONE, false, true);
                 fireCompletionListeners();
             } finally {
-                firePropertyChange("completed", false, true);
+                firePropertyChange(PROP_COMPLETED, false, true);
             }
         }
     }
@@ -1054,7 +1065,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             this.inputBlocker = inputBlocker;
             newInputBlocker = this.inputBlocker;
         }
-        firePropertyChange("inputBlocker", oldInputBlocker, newInputBlocker);
+        firePropertyChange(PROP_INPUTBLOCKER, oldInputBlocker, newInputBlocker);
     }
 
     /**
