@@ -126,6 +126,8 @@ import javax.swing.SwingWorker;
  */
 public abstract class Task<T, V> extends SwingWorker<T, V> {
 
+    private static final Logger logger = Logger.getLogger(Task.class.getName());
+
     public static final String PROP_DESCRIPTION = "description";
     public static final String PROP_INPUTBLOCKER = "inputBlocker";
     public static final String PROP_MESSAGE = "message";
@@ -135,7 +137,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
     public static final String PROP_COMPLETED = "completed";
     public static final String PROP_DONE = "done";
     public static final String PROP_STARTED = "started";
-    private static final Logger logger = Logger.getLogger(Task.class.getName());
+
     private final Application application;
     private String resourcePrefix;
     private ResourceMap resourceMap;
@@ -151,6 +153,8 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
     private boolean userCanCancel = true;
     private boolean progressPropertyIsValid = false;
     private TaskService taskService = null;
+    private T result;
+    private Exception exception;
 
     /**
      * Specifies to what extent the GUI should be blocked a Task 
@@ -760,12 +764,9 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 cancelled();
             } else {
                 try {
-                    final T result = get();
-                    succeeded(result);
-                } catch (InterruptedException e) {
-                    interrupted(e);
-                } catch (ExecutionException e) {
-                    failed(e.getCause());
+                    result = get();
+                } catch (Exception ex) {
+                    exception = ex;
                 }
             }
         } finally {
@@ -1020,6 +1021,21 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             try {
                 task.removePropertyChangeListener(this);
                 firePropertyChange(PROP_DONE, false, true);
+
+                // execute succeeded only when SwingWorker is done.
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (exception == null) {
+                            succeeded(result);
+                        } else if (exception instanceof InterruptedException) {
+                            interrupted((InterruptedException)exception);
+                        } else {
+                            failed(exception.getCause());
+                        }
+                    }
+                });
+
                 fireCompletionListeners();
             } finally {
                 firePropertyChange(PROP_COMPLETED, false, true);
