@@ -1026,12 +1026,17 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (exception == null) {
-                            succeeded(result);
-                        } else if (exception instanceof InterruptedException) {
-                            interrupted((InterruptedException)exception);
-                        } else {
-                            failed(exception.getCause());
+                        try {
+                            if (exception == null) {
+                                succeeded(result);
+                            } else if (exception instanceof InterruptedException) {
+                                interrupted((InterruptedException)exception);
+                            } else {
+                                failed(exception.getCause());
+                            }
+                        } finally {
+                            result = null;
+                            exception = null;
                         }
                     }
                 });
