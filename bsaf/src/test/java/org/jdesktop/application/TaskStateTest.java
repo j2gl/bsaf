@@ -4,26 +4,30 @@
  */
 package org.jdesktop.application;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import junit.framework.TestCase;
 
 /**
  *
  * @author Illya Yalovyy
  */
-public class TaskStateTest extends TestCase {
+public class TaskStateTest{
     private enum State {
         PCL,
         SUCCEEDED,
         FAILED
     }
 
-    private static boolean isAppLaunched = false;
+
 
     public static class SimpleApplication extends WaitForStartupApplication {
 
@@ -75,15 +79,14 @@ public class TaskStateTest extends TestCase {
             }
         }
     }
-    
-    public TaskStateTest(String testName) {
-        super(testName);
-        if (!isAppLaunched) {
-            SimpleApplication.launchAndWait(SimpleApplication.class);
-            isAppLaunched = true;
-        }
+
+    @Before
+    public void methodSetup()
+    {
+        SimpleApplication.launchAndWait(SimpleApplication.class);
     }
 
+    @Test
     public void testSucceeded() throws InterruptedException {
         State result = runTask(null);
 
@@ -91,6 +94,7 @@ public class TaskStateTest extends TestCase {
         assertTrue(result == State.SUCCEEDED);
     }
 
+    @Test
     public void testFailed() throws InterruptedException {
         State result = runTask(new Exception("Test Exception"));
 

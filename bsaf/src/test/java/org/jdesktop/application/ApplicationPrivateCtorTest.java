@@ -6,7 +6,10 @@
 
 package org.jdesktop.application;
 
-import junit.framework.*;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
 
 /**
  * 
@@ -15,7 +18,7 @@ import junit.framework.*;
  * 
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
-public class ApplicationPrivateCtorTest extends TestCase {
+public class ApplicationPrivateCtorTest{
 
     /* Support for private (not static) inner classes isn't provided
      * by Application.launch() because then we'd have to find a way to
@@ -28,20 +31,17 @@ public class ApplicationPrivateCtorTest extends TestCase {
         }
     }
 
-    private static boolean isAppLaunched = false;
-
-    public ApplicationPrivateCtorTest(String testName) {
-        super(testName);
-	if (!isAppLaunched) {
-	    PrivateApplication.launchAndWait(PrivateApplication.class);
-	    isAppLaunched = true;
-	}
+    @Before
+    public void methodSetup()
+    {
+        PrivateApplication.launchAndWait(PrivateApplication.class);
     }
 
     /**
      * Verify that a privileged app use an Application with a private
      * constructor.
      */
+    @Test
     public void testPrivateConstructor() {
 	PrivateApplication app = Application.getInstance(PrivateApplication.class);
         assertTrue(app.ok);

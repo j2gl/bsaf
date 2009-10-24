@@ -2,37 +2,43 @@
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
  */
+
 package org.jdesktop.application;
 
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
-import junit.framework.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.swing.*;
 
 /**
  * Checks that explicitly defining the Application.lookAndFeel resource
- * to be "system" causes the UIManager.lookAndFeel property to be 
+ * to be "system" causes the UIManager.lookAndFeel property to be
  * initialized to the sytem look and feel.
  * This test depends on resources/AppilcationSystemLNF.properties
- * 
+ *
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
-public class ApplicationSystemLNFResourceTest extends TestCase {
+public class ApplicationSystemLNFResourceTest
+{
 
     /* Application.lookAndFeel resource is explicity defined to be "system".
      */
-    public static class ApplicationSystemLNF extends WaitForStartupApplication {
-    }
-    private static boolean isAppLaunched = false;
-
-    public ApplicationSystemLNFResourceTest(String testName) {
-        super(testName);
-        if (!isAppLaunched) {
-            ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
-            isAppLaunched = true;
-        }
+    public static class ApplicationSystemLNF extends WaitForStartupApplication
+    {
     }
 
-    public void testApplicationLookAndFeelResource() {
+
+    @Before
+    public void methodSetup()
+    {
+        ApplicationSystemLNF.launchAndWait(ApplicationSystemLNF.class);
+    }
+
+    @Test
+    public void testApplicationLookAndFeelResource()
+    {
         ApplicationContext ctx = Application.getInstance(ApplicationSystemLNF.class).getContext();
         String lnfResource = ctx.getResourceMap().getString("Application.lookAndFeel");
         assertEquals("Application.lookAndFeel resource", "system", lnfResource);

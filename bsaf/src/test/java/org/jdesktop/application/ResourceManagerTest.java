@@ -1,37 +1,41 @@
-
 /*
- * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
- * subject to license terms.
- */ 
+* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+* subject to license terms.
+*/
 
 
 package org.jdesktop.application;
 
-import junit.framework.*;
+import org.junit.Test;
 
 /**
  * [TBD]
+ *
  * @author Hans Muller (Hans.Muller@Sun.COM)
  */
 
-public class ResourceManagerTest extends TestCase {
-    public ResourceManagerTest(String testName) {
-        super(testName);
-    }
+public class ResourceManagerTest
+{
 
-    class TestResourceManager extends ResourceManager {
-        TestResourceManager() {
+
+    class TestResourceManager extends ResourceManager
+    {
+        TestResourceManager()
+        {
             super(new ApplicationContext());
         }
     }
 
-    TestResourceManager resourceManager() {
-	return new TestResourceManager();
+    TestResourceManager resourceManager()
+    {
+        return new TestResourceManager();
     }
 
-    public void testBasics() {
-	TestResourceManager manager = resourceManager();
-	ResourceMap rm = manager.getResourceMap(getClass());
-	// [TBD]
+    @Test
+    public void testBasics()
+    {
+        TestResourceManager manager = resourceManager();
+        ResourceMap rm = manager.getResourceMap(getClass());
+        // [TBD]
     }
 }
