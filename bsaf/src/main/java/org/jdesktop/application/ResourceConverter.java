@@ -54,11 +54,22 @@ import java.util.List;
  * 
  * @author Hans Muller (Hans.Muller@Sun.COM)
  * @see ResourceMap
+ *
+ * @see org.jdesktop.application.convert.ConverterRegistry
+ * @see org.jdesktop.application.convert.ResourceConverter
+ * @deprecated
  */
+@Deprecated
 public abstract class ResourceConverter {
 
     protected final Class type;
 
+    /**
+     *
+     * @deprecated
+     * @see org.jdesktop.application.convert.ResourceConverter#convert
+     */
+    @Deprecated
     public abstract Object parseString(String s, ResourceMap r)
             throws ResourceConverterException;
 
@@ -110,6 +121,12 @@ public abstract class ResourceConverter {
         }
     }
 
+    /**
+     *
+     * @deprecated
+     * @see org.jdesktop.application.convert.ConverterRegistry#add
+     */
+    @Deprecated
     public static void register(ResourceConverter resourceConverter) {
         if (resourceConverter == null) {
             throw new IllegalArgumentException("null resourceConverter");
@@ -117,6 +134,12 @@ public abstract class ResourceConverter {
         resourceConverters.add(resourceConverter);
     }
 
+    /**
+     *
+     * @deprecated
+     * @see org.jdesktop.application.convert.ConverterRegistry#converterFor
+     */
+    @Deprecated
     public static ResourceConverter forType(Class type) {
         if (type == null) {
             throw new IllegalArgumentException("null type");

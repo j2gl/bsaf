@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+
+<!--
+    This build.xml is used to build the BSAF Application framework, and run unit tests against it.
+-->
+<project name="BSAF.project" default="all-tests" basedir=".">
+
+
+    <!-- ===================== Property Definitions =========================== -->
+
+
+    <!--
+
+      Each of the following properties are used in the build script.
+      Values for these properties are set by the first place they are
+      defined, from the following list:
+
+      * Definitions on the "ant" command line (ant -Dfoo=bar compile).
+
+      * Definitions from a "build.properties" file in the top level
+        source directory of this application.
+
+      * Definitions from a "build.properties" file in the developer's
+        home directory.
+
+      * Default definitions in this build.xml file.
+
+    -->
+
+    <property file="build.properties"/>
+    <property file="${user.home}/build.properties"/>
+
+    <!-- define some directories -->
+    <property name="app.name"      value="bsaf"/>
+    <property name="app.version"   value="1.9.0"/> <!-- todo - populate this property from the maven build files to keep in sync -->
+
+
+    <property name="src.dir"        value="src/main/java" />
+    <property name="res.dir"        value="src/main/resources" />
+    <property name="src.test.dir"   value="src/test/java" />
+    <property name="res.test.dir"   value="src/test/resources" />
+    <property name="lib.dir"        value="${basedir}/lib"/>
+
+    <property name="target.dir"     value="${basedir}/ant-targets" />
+    <property name="javadoc.dir"    value="${target.dir}/javadocs" />
+    <property name="compile.dir"    value="${target.dir}/compile" />
+    <property name="compile.test.dir"    value="${target.dir}/compile-test" />
+    <property name="test.report.dir" value="${target.dir}/junit" />
+    <property name="jar.dir"        value="${target.dir}/jar" />
+    <property name="build.dir"      value="${target.dir}/build/${app.name}" />
+    <property environment="env"/>
+
+    <taskdef name="javac2"
+             classpath="${lib.dir}/asm.jar;${lib.dir}/javac2.jar"
+             classname="com.intellij.ant.Javac2"/>
+
+
+
+    <!-- define a classpath for use throughout the buildfile -->
+    <path id="compile.classpath">
+
+        <pathelement path="${compile.dir}"/>
+        <pathelement path="${env.JAVA_HOME}/lib/javaws.jar"/>
+        <!-- inlude our own libraries -->
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean.all" description="Remove all generated files.">
+        <delete dir="${target.dir}"/>
+        <echo  message="java_home=${env.JAVA_HOME}"/>
+    </target>
+
+    <target name="clean.compile" description="Removes generated files from compile directory.">
+        <delete dir="${compile.dir}"/>
+    </target>
+
+    <target name="clean.build" description="Removes generated files from build directory.">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="compile" description="Compile all source code.">
+        <mkdir dir="${compile.dir}"/>
+        <javac2  destdir="${compile.dir}" debug="on" target="1.6" source="1.6" verbose="false"  >
+            <src path="${src.dir}" />            
+            <classpath refid="compile.classpath"/>
+        </javac2>
+
+        <copy todir="${compile.dir}">
+            <fileset dir="${src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+            <fileset dir="${res.dir}"/>            
+        </copy>
+    </target>
+
+    <target name="compile-test" depends="compile" description="Compile all source code.">
+        <mkdir dir="${compile.test.dir}"/>
+        <javac2  destdir="${compile.test.dir}" debug="on" target="1.6" source="1.6">
+            <src path="${src.test.dir}" />
+            <classpath refid="compile.classpath"/>
+        </javac2>
+
+        <copy todir="${compile.test.dir}">
+            <fileset dir="${src.test.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+            <fileset dir="${res.test.dir}"/>
+        </copy>
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Genreate API documentation using JavaDocs                           -->
+    <!-- =================================================================== -->
+
+
+    <target name="javadocs" description="create JavaDoc API documentation" >
+        <echo message="javaDocs will be created in: ${javadoc.dir}"/>
+        <mkdir dir="${javadoc.dir}"/>
+        <javadoc 	packagenames="org.*"
+                     sourcepath="${src.dir}"
+                     destdir="${javadoc.dir}"
+                     author="true"
+                     version="true"
+                     private="false"
+                     use="true"
+                     doctitle="${app.name} Documentation"
+                     windowtitle="${app.name} Application Documentation">
+
+            <classpath refid="compile.classpath"/>
+        </javadoc>
+
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- JUnit Tests                                                         -->
+    <!-- =================================================================== -->
+    <target name="all-tests" depends="compile-test" description="Run All JUnit tests">
+        <delete dir="${test.report.dir}"/>
+        <mkdir dir="${test.report.dir}"/>
+        <junit printsummary="on"
+               fork="false"
+               haltonfailure="false"
+               failureproperty="tests.failed"
+               showoutput="false"
+               outputtoformatters = "false">
+
+ <!--           <classpath refid="compile.classpath" />
+            <classpath path="${compile.test.dir}"/>-->
+            <classpath >
+                <pathelement path="${compile.test.dir}"/>
+                <path refid="compile.classpath"/>
+            </classpath>
+           <!--<formatter type="brief" usefile="false"/>-->
+
+            <sysproperty key="LocalStorage.dir" value="${test.report.dir}"/>
+
+            <batchtest todir="${test.report.dir}">
+                <fileset dir="${src.test.dir}">
+                    <include name="**/AllTests.java/**"/>
+                </fileset>
+            </batchtest>
+        </junit>
+
+    </target>
+
+
+
+
+</project>
+

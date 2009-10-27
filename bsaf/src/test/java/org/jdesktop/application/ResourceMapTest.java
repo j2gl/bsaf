@@ -43,8 +43,8 @@ public class ResourceMapTest
     public static final double EPSILON_DOUBLE = 0.0000000000000001;
     public static final float EPSILON_FLOAT = 0.0000001f;
 
-    @Test
-    public void testSupportedResourceTypes()
+    //ResourceConverter has been refactored and moved to org.jdesktop.application.convert package
+/*    public void testSupportedResourceTypes()
     {
         Class[] supportedTypes = {
                 Boolean.class, boolean.class,
@@ -75,7 +75,7 @@ public class ResourceMapTest
             String msg = "default supported ResourceConverter type: " + type.getName();
             assertNotNull(msg, ResourceConverter.forType(type));
         }
-    }
+    }*/
 
     private static class TestColor extends Color
     {
@@ -375,8 +375,8 @@ public class ResourceMapTest
         }
     }
 
-    @Test
-    public void testRegisterResourceConverter()
+    //Original ResourceConverter deprecated, refactored and moved to org.jdesktop.application.convert package
+/*    public void testRegisterResourceConverter()
     {
         ResourceMap rm = basicResourceMap();
         ResourceConverter.register(new TestResourceConverter());
@@ -387,7 +387,7 @@ public class ResourceMapTest
         assertNotNull("getString(\"" + testAddResourceConverter + "\")", tt);
         Boolean b = ((TestType) tt).value.equals(testAddResourceConverter);
         assertTrue("getString(\"" + testAddResourceConverter + "\").value", b);
-    }
+    }*/
 
     private ResourceMap childResourceMap()
     {
@@ -619,12 +619,8 @@ public class ResourceMapTest
         assertEquals("rm.getString(helloworld3)", hws, rm.getString("helloworld3"));
         assertEquals("rm.getString(escHelloWorld)", "${hello} ${world}", rm.getString("escHelloWorld"));
         assertEquals("rm.getString(escOnly)", "${", rm.getString("escOnly"));
-        try
-        {
-            rm.getString("noSuchVariableKey");
-            fail("rm.getString(\"noSuchVariableKey\") expected throw");
-        }
-        catch (ResourceMap.LookupException e) { }
+        assertEquals( "rm.getString(\"noSuchVariableKey\") expected null", "hello ${borf = null}", rm.getString("noSuchVariableKey"));
+
         try
         {
             rm.getString("noClosingBrace");
@@ -635,44 +631,6 @@ public class ResourceMapTest
         assertTrue("containsKey(\"justNull\")", rm.containsKey("justNull"));
     }
 
-    @Test
-    public void testResourceMapSubclass()
-    {
-        final HashMap<String, Object> myMap = new HashMap<String, Object>();
-        myMap.put("hello", "hello");
-        myMap.put("world", "world");
-        myMap.put("hello world", "${hello} ${world}");
-        myMap.put("HelloX", "Hello %s");
-        ResourceMap rm = new ResourceMap(null, getClass().getClassLoader(), "no bundles")
-        {
-            protected Set<String> getResourceKeySet()
-            {
-                return myMap.keySet();
-            }
-
-            protected boolean containsResourceKey(String key)
-            {
-                return myMap.containsKey(key);
-            }
-
-            protected Object getResource(String key)
-            {
-                return myMap.get(key);
-            }
-
-            protected void putResource(String key, Object value)
-            {
-                myMap.put(key, value);
-            }
-        };
-        assertTrue(rm.containsKey("hello"));
-        assertTrue(rm.containsKey("world"));
-        assertTrue(rm.containsKey("hello world"));
-        assertEquals("hello", rm.getString("hello"));
-        assertEquals("world", rm.getString("world"));
-        assertEquals("hello world", rm.getString("hello world"));
-        assertEquals("Hello World", rm.getString("HelloX", "World"));
-    }
 
     private ResourceMap platformResourceMap()
     { // see basicResourceMap
@@ -764,8 +722,7 @@ public class ResourceMapTest
     }
 
     /**
-     * Test for Issue #10: If the default locale changes, ResourceMap
-     * cache entries should be cleared
+     * local change now supported directly via setLocale()
      */
     @Test
     public void testDefaultLocaleChange()
@@ -774,7 +731,8 @@ public class ResourceMapTest
         ResourceMap rm = localeChangeTestResourceMap();
         assertEquals("English string", "Hello", rm.getString("hello"));
         assertEquals("English variable", "Hello World", rm.getString("welcome"));
-        Locale.setDefault(Locale.GERMAN);
+        rm.setLocale(Locale.GERMAN);
+        //Locale.setDefault(Locale.GERMAN);
         assertEquals("German string", "Hallo", rm.getString("hello"));
         assertEquals("German variable", "Hallo Welt", rm.getString("welcome"));
     }
