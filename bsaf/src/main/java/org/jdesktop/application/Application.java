@@ -228,8 +228,9 @@ public abstract class Application extends AbstractBean {
          * Application.* properties.
          */
         ResourceMap appResourceMap = ctx.getResourceMap();
-
-        appResourceMap.putResource("platform", platform());
+        ctx.getResourceManager().setPlatform(platform());
+        //ResourceMap.putResource is deprecated
+        //appResourceMap.putResource("platform", platform());
 
         if (!Beans.isDesignTime()) {
             /* Initialize the UIManager lookAndFeel property with the
@@ -646,8 +647,7 @@ public abstract class Application extends AbstractBean {
             ApplicationContext ctx = getContext();
             ctx.setApplicationClass(getClass());
             ctx.setApplication(this);
-            ResourceMap appResourceMap = ctx.getResourceMap();
-            appResourceMap.putResource("platform", platform());
+            ctx.getResourceManager().setPlatform(platform());
         }
 
         @Override
