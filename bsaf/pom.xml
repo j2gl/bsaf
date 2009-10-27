@@ -63,6 +63,11 @@
             <artifactId>javac2</artifactId>
             <version>7.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
+            <version>7.0.3</version>
+        </dependency>
     </dependencies>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

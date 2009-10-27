@@ -6,7 +6,7 @@ import org.jdesktop.application.resource.locale.TestLocaleChange;
 
 
 /**
- * ©2009 Rob Ross
+ * (c) 2009 Rob Ross
  * All rights reserved
  *
  * @author Rob Ross
