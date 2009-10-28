@@ -5,10 +5,11 @@
  */
 package org.jdesktop.application;
 
-import org.jdesktop.application.convert.ConverterRegistry;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -56,10 +57,6 @@ public class ResourceManager extends AbstractBean {
     private final ApplicationContext context;
     private List<String> applicationBundleNames = null;
     private ResourceMap appResourceMap = null;
-
-    private ConverterRegistry converters = null; //shared converters used by all the ResourceMaps managed by this RM
-    private Locale locale = Locale.getDefault();
-    private String platform = null;
 
     /**
      * Construct a {@code ResourceManager}.  Typically applications
@@ -437,48 +434,8 @@ public class ResourceManager extends AbstractBean {
      * @return
      */
     protected ResourceMap createResourceMap(ClassLoader classLoader, ResourceMap parent, List<String> bundleNames) {
-        if (converters == null)
-        {
-            converters = new ConverterRegistry();
-            converters.addDefaultConverters();
-        }
-        ResourceMap rm = new ResourceMap(parent, classLoader, bundleNames);
-        rm.setConverters(converters);
-        return rm;
+        return new ResourceMap(parent, classLoader, bundleNames);
     }
-
-    /**
-     * Set the ConverterRegisty used by the ResourceMaps managed by this ResourceManager
-     * @param converters
-     */
-    public synchronized void setConverters(ConverterRegistry converters)
-    {
-        if (converters != null)
-        {
-            this.converters = converters;
-            getApplicationResourceMap().setConverters(converters);
-        }
-    }
-
-    public synchronized ConverterRegistry getConverters()
-    {
-        return converters;
-    }
-
-    public synchronized void setLocale(@NotNull Locale newLocale)
-    {
-        if (newLocale.equals(locale))
-        {
-            return;
-        }
-        getApplicationResourceMap().setLocale(newLocale);
-    }
-
-    public synchronized Locale getLocale()
-    {
-        return locale;
-    }
-
 
     /**
      * The value of the special Application ResourceMap resource
@@ -490,8 +447,7 @@ public class ResourceManager extends AbstractBean {
      * @see #setPlatform
      */
     public String getPlatform() {
-        return platform;
-        //return getResourceMap().getString("platform");
+        return getResourceMap().getString("platform");
     }
 
     /**
@@ -521,10 +477,6 @@ public class ResourceManager extends AbstractBean {
         if (platform == null) {
             throw new IllegalArgumentException("null platform");
         }
-        //todo - since we're allowing a reload of properties when Locale changes, this property will be overrwitten (deleted)
-        //thus, ResoruceMap.putResource should be deprecated. The ResourceManager should have a private ResourceMap that never gets
-        //reloaded, to contain properties put into it during program execution
-        //getResourceMap().putResource("platform", platform);
-        this.platform = platform; 
+        getResourceMap().putResource("platform", platform);
     }
 }
