@@ -142,10 +142,8 @@ public class WindowProperty implements PropertySupport {
                 ge.getScreenDevices();
         for (int j = 0; j < gs.length; j++) {
             GraphicsDevice gd = gs[j];
-            GraphicsConfiguration[] gc = gd.getConfigurations();
-            for (int i = 0; i < gc.length; i++) {
-                virtualBounds = virtualBounds.union(gc[i].getBounds());
-            }
+            GraphicsConfiguration gc = gd.getDefaultConfiguration();
+            virtualBounds = virtualBounds.union(gc.getBounds());
         }
         return virtualBounds;
     }
