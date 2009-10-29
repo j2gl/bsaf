@@ -50,9 +50,6 @@
     <property name="build.dir"      value="${target.dir}/build/${app.name}" />
     <property environment="env"/>
 
-    <taskdef name="javac2"
-             classpath="${lib.dir}/asm.jar;${lib.dir}/javac2.jar"
-             classname="com.intellij.ant.Javac2"/>
 
 
 
@@ -82,10 +79,10 @@
 
     <target name="compile" description="Compile all source code.">
         <mkdir dir="${compile.dir}"/>
-        <javac2  destdir="${compile.dir}" debug="on" target="1.6" source="1.6" verbose="false"  >
+        <javac  destdir="${compile.dir}" debug="on" target="1.6" source="1.6" verbose="false"  >
             <src path="${src.dir}" />            
             <classpath refid="compile.classpath"/>
-        </javac2>
+        </javac>
 
         <copy todir="${compile.dir}">
             <fileset dir="${src.dir}">
@@ -97,10 +94,10 @@
 
     <target name="compile-test" depends="compile" description="Compile all source code.">
         <mkdir dir="${compile.test.dir}"/>
-        <javac2  destdir="${compile.test.dir}" debug="on" target="1.6" source="1.6">
+        <javac  destdir="${compile.test.dir}" debug="on" target="1.6" source="1.6">
             <src path="${src.test.dir}" />
             <classpath refid="compile.classpath"/>
-        </javac2>
+        </javac>
 
         <copy todir="${compile.test.dir}">
             <fileset dir="${src.test.dir}">
@@ -159,7 +156,7 @@
 
             <batchtest todir="${test.report.dir}">
                 <fileset dir="${src.test.dir}">
-                    <include name="**/AllTests.java/**"/>
+                    <include name="AllTestsSuite.java"/>
                 </fileset>
             </batchtest>
         </junit>
