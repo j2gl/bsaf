@@ -20,10 +20,11 @@ public class StringToKeyStroke extends ResourceConverter<String, KeyStroke>
 
     private static final int PLATFORM_MENU_SHORTCUT_KEYMASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-    public KeyStroke convert(@NotNull String s, Object... args) throws StringConvertException
+    public KeyStroke convert(@NotNull String source, Object... args) throws StringConvertException
     {
-        String lowerCase = s.toLowerCase();
-        StringBuilder sb = new StringBuilder(s);
+        assertNotNull(source, String.class, "source");
+        String lowerCase = source.toLowerCase();
+        StringBuilder sb = new StringBuilder(source);
 
         if (lowerCase.contains("shortcut"))
         {

@@ -19,6 +19,7 @@ public class StringToFont extends ResourceConverter<String, Font>
     */
     public Font convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         return Font.decode(source);
     }
 }

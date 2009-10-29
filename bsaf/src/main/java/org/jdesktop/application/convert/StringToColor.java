@@ -24,6 +24,7 @@ public class StringToColor extends ResourceConverter<String, Color>
 
     public Color convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         Color color = null;
         if (source.startsWith("#"))
         {

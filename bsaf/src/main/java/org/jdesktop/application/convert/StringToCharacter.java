@@ -24,6 +24,7 @@ public class StringToCharacter  extends ResourceConverter<String, Character>
      */
     public Character convert(@NotNull String source, Object... args) throws StringConvertException, IllegalArgumentException
     {
+        assertNotNull(source, String.class, "source");
         Character c = null;
 
         try

@@ -467,6 +467,7 @@ public class ResourceManager extends AbstractBean {
 
     public synchronized void setLocale(@NotNull Locale newLocale)
     {
+        assertNotNull(newLocale, Locale.class, "newLocale");
         if (newLocale.equals(locale))
         {
             return;
@@ -526,5 +527,13 @@ public class ResourceManager extends AbstractBean {
         //reloaded, to contain properties put into it during program execution
         //getResourceMap().putResource("platform", platform);
         this.platform = platform; 
+    }
+
+    protected void assertNotNull(Object o, Class type, String paramName)
+    {
+        if (o == null)
+        {
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+        }
     }
 }

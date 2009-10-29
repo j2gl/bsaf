@@ -28,8 +28,4 @@ import org.jdesktop.application.resource.locale.TestLocaleChange;
         })
 public class AllTests
 {
-    public final static String AbstractAppPropPath = "org.jdesktop.application.resource.abstractapp.resources.AbstractApplication";
-    public final static String ConcreteAppPropPath = "org.jdesktop.application.resource.concrete.resources.ConcreteApplication";
-    public final static String ExpressionsPropPath = "org.jdesktop.application.resource.resources.Expressions";
-    public final static String ActionsPropsPath    = "org.jdesktop.application.resource.resources.Actions";
 }

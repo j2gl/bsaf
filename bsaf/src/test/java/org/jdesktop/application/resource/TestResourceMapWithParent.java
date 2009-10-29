@@ -55,8 +55,8 @@ public class TestResourceMapWithParent
         {
             oldLocale = Locale.getDefault();
             Locale.setDefault(new Locale("")); //needed to force use of unqualified bundles if unit tests run where "es" is default language
-            parentMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
-            childMap = new ResourceMap(Arrays.asList(AllTests.ConcreteAppPropPath));
+            parentMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
+            childMap = new ResourceMap(Arrays.asList(TestUtil.ConcreteAppPropPath));
             childMap.setParent(parentMap);
 
         } // unitSetup()
@@ -161,8 +161,8 @@ public class TestResourceMapWithParent
         {
             oldLocale = Locale.getDefault();
             Locale.setDefault(new Locale("")); //needed to force use of unqualified bundles if unit tests run where "es" is default language
-            parentMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
-            childMap = new ResourceMap(Arrays.asList(AllTests.ConcreteAppPropPath));
+            parentMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
+            childMap = new ResourceMap(Arrays.asList(TestUtil.ConcreteAppPropPath));
             childMap.setParent(parentMap);
 
         } // unitSetup()
@@ -252,11 +252,11 @@ public class TestResourceMapWithParent
             Locale.setDefault(new Locale("es"));
             if (parentMap == null)
             {
-                parentMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
+                parentMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
             }
             if (childMap == null)
             {
-                childMap = new ResourceMap(Arrays.asList(AllTests.ConcreteAppPropPath));
+                childMap = new ResourceMap(Arrays.asList(TestUtil.ConcreteAppPropPath));
                 childMap.setParent(parentMap);
             }
 

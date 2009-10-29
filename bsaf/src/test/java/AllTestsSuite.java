@@ -13,6 +13,6 @@ import org.junit.runners.Suite;
                 org.jdesktop.application.resource.AllTests.class,
                 org.jdesktop.application.AllTests.class
         })
-public class AllTests
+public class AllTestsSuite
 {
 }

@@ -16,17 +16,18 @@ abstract public class StringToNumber<S, D> extends ResourceConverter<S, D>
 
     protected abstract D parseString(@NotNull String s, int radix) throws NumberFormatException;
 
-    protected D parseString(@NotNull String s) throws StringConvertException
+    protected D parseString(@NotNull String source) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         try
         {
-            String[] nar = s.split("&"); // number ampersand radix
+            String[] nar = source.split("&"); // number ampersand radix
             int radix = (nar.length == 2) ? Integer.parseInt(nar[1]) : -1;
             return parseString(nar[0], radix);
         }
         catch (NumberFormatException e)
         {
-            throw new StringConvertException("Invalid " + getDestClass().getSimpleName(), s, e);
+            throw new StringConvertException("Invalid " + getDestClass().getSimpleName(), source, e);
         }
     }
 
@@ -128,6 +129,7 @@ abstract public class StringToNumber<S, D> extends ResourceConverter<S, D>
 
         public Float convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             try
             {
                 return parseString(source);
@@ -160,6 +162,7 @@ abstract public class StringToNumber<S, D> extends ResourceConverter<S, D>
 
         public Double convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             try
             {
                 return parseString(source);

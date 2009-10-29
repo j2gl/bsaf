@@ -44,7 +44,7 @@ public class TestResourceMap1
     } // unitCleanup()
 
     AbstractApplication application = new AbstractApplication();
-    ResourceMap defaultMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
+    ResourceMap defaultMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
     ResourceConverter[] defaultConverters;
 
     @Before
@@ -166,7 +166,7 @@ public class TestResourceMap1
     @Test
     public void testKeySet()
     {
-        ResourceBundle bundle = ResourceBundle.getBundle(AllTests.AbstractAppPropPath);
+        ResourceBundle bundle = ResourceBundle.getBundle(TestUtil.AbstractAppPropPath);
         Set<String> expectedSet = bundle.keySet();
         Set<String> actualSet = defaultMap.keySet();
         assertEquals(String.format("keySet should contain all resource keys"), expectedSet, actualSet);
@@ -626,7 +626,7 @@ public class TestResourceMap1
     public void testLoadWithCustomClassLoader1()
     {
         ClassLoader expected = new URLClassLoader(new URL[0]);
-        ResourceMap rm = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath), expected);
+        ResourceMap rm = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath), expected);
 
         ClassLoader actual = rm.getClassLoader();
         assertSame("ClassLoader used in ResourceMap constructor should be returned by getter method",expected, actual);
@@ -639,7 +639,7 @@ public class TestResourceMap1
     public void testLoadWithCustomClassLoader2()
     {
         ClassLoader cl = new URLClassLoader(new URL[0], getClass().getClassLoader());
-        ResourceMap rm = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath), cl);
+        ResourceMap rm = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath), cl);
 
         Integer expected = new Integer(56789234);
         Integer actual = rm.getAsInteger("AbstractApplication.integer", null);
@@ -668,7 +668,7 @@ public class TestResourceMap1
                 super(String.class, String.class);
             }
 
-            public String convert(@NotNull String source, Object... args) throws StringConvertException
+            public String convert(String source, Object... args) throws StringConvertException
             {
                 return "I am a custom String converter. Original String was :"+source;
             }
@@ -681,7 +681,7 @@ public class TestResourceMap1
                 super(String.class, Integer.class);
             }
 
-            public Integer convert(@NotNull String source, Object... args) throws StringConvertException
+            public Integer convert(String source, Object... args) throws StringConvertException
             {
                 return 42; //always convert source to number 42, of course!
             }
@@ -703,7 +703,7 @@ public class TestResourceMap1
     public void testLoadMultipleBundles()
     {
         //test explicitly loading more than one bundle file
-        ResourceMap rm = new ResourceMap(Arrays.asList(AllTests.ExpressionsPropPath, AllTests.ActionsPropsPath));
+        ResourceMap rm = new ResourceMap(Arrays.asList(TestUtil.ExpressionsPropPath, TestUtil.ActionsPropsPath));
 
         //spot check a few props from each, and verify that items in Expressions.properties shadow items in Actions.properties
         assertEquals("Correct value from Expressions.properties not loaded.","Hello", rm.getAsString("hello", null));
@@ -717,7 +717,7 @@ public class TestResourceMap1
     @Test (expected = IllegalArgumentException.class)
     public void testLoadMultiBundlesNotColocated()
     {
-        ResourceMap rm = new ResourceMap(Arrays.asList(AllTests.ExpressionsPropPath, "doesNotExist"));
+        ResourceMap rm = new ResourceMap(Arrays.asList(TestUtil.ExpressionsPropPath, "doesNotExist"));
     }
 
     //todo - interim behavior with current app framework allows non-existent bundle names to be supplied to a ResourceMap consturctor
@@ -725,7 +725,7 @@ public class TestResourceMap1
     @Test //(expected = MissingResourceException.class)
     public void testLoadMultiBundlesWithBadBundleName()
     {
-        ResourceMap rm = new ResourceMap(Arrays.asList(AllTests.ExpressionsPropPath, "org.jdesktop.application.resource.resources.doesNotExist"));
+        ResourceMap rm = new ResourceMap(Arrays.asList(TestUtil.ExpressionsPropPath, "org.jdesktop.application.resource.resources.doesNotExist"));
     }
     
 }

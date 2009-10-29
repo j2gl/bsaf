@@ -21,6 +21,7 @@ public class StringToPoint extends ResourceConverter<String, Point>
 
     public Point convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         List<Double> xy = parseDoubles(source, 2, "Invalid x,y Point string");
         Point p = new Point();
         p.setLocation(xy.get(0), xy.get(1));
@@ -36,6 +37,7 @@ public class StringToPoint extends ResourceConverter<String, Point>
 
         public Point2D.Float convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             List<Double> xy = parseDoubles(source, 2, "Invalid x,y Point2D.Float string");
             Point2D.Float p = new Point2D.Float();
             p.setLocation(xy.get(0), xy.get(1));
@@ -52,6 +54,7 @@ public class StringToPoint extends ResourceConverter<String, Point>
 
         public Point2D.Double convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             List<Double> xy = parseDoubles(source, 2, "Invalid x,y Point2D.Double string");
             Point2D.Double p = new Point2D.Double();
             p.setLocation(xy.get(0), xy.get(1));

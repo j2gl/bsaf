@@ -27,8 +27,17 @@ public class ConverterRegistry
     }
 
 
+    protected void assertNotNull(Object o, Class type, String paramName)
+    {
+        if (o == null)
+        {
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+        }
+    }
     public void add(@NotNull ResourceConverter converter)
     {
+        assertNotNull(converter, ResourceConverter.class, "converter");
+
         Map<Class<?>, ResourceConverter> destMap = registry.get(converter.getSourceClass());
         if (destMap == null)
         {
@@ -41,6 +50,8 @@ public class ConverterRegistry
 
     public void addAll(@NotNull List<ResourceConverter> converterList)
     {
+        assertNotNull(converterList, List.class, "converterList");
+
         for (ResourceConverter resourceConverter : converterList)
         {
             add(resourceConverter);
@@ -55,6 +66,8 @@ public class ConverterRegistry
     @Nullable
     public <T> ResourceConverter<String, T> converterFor(@NotNull Class<T> targetType)
     {
+        assertNotNull(targetType, Class.class, "targetType");
+
         return converterFor(java.lang.String.class, targetType);
     }
 
@@ -67,6 +80,8 @@ public class ConverterRegistry
     @Nullable
     public ResourceConverter converterFor(@NotNull Class<?> sourceType, @NotNull Class<?> targetType)
     {
+        assertNotNull(sourceType, Class.class, "sourceType");
+        assertNotNull(targetType, Class.class, "targetType");
         if (targetType.isPrimitive())
         {
             targetType = wrapperClassForPrimativeType(targetType);
@@ -132,6 +147,7 @@ public class ConverterRegistry
      */
     synchronized public boolean remove(@NotNull ResourceConverter converter)
     {
+        assertNotNull(converter, ResourceConverter.class, "converter");
         Map<Class<?>, ResourceConverter> destMap = registry.get(converter.getSourceClass());
         if (destMap == null)
         {
@@ -158,6 +174,7 @@ public class ConverterRegistry
     @NotNull
     public List<ResourceConverter> convertersFor(@NotNull Class<?> sourceType)
     {
+        assertNotNull(sourceType, Class.class, "sourceType");
         Map<Class<?>, ResourceConverter> destMap = registry.get(sourceType);
         List<ResourceConverter> list = new ArrayList<ResourceConverter>();
         if (destMap != null)

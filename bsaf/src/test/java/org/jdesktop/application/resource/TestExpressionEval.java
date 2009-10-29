@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import static org.junit.Assert.*;
 import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.TestUtil;
 
 import java.util.Collection;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class TestExpressionEval
     @BeforeClass
     public static void unitSetup()
     {
-        defaultMap = new ResourceMap(Arrays.asList(AllTests.ExpressionsPropPath));
+        defaultMap = new ResourceMap(Arrays.asList(TestUtil.ExpressionsPropPath));
     } // unitSetup()
 
     @AfterClass

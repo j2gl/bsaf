@@ -47,6 +47,7 @@ public class StringToBoolean extends ResourceConverter<String, Boolean>
 
     public void addTrueValue(@NotNull String trueValue)
     {
+        assertNotNull(trueValue, String.class, "trueValue");
         synchronized (trueValues)
         {
             trueValues.add(trueValue);
@@ -60,6 +61,7 @@ public class StringToBoolean extends ResourceConverter<String, Boolean>
      */
     public boolean removeTrueValue(@NotNull String trueValue)
     {
+        assertNotNull(trueValue, String.class, "trueValue");
         synchronized (trueValues)
         {
             if (!trueValues.contains(trueValue))
@@ -73,10 +75,7 @@ public class StringToBoolean extends ResourceConverter<String, Boolean>
     @NotNull
     public Boolean convert(@NotNull String source, Object... args)
     {
-        if (source == null)
-        {
-            return Boolean.FALSE;
-        }
+        assertNotNull(source, String.class, "source");
         synchronized(trueValues)
         {
             if (trueValues.contains(source.trim().toLowerCase()))

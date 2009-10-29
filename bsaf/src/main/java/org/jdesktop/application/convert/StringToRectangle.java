@@ -18,6 +18,7 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
 
     public Rectangle convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         List<Double> xywh = parseDoubles(source, 4, "Invalid x,y,width,height Rectangle string");
         Rectangle r = new Rectangle();
         r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));
@@ -33,6 +34,7 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
 
         public Rectangle2D.Float convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             List<Double> xywh = parseDoubles(source, 4, "Invalid x,y,width,height Rectangle2D.Float string");
             Rectangle2D.Float r = new Rectangle2D.Float();
             r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));
@@ -49,6 +51,7 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
 
         public Rectangle2D.Double convert(@NotNull String source, Object... args) throws StringConvertException
         {
+            assertNotNull(source, String.class, "source");
             List<Double> xywh = parseDoubles(source, 4, "Invalid x,y,width,height Rectangle2D.Double string");
             Rectangle2D.Double r = new Rectangle2D.Double();
             r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));

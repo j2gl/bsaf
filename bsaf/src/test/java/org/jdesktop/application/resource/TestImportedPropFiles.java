@@ -50,7 +50,7 @@ public class TestImportedPropFiles
         List<String> actual = defaultManager.getBundleNames();
 
         //todo - remove println
-        System.out.println(String.format("actual bundle names: %s", actual));
+        //System.out.println(String.format("actual bundle names: %s", actual));
         assertArrayEquals("Bundle names should match import key in SpecializedApplication",expected.toArray(), actual.toArray());
     }
 

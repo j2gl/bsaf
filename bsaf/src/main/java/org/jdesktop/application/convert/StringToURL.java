@@ -17,6 +17,7 @@ public class StringToURL extends ResourceConverter<String, URL>
 
     public URL convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         String trimmed = source.trim();
         try
         {

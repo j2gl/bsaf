@@ -70,4 +70,12 @@ abstract public class ResourceConverter<S, D>
             return doubles;
         }
     }
+
+    protected void assertNotNull(Object o, Class type, String paramName)
+    {
+        if (o == null)
+        {
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+        }
+    }
 }

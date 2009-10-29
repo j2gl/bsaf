@@ -56,7 +56,7 @@ public class TestResourceMapCaching1
     {
         oldLocale = Locale.getDefault();
         Locale.setDefault(new Locale("")); //needed to force use of unqualified bundles if unit tests run where "es" is default language
-        defaultMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
+        defaultMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
     } // unitSetup()
 
     @AfterClass

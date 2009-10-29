@@ -17,6 +17,7 @@ public class StringToEmptyBorder extends ResourceConverter<String, EmptyBorder>
 
     public EmptyBorder convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         List<Double> tlbr = parseDoubles(source, 4, "invalid top,left,bottom,right EmptyBorder string");
         return new EmptyBorder(tlbr.get(0).intValue(), tlbr.get(1).intValue(), tlbr.get(2).intValue(), tlbr.get(3).intValue());
     }

@@ -13,7 +13,7 @@ public class TestGetArrays
 {
     public TestGetArrays() {} // constructor
 
-    static ResourceMap defaultMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
+    static ResourceMap defaultMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
 
     @BeforeClass
     public static void unitSetup()

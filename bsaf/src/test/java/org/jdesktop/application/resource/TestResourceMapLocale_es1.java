@@ -48,7 +48,7 @@ public class TestResourceMapLocale_es1
        oldLocale = Locale.getDefault();
         //load with spanish local
         Locale.setDefault(new Locale("es"));
-        spanishMap = new ResourceMap(Arrays.asList(AllTests.AbstractAppPropPath));
+        spanishMap = new ResourceMap(Arrays.asList(TestUtil.AbstractAppPropPath));
     } // unitSetup()
 
     @AfterClass

@@ -131,6 +131,8 @@ public class ResourceMap
      */
     public Object getAsPrimitiveArray(@NotNull String resourceKey, @NotNull Class<?> componentType, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        assertNotNull(componentType, Class.class, "componentType");
         if (!componentType.isPrimitive())
         {
             throw new IllegalArgumentException("Component Type of array must be a primitive.");
@@ -145,13 +147,15 @@ public class ResourceMap
     //getAsArray_impl will always return an array of componentType, or throw an exception
     public <T> T[] getAsArray(@NotNull String resourceKey, @NotNull Class<T> componentType, @Nullable ConverterRegistry converters)
     {
-
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        assertNotNull(componentType, Class.class, "componentType");
         return (T[]) getAsArray_impl(resourceKey, componentType, converters);
     }
 
     @Nullable
     public String[] getAsArrayString(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         //all resources are internally stored as strings
         return (String[]) getAsArray(resourceKey, String.class, converters);
     }
@@ -162,7 +166,7 @@ public class ResourceMap
     @Nullable
     public boolean[] getAsArray_boolean(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
-        //all resources are internally stored as strings
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return (boolean[]) getAsPrimitiveArray(resourceKey, boolean.class, converters);
     }
 
@@ -172,7 +176,7 @@ public class ResourceMap
     @Nullable
     public int[] getAsArray_int(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
-        //all resources are internally stored as strings
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return (int[]) getAsPrimitiveArray(resourceKey, int.class, converters);
     }
 
@@ -182,7 +186,7 @@ public class ResourceMap
     @Nullable
     public long[] getAsArray_long(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
-        //all resources are internally stored as strings
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return (long[]) getAsPrimitiveArray(resourceKey, long.class, converters);
     }
 
@@ -192,7 +196,7 @@ public class ResourceMap
     @Nullable
     public double[] getAsArray_double(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
-        //all resources are internally stored as strings
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return (double[]) getAsPrimitiveArray(resourceKey, double.class, converters);
     }
 
@@ -200,6 +204,8 @@ public class ResourceMap
     @SuppressWarnings("unchecked")
     synchronized public <T> T getResourceAs(@NotNull String resourceKey, @NotNull Class<T> conversionType, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        assertNotNull(conversionType, Class.class, "conversionType");
         Object value = null;
         value = conversionCache.get(new ConversionCacheKey<T>(resourceKey, conversionType));
         if (value != null)
@@ -218,8 +224,6 @@ public class ResourceMap
         {
             return (T) null;
         }
-
-        //todo - deal with array types, collections?
 
         //convert this String value to the desired type
         value = convertResourceString(resourceKey, (String) value, conversionType, converters);
@@ -291,6 +295,7 @@ public class ResourceMap
     @Nullable
     public String getAsString(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         //all resources are internally stored as strings
         return getResourceAs(resourceKey, String.class, converters);
     }
@@ -304,32 +309,38 @@ public class ResourceMap
      */
     public Boolean getAsBoolean(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Boolean.class, converters);
     }
 
 
     public Character getAsCharacter(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Character.class, converters);
     }
 
     public Color getAsColor(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Color.class, converters);
     }
 
     public Dimension getAsDimension(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Dimension.class, converters);
     }
 
     public EmptyBorder getAsEmptyBorder(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, EmptyBorder.class, converters);
     }
 
     public Font getAsFont(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Font.class, converters);
     }
 
@@ -341,6 +352,7 @@ public class ResourceMap
      */
     public BufferedImage getAsBufferedImage(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, BufferedImage.class, converters);
     }
 
@@ -352,87 +364,104 @@ public class ResourceMap
      */
     public ImageIcon getAsImageIcon(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, ImageIcon.class, converters);
     }
 
     public Insets getAsInsets(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Insets.class, converters);
     }
 
     public KeyStroke getAsKeyStroke(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, KeyStroke.class, converters);
     }
 
     public Byte getAsByte(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Byte.class, converters);
     }
 
     public Double getAsDouble(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Double.class, converters);
     }
 
     public Float getAsFloat(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Float.class, converters);
     }
 
     public Integer getAsInteger(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Integer.class, converters);
     }
 
     public Long getAsLong(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Long.class, converters);
     }
 
     public Short getAsShort(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Short.class, converters);
     }
 
 
     public Point getAsPoint(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Point.class, converters);
     }
 
     public Point2D.Double getAsPoint2D_Double(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Point2D.Double.class, converters);
     }
 
     public Point2D.Float getAsPoint2D_Float(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Point2D.Float.class, converters);
     }
 
     public Rectangle getAsRectangle(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Rectangle.class, converters);
     }
 
     public Rectangle2D.Double getAsRectangle2D_Double(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Rectangle2D.Double.class, converters);
     }
 
     public Rectangle2D.Float getAsRectangle2D_Float(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, Rectangle2D.Float.class, converters);
     }
 
     public URI getAsURI(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, URI.class, converters);
     }
 
     public URL getAsURL(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         return getResourceAs(resourceKey, URL.class, converters);
     }
 
@@ -447,6 +476,7 @@ public class ResourceMap
      */
     public synchronized boolean containsKey(@NotNull String resourceKey)
     {
+        assertNotNull(resourceKey, String.class, "resourceKey");
         if (getResourceMap().containsKey(resourceKey))
         {
             return true;
@@ -496,6 +526,7 @@ public class ResourceMap
      */
     public synchronized void setLocale(@NotNull Locale newLocale)
     {
+        assertNotNull(newLocale, String.class, "newLocale");
         if (newLocale.equals(locale))
         {
             return;
@@ -776,6 +807,14 @@ public class ResourceMap
                 return getMessage() + String.format(" resource='%s', type=%s%s", key, type, strBuilder.toString());
             }
 
+        }
+    }
+
+    protected void assertNotNull(Object o, Class type, String paramName)
+    {
+        if (o == null)
+        {
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
         }
     }
 
@@ -1386,6 +1425,8 @@ public class ResourceMap
         return (i == -1) ? "" : bundleName.substring(0, i);
     }
 
+
+
     //-------------------------------------
     //    D E B U G G I N G
     //debugging
@@ -1421,6 +1462,8 @@ public class ResourceMap
     @Deprecated
     public Object getObject(@NotNull String key, @NotNull Class type)
     {
+        assertNotNull(key, String.class, "resourceKey");
+        assertNotNull(type, Class.class, "type");
         return getResourceAs(key, type, null);
     }
 

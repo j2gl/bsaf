@@ -18,6 +18,7 @@ public class StringToDimension extends ResourceConverter<String, Dimension>
 
     public Dimension convert(@NotNull String source, Object... args) throws StringConvertException
     {
+        assertNotNull(source, String.class, "source");
         java.util.List<Double> xy = parseDoubles(source, 2, "Invalid x,y Dimension string");
         Dimension d = new Dimension();
         d.setSize(xy.get(0), xy.get(1));
