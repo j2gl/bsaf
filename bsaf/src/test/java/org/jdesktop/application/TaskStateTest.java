@@ -6,11 +6,15 @@ package org.jdesktop.application;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -24,10 +28,9 @@ public class TaskStateTest{
     private enum State {
         PCL,
         SUCCEEDED,
-        FAILED
+        FAILED,
+        FINISHED
     }
-
-
 
     public static class SimpleApplication extends WaitForStartupApplication {
 
@@ -63,6 +66,13 @@ public class TaskStateTest{
         protected void succeeded(Void result) {
             queue.offer(State.SUCCEEDED);
         }
+
+        @Override
+        protected void finished() {
+            queue.offer(State.FINISHED);
+        }
+
+
     }
 
     private static class PropertyChangeListenerImpl implements PropertyChangeListener {
@@ -88,26 +98,35 @@ public class TaskStateTest{
 
     @Test
     public void testSucceeded() throws InterruptedException {
-        State result = runTask(null);
+        List<State> result = runTask(null);
 
-        assertNotNull(result);
-        assertTrue(result == State.SUCCEEDED);
+        assertArrayEquals(new State[] {
+            State.PCL,
+            State.SUCCEEDED,
+            State.FINISHED
+        }, result.toArray());
     }
 
     @Test
     public void testFailed() throws InterruptedException {
-        State result = runTask(new Exception("Test Exception"));
+        List<State> result = runTask(new Exception("Test Exception"));
 
-        assertNotNull(result);
-        assertTrue(result == State.FAILED);
+        assertArrayEquals(new State[] {
+            State.PCL,
+            State.FAILED,
+            State.FINISHED
+            }, result.toArray());
     }
 
-    private State runTask(Exception ex) throws InterruptedException {
-        BlockingQueue<State> queue = new ArrayBlockingQueue<State>(2);
+    private List<State> runTask(Exception ex) throws InterruptedException {
+        List<State> result = new ArrayList<State>();
+        BlockingQueue<State> queue = new ArrayBlockingQueue<State>(3);
         DoNothingTask task = new DoNothingTask(ex, queue);
         task.addPropertyChangeListener(new PropertyChangeListenerImpl(queue));
         task.execute();
-        queue.poll(1, TimeUnit.SECONDS);
-        return queue.poll(1, TimeUnit.SECONDS);
+        result.add(queue.poll(1, TimeUnit.SECONDS));
+        result.add(queue.poll(1, TimeUnit.SECONDS));
+        result.add(queue.poll(1, TimeUnit.SECONDS));
+        return result;
     }
 }

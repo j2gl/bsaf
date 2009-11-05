@@ -7,7 +7,6 @@ package org.jdesktop.application;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.annotation.Target;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -770,11 +769,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                 }
             }
         } finally {
-            try {
-                finished();
-            } finally {
-                setTaskService(null);
-            }
+            setTaskService(null);
         }
     }
 
@@ -1037,6 +1032,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
                         } finally {
                             result = null;
                             exception = null;
+                            finished();
                         }
                     }
                 });
