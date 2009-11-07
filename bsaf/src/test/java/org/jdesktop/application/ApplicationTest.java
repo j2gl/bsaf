@@ -33,12 +33,14 @@ public class ApplicationTest
     public static class SimpleApplication extends WaitForStartupApplication
     {
         public boolean startupOnEDT;
+        public boolean startupRan = false;
 
         @Override
         protected void startup()
         {
             super.startup();
             startupOnEDT = SwingUtilities.isEventDispatchThread();
+            startupRan = true;
         }
 
         @Action()
@@ -67,6 +69,7 @@ public class ApplicationTest
         assertTrue("ApplicationContext.getApplication()", isSimpleApp);
         Class appClass = ac.getApplicationClass();
         assertSame("ApplicationContext.getApplicationClass()", SimpleApplication.class, appClass);
+        assertTrue("SimpleApplication.startup() ran to completion", ((SimpleApplication) app).startupRan);
         assertTrue("SimpleApplication.startup() ran on the EDT", ((SimpleApplication) app).startupOnEDT);
     }
 
