@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -31,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
@@ -40,6 +42,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
 
     private static final Logger logger = Logger.getLogger(DefaultInputBlocker.class.getName());
     private static final String PB_STRING_FORMAT_KEY = "progressBarStringFormat";
+    public static final String ON_ESCAPE_ACTION_KEY = "onEscape";
     private JDialog modalDialog = null;
 
     DefaultInputBlocker(Task task, Task.BlockingScope scope, Object target, ApplicationAction action) {
@@ -137,6 +140,14 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         } else {
             optionPane.setOptions(new Object[]{}); // no OK button
         }
+
+        /* Replace default action assigned to ESC key stroke
+         *
+         */
+
+        optionPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                ON_ESCAPE_ACTION_KEY);
+
         /* Create the JDialog.  If the task can be canceled, then 
          * map closing the dialog window to canceling the task.
          */
