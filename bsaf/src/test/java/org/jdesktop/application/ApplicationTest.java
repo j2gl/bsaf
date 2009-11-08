@@ -33,14 +33,12 @@ public class ApplicationTest
     public static class SimpleApplication extends WaitForStartupApplication
     {
         public boolean startupOnEDT;
-        public boolean startupRan = false;
 
         @Override
         protected void startup()
         {
-            super.startup();
             startupOnEDT = SwingUtilities.isEventDispatchThread();
-            startupRan = true;
+            super.startup(); 
         }
 
         @Action()
@@ -69,7 +67,7 @@ public class ApplicationTest
         assertTrue("ApplicationContext.getApplication()", isSimpleApp);
         Class appClass = ac.getApplicationClass();
         assertSame("ApplicationContext.getApplicationClass()", SimpleApplication.class, appClass);
-        assertTrue("SimpleApplication.startup() ran to completion", ((SimpleApplication) app).startupRan);
+        assertTrue("SimpleApplication.startup() ran to completion", ((SimpleApplication) app).isStarted());
         assertTrue("SimpleApplication.startup() ran on the EDT", ((SimpleApplication) app).startupOnEDT);
     }
 
@@ -87,8 +85,8 @@ public class ApplicationTest
             * and three bundles:
             */
             String[] expectedBundleNames = {
-                    bundleBaseName + "SimpleApplication",
-                    bundleBaseName + "WaitForStartupApplication",
+                   // bundleBaseName + "SimpleApplication",
+                   // bundleBaseName + "WaitForStartupApplication",
                     bundleBaseName + "Application"
             };
             String[] actualBundleNames = appRM.getBundleNames().toArray(new String[0]);
@@ -110,12 +108,12 @@ public class ApplicationTest
     public void testPlatformResource()
     {
         ApplicationContext ctx = getApplicationContext();
-        ResourceMap appRM = ctx.getResourceMap();
-        String platform = appRM.getString("platform");
+        ResourceManager rm = ctx.getResourceManager();
+        String platform = rm.getPlatform();
         assertTrue("default".equals(platform) || "osx".equals(platform));
         ctx.getResourceManager().setPlatform("anotherPlatform");
         assertEquals("anotherPlatform", ctx.getResourceManager().getPlatform());
-        assertEquals("anotherPlatform", appRM.getString("platform"));
+        assertEquals("anotherPlatform", rm.getPlatform());
     }
 
     private void checkActionName(String msg, javax.swing.Action action, String expectedValue)
