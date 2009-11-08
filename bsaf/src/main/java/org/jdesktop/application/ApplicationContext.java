@@ -18,13 +18,10 @@ import javax.swing.JComponent;
  * A singleton that manages shared objects, like actions, resources, and tasks, 
  * for {@code Applications}.  
  * <p>
- * {@link Application Applications} use the {@code ApplicationContext}
- * singleton to find global values and services.  The majority of the
- * Swing Application Framework API can be accessed through {@code
- * ApplicationContext}.  The static {@code getInstance} method returns
- * the singleton Typically it's only called after the application has
- * been {@link Application#launch launched}, however it is always safe
- * to call {@code getInstance}.
+ * {@link Application Applications} use {@code ApplicationContext},
+ * via {@link Application#getContext}, to access global values and services.
+ * The majority of the Swing Application Framework API can be accessed through {@code
+ * ApplicationContext}.
  * 
  * @see Application
  * @author Hans Muller (Hans.Muller@Sun.COM)
@@ -338,8 +335,7 @@ public class ApplicationContext extends AbstractBean {
     }
 
     /**
-     * A shared {@code Clipboard}.
-     * @return
+     * @return A shared {@code Clipboard}.
      */
     public Clipboard getClipboard() {
         if (clipboard == null) {
@@ -353,8 +349,7 @@ public class ApplicationContext extends AbstractBean {
     }
 
     /**
-     * The application's focus owner.
-     * @return 
+     * @return  The application's focus owner.
      */
     public JComponent getFocusOwner() {
         return focusOwner;
@@ -370,6 +365,12 @@ public class ApplicationContext extends AbstractBean {
         return new ArrayList<TaskService>(taskServices);
     }
 
+    /**
+     * Register a new TaskService with the application. The task service
+     * then be retrieved by name via {@link ApplicationContext#getTaskService(String)}.
+     * 
+     * @param taskService Task service to register
+     */
     public void addTaskService(TaskService taskService) {
         if (taskService == null) {
             throw new IllegalArgumentException("null taskService");
@@ -389,6 +390,12 @@ public class ApplicationContext extends AbstractBean {
         }
     }
 
+    /**
+     * Unregister a previously registered TaskService. The task service
+     * is not shut down.
+     *
+     * @param taskService TaskService to unregister
+     */
     public void removeTaskService(TaskService taskService) {
         if (taskService == null) {
             throw new IllegalArgumentException("null taskService");
@@ -408,6 +415,12 @@ public class ApplicationContext extends AbstractBean {
         }
     }
 
+    /**
+     * Look up a task service by name.
+     *
+     * @param name Name of the task service to retrieve.
+     * @return Task service found, or null if no service of that name found
+     */
     public TaskService getTaskService(String name) {
         if (name == null) {
             throw new IllegalArgumentException("null name");
@@ -427,7 +440,7 @@ public class ApplicationContext extends AbstractBean {
      * method executes background <code>Tasks</code> on the default
      * TaskService.  Application's can launch Tasks in the same way, e.g.
      * <pre>
-     * ApplicationContext.getInstance().getTaskService().execute(myTask);
+     * Application.getInstance().getContext().getTaskService().execute(myTask);
      * </pre>
      * 
      * @return the default TaskService.
