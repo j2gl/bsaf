@@ -5,6 +5,7 @@
 
 package org.jdesktop.application;
 
+import javax.swing.SwingUtilities;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,11 +35,19 @@ public class ApplicationEndTest
     public static class EndApplication extends WaitForStartupApplication
     {
         boolean endCalled = false;
+        boolean shutdownRanOnEDT;
 
         @Override
         protected void end()
         {
             endCalled = true;  // default was System.exit(0);
+        }
+
+        //Application.shutdown() javadoc says: "This method runs on the event dispatching thread."
+        @Override
+        protected void shutdown() {
+            shutdownRanOnEDT = SwingUtilities.isEventDispatchThread();
+            super.shutdown();
         }
     }
 
@@ -63,6 +72,7 @@ public class ApplicationEndTest
     @Test
     public void testEndCalled()
     {
+        assertTrue("shutdown() ran on the EDT", ((EndApplication) Application.getInstance()).shutdownRanOnEDT);
         assertTrue(application().endCalled);
     }
 }
