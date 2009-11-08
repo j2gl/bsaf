@@ -85,8 +85,8 @@ public class ApplicationTest
             * and three bundles:
             */
             String[] expectedBundleNames = {
-                   // bundleBaseName + "SimpleApplication",
-                   // bundleBaseName + "WaitForStartupApplication",
+                    bundleBaseName + "SimpleApplication",
+                    bundleBaseName + "WaitForStartupApplication",
                     bundleBaseName + "Application"
             };
             String[] actualBundleNames = appRM.getBundleNames().toArray(new String[0]);
