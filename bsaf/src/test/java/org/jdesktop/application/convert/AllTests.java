@@ -3,18 +3,6 @@ package org.jdesktop.application.convert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Arrays;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.net.URL;
-import java.net.URLDecoder;
-
 @RunWith(value = Suite.class)
 @Suite.SuiteClasses(value =
    {
@@ -47,7 +35,8 @@ import java.net.URLDecoder;
            TestStringToRectangle.class,
            TestStringToURI.class,
            TestStringToURL.class,
-           TestConverterRegistry.class
+           TestConverterRegistry.class,
+           TestStringToMnemonicTextValue.class
 
    })
 public class AllTests

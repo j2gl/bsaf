@@ -163,6 +163,27 @@
 
     </target>
 
+    <!-- to use, type ant -Dtest=Foo, where Foo is the name of the test Class -->
+    <target  name="single.test" depends="compile-test">
+        <echo  message="runningUnit test: ${test}"/>
+        <mkdir dir="${test.report.dir}"/>
+        <junit printsummary="on"
+               fork="false"
+               haltonfailure="false"
+               failureproperty="tests.failed"
+               showoutput="true"
+               outputtoformatters = "true">
+
+            <classpath >
+                <pathelement path="${compile.test.dir}"/>
+                <path refid="compile.classpath"/>
+            </classpath>
+
+            <sysproperty key="LocalStorage.dir" value="${test.report.dir}"/>
+
+            <test  name="${test}"/>
+        </junit>
+    </target>
 
 
 

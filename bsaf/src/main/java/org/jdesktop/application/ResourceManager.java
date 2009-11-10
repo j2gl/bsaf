@@ -533,7 +533,7 @@ public class ResourceManager extends AbstractBean {
     {
         if (o == null)
         {
-            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null.", paramName, type));
         }
     }
 }

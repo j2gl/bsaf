@@ -57,7 +57,17 @@ public class TestConverterRegistry
                 new StringToRectangle.StringToRectangle2D_Float(),
                 new StringToURI(),
                 new StringToURL(),
+                new StringToMnemonicTextValue(),
         };
+
+        //we want a known sort order for unit tests
+        Arrays.sort(knownConverters, new Comparator<ResourceConverter>()
+        {
+            public int compare(ResourceConverter o1, ResourceConverter o2)
+            {
+                return o1.getClass().getName().compareTo(o2.getClass().getName());
+            }
+        });
     } // methodSetup()
 
     @After

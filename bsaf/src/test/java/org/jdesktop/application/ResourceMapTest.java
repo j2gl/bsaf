@@ -6,6 +6,8 @@
 package org.jdesktop.application;
 
 import org.jdesktop.application.ResourceConverter.ResourceConverterException;
+import org.jdesktop.application.inject.InjectorRegistry;
+import org.jdesktop.application.inject.ResourceInjector;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -447,7 +449,12 @@ public class ResourceMapTest
         JLabel label = new JLabel();
         label.setName("testLabel");
         ResourceMap rm = injectionResourceMap();
-        rm.injectComponent(label);
+
+        InjectorRegistry ir = new InjectorRegistry();
+        ir.addDefaultInjectors();
+        ir.injectorFor(JLabel.class).inject(label,rm,false);
+
+       // rm.injectComponent(label);
         assertEquals("label.getText()", "Hello World", label.getText());
         assertEquals("label.getAlignmentX()", 0.5f, label.getAlignmentX(), EPSILON_FLOAT);
         assertFalse("label.getEnabled()", label.isEnabled());
@@ -463,7 +470,10 @@ public class ResourceMapTest
         JLabel labelNullText = new JLabel("Hello World");
         labelNullText.setName("labelNullText");
         assertNotNull(labelNullText.getText());
-        rm.injectComponent(labelNullText);
+
+        ir.injectorFor(JLabel.class).inject(labelNullText, rm, false);
+        //rm.injectComponent(labelNullText);
+
         assertNull(labelNullText.getText());
     }
 
@@ -502,7 +512,12 @@ public class ResourceMapTest
         childPanel.add(new JScrollPane(textField2));
         childPanel.add(mnemonicLabel2);
         childPanel.add(button);
-        injectionResourceMap().injectComponents(mainFrame);
+
+       // injectionResourceMap().injectComponents(mainFrame);
+        InjectorRegistry ir = new InjectorRegistry();
+        ir.addDefaultInjectors();
+        ir.injectorFor(JFrame.class).inject(mainFrame,injectionResourceMap(),true);
+
         assertEquals("mainFrame.getTitle()", "Frame title", mainFrame.getTitle());
         Image image = mainFrame.getIconImage();
         assertNotNull("mainFrame.getIconImage()", image);

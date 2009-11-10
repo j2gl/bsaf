@@ -10,12 +10,14 @@ import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.TestUtil;
+import org.jdesktop.application.convert.ConverterRegistry;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.*;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -50,6 +52,8 @@ public class TestResourceMapCaching1
 
     static ResourceMap defaultMap;
     static Locale oldLocale;
+
+    private static Set<Class<?>> IMMUTABLE_TYPES = ConverterRegistry.getImmutableTypes();
 
     @BeforeClass
     public static void unitSetup()
@@ -109,10 +113,18 @@ public class TestResourceMapCaching1
         //Special case for testing equals with Images, Icons, URLs,
         TestUtil.assertResourcesEqual(msg, expectedValue, expected);
 
-        //called a second time, should return same instance
+        //called a second time, should return same instance if object is of an immutable type
         Object actual = getResource();
-        msg = String.format("Getting '%s' second time should return cached instance", resourceKey);
-        assertSame(msg, expected, actual);
+        if (IMMUTABLE_TYPES.contains(expectedValue.getClass()))
+        {
+            msg = String.format("Getting '%s' second time should return cached instance", resourceKey);
+            assertSame(msg, expected, actual);
+        }
+        else
+        {
+            msg = String.format("Getting immutable '%s' of type %s a second time should return new instance", resourceKey, resourceType.getName());
+            assertNotSame(msg, expected, actual);
+        }
 
         //clearing cache should cause new instances to be returned
         defaultMap.clearCache();

@@ -5,6 +5,8 @@
  */
 package org.jdesktop.application;
 
+import org.jdesktop.application.inject.ActionInjector;
+
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -240,7 +242,12 @@ public class ApplicationAction extends AbstractAction {
         }
 
         if (resourceMap != null) {
-            initActionProperties(resourceMap, baseName);
+            //initActionProperties(resourceMap, baseName);
+            //temp debug to see if ActionInjector is a drop-in replacement here
+            //todo replace with lookup from ResourceInjectorRegistry
+            ActionInjector ari = new ActionInjector();
+            this.putValue(javax.swing.Action.NAME, actionName);
+            ari.inject(this, resourceMap, false);
         }
     }
 

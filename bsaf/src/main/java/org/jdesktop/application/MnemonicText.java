@@ -31,6 +31,72 @@ import javax.swing.JLabel;
  */
 class MnemonicText {
 
+    /*
+    refactoring notes
+     classes that have any methods/state pertaining to "mnemonics":
+      AbstractButton,
+       int 	getDisplayedMnemonicIndex()
+          Returns the character, as an index, that the look and feel should provide decoration for as representing the
+          mnemonic character.
+       int 	getMnemonic()
+          Returns the keyboard mnemonic from the the current model.
+       void 	setDisplayedMnemonicIndex(int index)
+          Provides a hint to the look and feel as to which character in the text should be decorated to represent the mnemonic.   
+       void 	setMnemonic(int mnemonic)
+          Sets the keyboard mnemonic on the current model.
+
+      AbstractColorChooserPanel,
+        DefaultRGBChooserPanel - set via UIManager properties : ColorChooser.rgbMnemonic, ColorChooser.rgbDisplayedMnemonicIndex
+         so to set, UIManager.put("ColorChooser.rgbMnemonic", intValue),UIManager.put("ColorChooser.rgbDisplayedMnemonicIndex", intValue)
+        DefaultHSBColorChooserPanel - ColorChooser.hsbMnemonic, ColorChooser.hsbDisplayedMnemonicIndex
+        DefaultSwatchChooserPanel - ColorChooser.swatchesMnemonic, ColorChooser.swatchesDisplayedMnemonicIndex
+        GTKColorChooserPanel - unknown, but guess it is   ColorChooser.gtkMnemonic, ColorChooser.gtkDisplayedMnemonicIndex
+        
+       Action - already implemented
+       
+       BasicFileChooserUI - lots of buttons, each with a potential mnemonic
+        	saveButtonMnemonic   = getMnemonic("FileChooser.saveButtonMnemonic", l);
+	        openButtonMnemonic   = getMnemonic("FileChooser.openButtonMnemonic", l);
+	        cancelButtonMnemonic = getMnemonic("FileChooser.cancelButtonMnemonic", l);
+	        updateButtonMnemonic = getMnemonic("FileChooser.updateButtonMnemonic", l);
+	        helpButtonMnemonic   = getMnemonic("FileChooser.helpButtonMnemonic", l);
+	        directoryOpenButtonMnemonic = getMnemonic("FileChooser.directoryOpenButtonMnemonic", l);
+
+      BasicOptionPaneUI - several buttons
+        OptionPane.yesButtonMnemonic, OptionPane.noButtonMnemonic, OptionPane.cancelButtonMnemonic, OptionPane.okButtonMnemonic
+
+
+      ButtonModel, DefaultButtonModel - interface method : setMnemonic(int key)
+
+
+      JColorChooser-reset button uses UI Default "ColorChooser.resetMnemonic"
+
+      JFileChooser
+        setApproveButtonMnemonic(int mnemonic), setApproveButtonMnemonic(char mnemonic)
+
+       JLabel - already implemented  (setDisplayedMnemonic/setDisplayedMnemonicIndex)
+
+       JMenu - setMnemonic, in JMenuItem superclass
+       JMenuItem setMnemonic(int mnemonic), setMnemonic(char mnemonic), setDisplayedMnemonicIndex(int index)
+
+
+      JTabbedPane - you can set the mnemonic for a particular tab with
+                setDisplayedMnemonicIndexAt(int tabIndex, int mnemonicIndex), setMnemonicAt(int tabIndex, int mnemonic)
+
+       MetalFileChooserUI - & WindowsFileChooserUI
+            lookInLabelMnemonic = UIManager.getInt("FileChooser.lookInLabelMnemonic")
+            fileNameLabelMnemonic = UIManager.getInt("FileChooser.fileNameLabelMnemonic");
+            filesOfTypeLabelMnemonic = UIManager.getInt("FileChooser.filesOfTypeLabelMnemonic");
+      MotifFileChooserUI
+            enterFileNameLabelMnemonic = UIManager.getInt("FileChooser.enterFileNameLabelMnemonic");
+            filesLabelMnemonic = UIManager.getInt("FileChooser.filesLabelMnemonic");
+            foldersLabelMnemonic = UIManager.getInt("FileChooser.foldersLabelMnemonic");
+            pathLabelMnemonic = UIManager.getInt("FileChooser.pathLabelMnemonic");
+            filterLabelMnemonic = UIManager.getInt("FileChooser.filterLabelMnemonic");
+
+
+      
+     */
     private MnemonicText() {
     } // not used
 

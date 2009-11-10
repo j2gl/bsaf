@@ -1,6 +1,9 @@
 package org.jdesktop.application.convert;
 
-import org.jetbrains.annotations.NotNull;import java.awt.*;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.util.List;
 
 
@@ -20,5 +23,12 @@ public class StringToInsets extends ResourceConverter<String, Insets>
         assertNotNull(source, String.class, "source");
         List<Double> tlbr = parseDoubles(source, 4, "Invalid top,left,bottom,right Insets string");
         return new Insets(tlbr.get(0).intValue(), tlbr.get(1).intValue(), tlbr.get(2).intValue(), tlbr.get(3).intValue());
+    }
+
+    @Override
+    public Insets copy(Insets source)
+    {
+        assertNotNull(source, Insets.class, "source");
+        return new Insets(source.top, source.left, source.bottom, source.right);
     }
 }

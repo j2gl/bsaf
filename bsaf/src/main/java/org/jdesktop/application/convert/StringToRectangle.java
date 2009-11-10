@@ -1,6 +1,9 @@
 package org.jdesktop.application.convert;
 
-import org.jetbrains.annotations.NotNull;import java.awt.*;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
@@ -25,6 +28,13 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
         return r;
     }
 
+    @Override
+    public Rectangle copy(Rectangle source)
+    {
+        assertNotNull(source, Rectangle.class, "source");
+        return new Rectangle(source);
+    }
+
     public static class StringToRectangle2D_Float extends ResourceConverter<String, Rectangle2D.Float>
     {
         public StringToRectangle2D_Float()
@@ -39,6 +49,13 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
             Rectangle2D.Float r = new Rectangle2D.Float();
             r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));
             return r;
+        }
+
+        @Override
+        public Rectangle2D.Float copy(Rectangle2D.Float source)
+        {
+            assertNotNull(source, Rectangle2D.Float.class, "source");
+            return new Rectangle2D.Float(source.x, source.y, source.width, source.height);
         }
     }
 
@@ -56,6 +73,13 @@ public class StringToRectangle extends ResourceConverter<String, Rectangle>
             Rectangle2D.Double r = new Rectangle2D.Double();
             r.setFrame(xywh.get(0), xywh.get(1), xywh.get(2), xywh.get(3));
             return r;
+        }
+
+        @Override
+        public Rectangle2D.Double copy(Rectangle2D.Double source)
+        {
+            assertNotNull(source, Rectangle2D.Double.class, "source");
+            return new Rectangle2D.Double(source.x, source.y, source.width, source.height);
         }
     }
 }

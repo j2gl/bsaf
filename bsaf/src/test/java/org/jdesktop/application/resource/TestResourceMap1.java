@@ -685,6 +685,7 @@ public class TestResourceMap1
             {
                 return 42; //always convert source to number 42, of course!
             }
+
         }
 
         ConverterRegistry customRegistry = new ConverterRegistry();

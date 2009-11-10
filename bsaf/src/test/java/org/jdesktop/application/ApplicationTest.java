@@ -37,8 +37,8 @@ public class ApplicationTest
         @Override
         protected void startup()
         {
-            super.startup();
             startupOnEDT = SwingUtilities.isEventDispatchThread();
+            super.startup();
         }
 
         @Action()

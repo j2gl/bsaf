@@ -34,6 +34,19 @@ abstract public class ResourceConverter<S, D>
 
     abstract public D convert(@NotNull S source, Object... args) throws StringConvertException;
 
+    /**
+     *  Default implementation just returns the source argument. Subclasses that have mutable destination types
+     * should override this, and return a new copy of the source argument.
+     *
+     * @param source an instance of any type D
+     * @return if source is immutable, returns source, otherwise returns a copy of source
+     */
+    public D copy(D source)
+    {
+        return source;
+    }
+
+
 
     public String toString(Object obj)
     {
@@ -75,7 +88,7 @@ abstract public class ResourceConverter<S, D>
     {
         if (o == null)
         {
-            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null.", paramName, type));
         }
     }
 }

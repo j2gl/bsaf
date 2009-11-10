@@ -2,6 +2,7 @@ package org.jdesktop.application.convert;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -28,6 +29,13 @@ public class StringToPoint extends ResourceConverter<String, Point>
         return p;
     }
 
+    @Override
+    public Point copy(Point source)
+    {
+        assertNotNull(source, Point.class, "source");
+        return new Point(source);
+    }
+
     public static class StringToPoint2D_Float extends ResourceConverter<String, Point2D.Float>
     {
         public StringToPoint2D_Float()
@@ -42,6 +50,13 @@ public class StringToPoint extends ResourceConverter<String, Point>
             Point2D.Float p = new Point2D.Float();
             p.setLocation(xy.get(0), xy.get(1));
             return p;
+        }
+
+        @Override
+        public Point2D.Float copy(Point2D.Float source)
+        {
+            assertNotNull(source, Point2D.Float.class, "source");
+            return new Point2D.Float(source.x,  source.y);
         }
     }
 
@@ -59,6 +74,13 @@ public class StringToPoint extends ResourceConverter<String, Point>
             Point2D.Double p = new Point2D.Double();
             p.setLocation(xy.get(0), xy.get(1));
             return p;
+        }
+
+        @Override
+        public Point2D.Double copy(Point2D.Double source)
+        {
+            assertNotNull(source, Point2D.Double.class, "source");
+            return new Point2D.Double(source.x, source.y);
         }
     }
 }

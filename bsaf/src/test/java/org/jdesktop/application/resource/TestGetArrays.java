@@ -1,6 +1,10 @@
 package org.jdesktop.application.resource;
 
 import org.junit.*;
+import org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertArrayEquals;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.TestUtil;
 
@@ -41,7 +45,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.string.empty";
         String[] expected = null;
         String[] actual = defaultMap.getAsArrayString(key, null);
-        Assert.assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -50,7 +54,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.string.one";
         String[] expected = {"one"};
         String[] actual = defaultMap.getAsArrayString(key, null);
-        Assert.assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -58,7 +62,7 @@ public class TestGetArrays
     {   String key = "AbstractApplication.array.string";
         String[] expected = {"one", "two", "three"};
         String[] actual = defaultMap.getAsArrayString(key, null);
-        Assert.assertArrayEquals(String.format("String array for key='%s' not retrieved.",key), expected, actual);
+        assertArrayEquals(String.format("String array for key='%s' not retrieved.",key), expected, actual);
     }
 
 
@@ -69,7 +73,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.string.lastComma";
         String[] expected = {"one", "two", "three"};
         String[] actual = defaultMap.getAsArrayString(key, null);
-        Assert.assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -78,7 +82,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.string.missing";
         String[] expected = {"one", "", "three"};
         String[] actual = defaultMap.getAsArrayString(key, null);
-        Assert.assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("String array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -87,7 +91,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.int.empty";
         int[] expected = null;
         int[] actual = defaultMap.getAsArray_int(key, null);
-        Assert.assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -96,7 +100,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.int";
         int[] expected = {1,2,3};
         int[] actual = defaultMap.getAsArray_int(key, null);
-        Assert.assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test (expected = ResourceMap.LookupException.class)
@@ -114,7 +118,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.long.empty";
         int[] expected = null;
         int[] actual = defaultMap.getAsArray_int(key, null);
-        Assert.assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -123,7 +127,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.long";
         int[] expected = {1, 2, 3};
         int[] actual = defaultMap.getAsArray_int(key, null);
-        Assert.assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("int array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -139,7 +143,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.double";
         double[] expected = {1.1, -2.22, 3.333};
         double[] actual = defaultMap.getAsArray_double(key, null);
-        Assert.assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
+        assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -148,7 +152,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.double.missing";
         double[] expected = {1.1, 2.22, 3.333};
         double[] actual = defaultMap.getAsArray_double(key, null);
-        Assert.assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
+        assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
     }
 
     @Test
@@ -157,7 +161,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.double.empty";
         double[] expected = null;
         double[] actual = defaultMap.getAsArray_double(key, null);
-        Assert.assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
+        assertArrayEquals(String.format("double array for key='%s' not retrieved.", key), expected, actual, TestUtil.EPSILON_DOUBLE);
     }
 
 
@@ -215,7 +219,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.int.empty";
         byte[] expected = null;
         byte[] actual = (byte[]) defaultMap.getAsPrimitiveArray(key, byte.class, null);
-        Assert.assertArrayEquals(String.format("byte array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("byte array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -224,7 +228,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.int";
         byte[] expected = {1, 2, 3};
         byte[] actual = (byte[]) defaultMap.getAsPrimitiveArray(key, byte.class, null);
-        Assert.assertArrayEquals(String.format("byte array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("byte array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -241,7 +245,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.point";
         Point[] expected = { new Point(22,33), new Point(66,77), new Point(99, 78)};
         Point[] actual = (Point[]) defaultMap.getAsArray(key, Point.class, null);
-        Assert.assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -250,7 +254,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.point.empty";
         Point[] expected = null;
         Point[] actual = (Point[]) defaultMap.getAsArray(key, Point.class, null);
-        Assert.assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test (expected = ResourceMap.LookupException.class)
@@ -259,7 +263,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.point.missing";
         Point[] expected = {new Point(22, 33), new Point(99, 78)};
         Point[] actual = (Point[]) defaultMap.getAsArray(key, Point.class, null);
-        Assert.assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test (expected = ResourceMap.LookupException.class)
@@ -268,7 +272,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.point.badPoint";
         Point[] expected = {new Point(22, 33), new Point(99, 78)};
         Point[] actual = (Point[]) defaultMap.getAsArray(key, Point.class, null);
-        Assert.assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -277,7 +281,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.point.badPoint2";
         Point[] expected = {new Point(22, 33), new Point(99, 78)};
         Point[] actual = (Point[]) defaultMap.getAsArray(key, Point.class, null);
-        Assert.assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Point array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test
@@ -286,7 +290,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.rect";
         Rectangle[] expected = {new Rectangle(1,2,3,4), new Rectangle(5,6,7,8), new Rectangle(9,10,11,12)};
         Rectangle[] actual = (Rectangle[]) defaultMap.getAsArray(key, Rectangle.class, null);
-        Assert.assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
         //todo - remove println
         //System.out.println(String.format("actualArray=%s", Arrays.toString(actual)));
     }
@@ -297,7 +301,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.rect.empty";
         Rectangle[] expected = null;
         Rectangle[] actual = (Rectangle[]) defaultMap.getAsArray(key, Rectangle.class, null);
-        Assert.assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -306,7 +310,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.rect.missing";
         Rectangle[] expected = {new Rectangle(1, 2, 3, 4), new Rectangle(5, 6, 7, 8), new Rectangle(9, 10, 11, 12)};
         Rectangle[] actual = (Rectangle[]) defaultMap.getAsArray(key, Rectangle.class, null);
-        Assert.assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test(expected = ResourceMap.LookupException.class)
@@ -315,7 +319,7 @@ public class TestGetArrays
         String key = "AbstractApplication.array.rect.badRect";
         Rectangle[] expected = {new Rectangle(1, 2, 3, 4), new Rectangle(5, 6, 7, 8), new Rectangle(9, 10, 11, 12)};
         Rectangle[] actual = (Rectangle[]) defaultMap.getAsArray(key, Rectangle.class, null);
-        Assert.assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+        assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
     }
 
     @Test (expected = ResourceMap.LookupException.class)
@@ -323,7 +327,71 @@ public class TestGetArrays
     {
         String key = "AbstractApplication.array.rect.badRect2";
         Rectangle[] expected = {new Rectangle(1, 2, 3, 4), new Rectangle(5, 6, 7, 8), new Rectangle(9, 10, 11, 12)};
-        Rectangle[] actual = (Rectangle[]) defaultMap.getAsArray(key, Rectangle.class, null);
-        Assert.assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+        Rectangle[] actual = defaultMap.getAsArray(key, Rectangle.class, null);
+        assertArrayEquals(String.format("Rectangle array for key='%s' not retrieved.", key), expected, actual);
+    }
+
+    @Test
+    public void testMutateResource1()
+    {
+        //resources obtained from ResourceMap should either be immutable, or if not, be a copy of the original, to prevent
+        //clients from changing its state
+        String key = "AbstractApplication.point";
+        Point expected = new Point(55,66);
+        Point harness = defaultMap.getAsPoint(key,null);
+        assertEquals("Expected Point not retrieved",expected, harness);
+        harness.x = -22; harness.y = -33; //mutate the Point instance
+        //getting it a second time should produce the original value
+        Point actual = defaultMap.getAsPoint(key, null);
+        assertEquals("Expected Point not retrieved", expected, actual);
+        assertNotSame("Second get call should return new instance", expected, actual);
+    }
+
+    @Test
+    public void testMutateResource2()
+    {
+        //resources obtained from ResourceMap should either be immutable, or if not, be a copy of the original, to prevent
+        //clients from changing its state
+        String key = "AbstractApplication.insets";
+        Insets expected = new Insets(9, 8, 7, 6);
+        Insets harness = defaultMap.getAsInsets(key, null);
+        assertEquals("Expected Insets not retrieved", expected, harness);
+        harness.set(-5,-6,-7,-8); //mutate the Insets instance
+        //getting it a second time should produce the original value
+        Insets actual = defaultMap.getAsInsets(key, null);
+        assertEquals("Expected Insets not retrieved", expected, actual);
+        assertNotSame("Second get call should return new instance", expected, actual);
+    }
+
+    @Test
+    public void testMutateStringArray()
+    {
+        String key = "AbstractApplication.array.string";
+        String[] expected = {"one", "two", "three"};
+        String[] harness  = defaultMap.getAsArrayString(key, null);
+        assertArrayEquals("Expected String[] not retrieved", expected, harness);
+        harness[0] = "foo";
+        harness[1] = "bar";
+        harness[2] = "baz";
+        //if ResourceMap returns same reference to this array each time, we've just mutated it
+        String[] actual = defaultMap.getAsArrayString(key, null);
+        assertArrayEquals("Expected String[] not retrieved after local mutate", expected, actual);
+        assertNotSame("Second get call should return new instance", expected, actual);
+    }
+
+    @Test
+    public void testMutate_int_array()
+    {
+        String key = "AbstractApplication.array.int";
+        int[] expected = {1 ,2, 3};
+        int[] harness = defaultMap.getAsArray_int(key, null);
+        assertArrayEquals("Expected int[] not retrieved", expected, harness);
+        harness[0] = 55;
+        harness[1] = 66;
+        harness[2] = 77;
+        //if ResourceMap returns same reference to this array each time, we've just mutated it
+        int[] actual = defaultMap.getAsArray_int(key, null);
+        assertArrayEquals("Expected int[] not retrieved after local mutate", expected, actual);
+        assertNotSame("Second get call should return new instance", expected, actual);
     }
 }

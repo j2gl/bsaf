@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jdesktop.application.convert.StringConvertException;
 import org.jdesktop.application.convert.ConverterRegistry;
 import org.jdesktop.application.convert.ResourceConverter;
+import org.jdesktop.application.inject.InjectorRegistry;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -211,8 +212,7 @@ public class ResourceMap
         if (value != null)
         {
             //value not null, we found it in the cache
-            //noinspection unchecked
-            return (T) value;
+            return (T) maybeCopy(value); //copy/clone if the type is mutable
         }
         else
         {
@@ -228,7 +228,53 @@ public class ResourceMap
         //convert this String value to the desired type
         value = convertResourceString(resourceKey, (String) value, conversionType, converters);
         conversionCache.put(new ConversionCacheKey<T>(resourceKey, conversionType), value);
-        return (T) value;
+        return (T) maybeCopy(value); //copy/clone if the type is mutable
+    }
+
+    private final static Set<Class<?>> IMMUTABLE_TYPES = ConverterRegistry.getImmutableTypes();
+
+    private <T> T maybeCopy(T value)
+    {
+        @SuppressWarnings({"unchecked"})
+        Class<T> type = (Class<T>) value.getClass(); //value is type T, so its Class object is a Class<T>, right? Right!
+
+        if (IMMUTABLE_TYPES.contains(type))
+        {
+            return value; //type is already immutable, no copy needed
+        }
+        if (type.isArray())
+        {
+
+            //todo - remove println
+            System.out.println(String.format("value %s is an array type %s", value, type));
+            Object[] objArray = (Object[]) value;
+            Object[] copyArray = Arrays.copyOf(objArray, objArray.length);
+            return (T) copyArray;
+        }
+        ResourceConverter<String, T> converter = getConverters().converterFor(type);
+        if (converter == null)
+        {
+            throw new IllegalArgumentException(String.format("No resource converter for destination type '%s', value=%s", type, value));
+        }
+        return converter.copy(value);
+    }
+
+    private Object copyArray(Object array)
+    {
+        Class type = array.getClass();
+        if (!type.isArray())
+        {
+            return array;
+        }
+
+        Class compType = type.getComponentType();
+
+        Object arrayCopy = Array.newInstance(compType, Array.getLength(array));
+        for (int i = 0, n = Array.getLength(array); i < n; i++)
+        {
+            Array.set(arrayCopy, i, maybeCopy(Array.get(array, i)));  //deep copy where needed
+        }
+        return arrayCopy;
     }
 
 
@@ -465,6 +511,12 @@ public class ResourceMap
         return getResourceAs(resourceKey, URL.class, converters);
     }
 
+    public MnemonicTextValue getAsMnemonicText(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    {
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        return getResourceAs(resourceKey, MnemonicTextValue.class, converters);
+    }
+
     /**
      * Returns true if this resourceMap or its parent (recursively) contains
      * the specified key.
@@ -510,52 +562,71 @@ public class ResourceMap
      * @return the Locale used to load all ResourceBundles in this ResourceMap.
      */
     @NotNull
-    public synchronized Locale getLocale()
+    public Locale getLocale()
     {
-        return locale;
+        synchronized (localeChangeMonitor)
+        {
+            return locale;
+        }
     }
 
     /**
      * Changes the Locale used by this ResourceMap when loading ResourceBundles. This method will cause all bundles
-     * to be re-loaded using the new Locale, and propigates the change in Locale to its parent, if one exists. When this method
+     * to be re-loaded using the new Locale, and propigates the change in Locale to all ResourceMaps that are part of
+     * its chain, either as a parent or child, if such a chain exists. When this method
      * returns, subsequent calls to any property getters will use the property values appropriate to the new Locale.
      *
      * @param newLocale if newLocale is the same as the current Locale, this method simply returns. If different,
      *                  the conversion cache is cleared, and all ResourceBundles are reloaded using the new Locale. The new Locale change
      *                  will be propogated up the chain if any parent ResourceMaps exist.
      */
-    public synchronized void setLocale(@NotNull Locale newLocale)
+    public void setLocale(@NotNull Locale newLocale)
     {
         assertNotNull(newLocale, String.class, "newLocale");
-        if (newLocale.equals(locale))
+        synchronized (localeChangeMonitor)
         {
-            return;
+            if (newLocale.equals(locale))
+            {
+                return;
+            }
+            getBottommostChild().setLocale_impl(newLocale);
         }
+    }
 
-        if (parent != null)
-        {
-            parent.setLocale(newLocale);
-        }
-        conversionCache.clear();
-        //current implementation includes all keys from this ResourceMap and its parent(s), so we must clear this
-        //set as well
-        resourceKeys = null;
-        Locale oldLocale = locale;
-        this.locale = newLocale;
-        //noinspection AccessToStaticFieldLockedOnInstance
-        logger.log(Level.FINE, String.format("Setting Locale to '%s' for ResourceMap for dir=%s", locale, getResourcesDir()));
-        loadBundles0(resourceBundleNames);
+    //we need a static variable as a monitor object since multiple ResourceMaps in the chain may be involved in a Locale change
+    //and we need to protect access across this entire transaction
+    private static final Object localeChangeMonitor = new Object();
 
-        if (parent == null)
+
+    private void setLocale_impl(Locale newLocale)
+    {
+        synchronized (localeChangeMonitor)
         {
-            //parent map is responsible for firing the notification event, so that only one is sent on behalf of the whole chain
-            pcs.firePropertyChange("locale", oldLocale, locale);
+            if (parent != null)
+            {
+                parent.setLocale_impl(newLocale);
+            }
+            conversionCache.clear();
+            //current implementation includes all keys from this ResourceMap and its parent(s), so we must clear this
+            //set as well
+            resourceKeys = null;
+            Locale oldLocale = locale;
+            this.locale = newLocale;
+            //noinspection AccessToStaticFieldLockedOnInstance
+            logger.log(Level.FINE, String.format("Setting Locale to '%s' for ResourceMap for dir=%s", locale, getResourcesDir()));
+            loadBundles0(resourceBundleNames);
+
+            if (child == null)
+            {
+                //child map is responsible for firing the notification event, so that only one is sent on behalf of the whole chain
+                pcs.firePropertyChange("locale", oldLocale, newLocale);
+            }
         }
     }
 
 
     /**
-     * @return an unmodifiable set of all keys in this resource map, including key from parent ResourceMaps.
+     * @return an unmodifiable set of all keys in this resource map, including keys from parent ResourceMaps.
      */
     @NotNull
     public synchronized Set<String> keySet()
@@ -633,6 +704,17 @@ public class ResourceMap
         return child;
     }
 
+    //navigate the ResourceMap chain and find the bottommost, i.e. leaf or base, ResourceMap, which has no child itself
+    private ResourceMap getBottommostChild()
+    {
+        ResourceMap currentNode = this;
+        while (currentNode.getChild() != null)
+        {
+            currentNode = currentNode.getChild();
+        }
+        return currentNode;
+    }
+
     /**
      * Makes the conversion cache for this ResourceMap instance empty.
      * This is not a transitive operation, i.e., any parent ResourceMapS are unaffected
@@ -646,11 +728,12 @@ public class ResourceMap
 
     /**
      * ResourceMaps can be reloaded when calling setLocale, so any set properties, including "platform",
-     *  will be deleted. If it is desired for a ResourceMap to hold properties set by user during program execution,
+     * will be deleted. If it is desired for a ResourceMap to hold properties set by user during program execution,
      * the ResourceManger should have to be refactored to contain a private ResourceMap that does
      * not get reloaded and serves as the map to always check first
-     * @deprecated to set platform see {@code ResourceManager.setPlatform() }
+     *
      * @see ResourceManager#setPlatform
+     * @deprecated to set platform see {@code ResourceManager.setPlatform() }
      */
     @Deprecated
     protected void putResource(@NotNull String resourceKey, Object resource)
@@ -662,14 +745,14 @@ public class ResourceMap
     }
 
     // Property Listener support. Right now I only intend to fire changes on "locale" so observers can re-load their resources with the new Locale bundle.
-    //If the ResourceMap is part of a chain, we delegate all property handling the the top of the chain, i.e., the RM with no parent.
+    //If the ResourceMap is part of a chain, we delegate all property handling the the bottom of the chain, i.e., the RM with no child.
     private PropertyChangeSupport pcs = new PropertyChangeSupport(ResourceMap.class);
 
     synchronized public void addPropertyChangeListener(PropertyChangeListener listener)
     {
-        if (parent != null)
+        if (child != null)
         {
-            parent.addPropertyChangeListener(listener);
+            child.addPropertyChangeListener(listener);
         }
         else
         {
@@ -679,9 +762,9 @@ public class ResourceMap
 
     synchronized public void removePropertyChangeListener(PropertyChangeListener listener)
     {
-        if (parent != null)
+        if (child != null)
         {
-            parent.removePropertyChangeListener(listener);
+            child.removePropertyChangeListener(listener);
         }
         else
         {
@@ -691,9 +774,9 @@ public class ResourceMap
 
     synchronized public PropertyChangeListener[] getPropertyChangeListeners()
     {
-        if (parent != null)
+        if (child != null)
         {
-            return parent.getPropertyChangeListeners();
+            return child.getPropertyChangeListeners();
         }
         else
         {
@@ -703,9 +786,9 @@ public class ResourceMap
 
     public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
     {
-        if (parent != null)
+        if (child != null)
         {
-            parent.addPropertyChangeListener(propertyName, listener);
+            child.addPropertyChangeListener(propertyName, listener);
         }
         else
         {
@@ -716,9 +799,9 @@ public class ResourceMap
 
     synchronized public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
     {
-        if (parent != null)
+        if (child != null)
         {
-            parent.removePropertyChangeListener(propertyName, listener);
+            child.removePropertyChangeListener(propertyName, listener);
         }
         else
         {
@@ -729,9 +812,9 @@ public class ResourceMap
 
     synchronized public PropertyChangeListener[] getPropertyChangeListeners(String propertyName)
     {
-        if (parent != null)
+        if (child != null)
         {
-            return parent.getPropertyChangeListeners(propertyName);
+            return child.getPropertyChangeListeners(propertyName);
         }
         else
         {
@@ -814,7 +897,7 @@ public class ResourceMap
     {
         if (o == null)
         {
-            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null."));
+            throw new IllegalArgumentException(String.format("parameter '%s' of type '%s' cannot be null.", paramName, type));
         }
     }
 
@@ -1180,7 +1263,7 @@ public class ResourceMap
 
         Class<?> arrayClass = Array.newInstance(componentType, 0).getClass();
         //The ConversionCache supports primitive array types as well as Reference array types, but we can't specify primitive
-        //component types as a parameterized (Generic) type, so we have to use wildcards in the method Type. "arrayClass" will
+        //component types as a parameterized (Generic) type, so we have to use wildcards in the Class type. "arrayClass" will
         //always be an array of the type supplied in the argument, so this statement is safe
         @SuppressWarnings("unchecked")
         ConversionCacheKey cacheKey = new ConversionCacheKey(resourceKey, arrayClass);
@@ -1189,7 +1272,7 @@ public class ResourceMap
         {
             //value not null, we found it in the cache
             //noinspection unchecked
-            return value;
+            return copyArray(value);
         }
         else
         {
@@ -1239,7 +1322,7 @@ public class ResourceMap
         }
 
         conversionCache.put(cacheKey, array);
-        return array;
+        return copyArray(array);
     }
 
 
@@ -1424,7 +1507,6 @@ public class ResourceMap
         int i = bundleName.lastIndexOf(".");
         return (i == -1) ? "" : bundleName.substring(0, i);
     }
-
 
 
     //-------------------------------------
@@ -1621,8 +1703,112 @@ public class ResourceMap
         return (ks != null) ? new Integer(ks.getKeyCode()) : null;
     }
 
+
+    //todo - this should be moved up to ResourceManager, and let ResourceManager be the entry point for calling inject
+    private InjectorRegistry injectors = null;
+
+    private InjectorRegistry getInjectors()
+    {
+        if (injectors == null)
+        {
+            injectors = new InjectorRegistry();
+            injectors.addDefaultInjectors();
+        }
+        return injectors;
+    }
     //Injection relatd code, copied from original ResourceMap implementation.
     //todo - refactor, extract this into separate classes and make injectors pluggable
+    /**
+     * Set each property in <tt>target</tt> to the value of
+     * the resource named <tt><i>componentName</i>.propertyName</tt>,
+     * where  <tt><i>componentName</i></tt> is the value of the
+     * target component's name property, i.e. the value of
+     * <tt>target.getName()</tt>.  The type of the resource must
+     * match the type of the corresponding property.  Properties
+     * that aren't defined by a resource aren't set.
+     * <p/>
+     * For example, given a button configured like this:
+     * <pre>
+     * myButton = new JButton();
+     * myButton.setName("myButton");
+     * </pre>
+     * And a ResourceBundle properties file with the following
+     * resources:
+     * <pre>
+     * myButton.text = Hello World
+     * myButton.foreground = 0, 0, 0
+     * myButton.preferredSize = 256, 256
+     * </pre>
+     * Then <tt>injectComponent(myButton)</tt> would initialize
+     * myButton's text, foreground, and preferredSize properties
+     * to <tt>Hello World</tt>, <tt>new Color(0,0,0)</tt>, and
+     * <tt>new Dimension(256,256)</tt> respectively.
+     * <p/>
+     * This method calls {@link #getObject} to look up resources
+     * and it uses {@link Introspector#getBeanInfo} to find
+     * the target component's properties.
+     * <p/>
+     * If target is null an IllegalArgumentException is thrown.  If a
+     * resource is found that matches the target component's name but
+     * the corresponding property can't be set, an (unchecked) {@link
+     * PropertyInjectionException} is thrown.
+     *
+     * @param target the Component to inject
+     * @throws LookupException            if an error occurs during lookup or string conversion
+     * @throws PropertyInjectionException if a property specified by a resource can't be set
+     * @throws IllegalArgumentException   if target is null
+     * @see #injectComponents
+     * @see #getObject
+     * @see org.jdesktop.application.ResourceConverter#forType
+     */
+    public void injectComponent(Component target)
+    {
+        if (target == null)
+        {
+            throw new IllegalArgumentException("null target");
+        }
+        getInjectors().injectorFor(target).inject(target,this, false);
+        //injectComponentProperties(target);
+    }
+
+
+    /**
+     * Applies {@link #injectComponent} to each Component in the
+     * hierarchy with root <tt>root</tt>.
+     *
+     * @param root the root of the component hierarchy
+     * @throws PropertyInjectionException if a property specified by a resource can't be set
+     * @throws IllegalArgumentException   if target is null
+     * @see #injectComponent
+     */
+    public void injectComponents(Component root)
+    {
+        getInjectors().injectorFor(root).inject(root, this, true);
+/*
+        injectComponent(root);
+        if (root instanceof JMenu)
+        {
+            *//* Warning: we're bypassing the popupMenu here because
+            * JMenu#getPopupMenu creates it; doesn't seem right
+            * to do so at injection time.  Unfortunately, this
+            * means that attempts to inject the popup menu's
+            * "label" property will fail.
+            *//*
+            JMenu menu = (JMenu) root;
+            for (Component child : menu.getMenuComponents())
+            {
+                injectComponents(child);
+            }
+        }
+        else if (root instanceof Container)
+        {
+            Container container = (Container) root;
+            for (Component child : container.getComponents())
+            {
+                injectComponents(child);
+            }
+        }*/
+    }
 
 
     /**
@@ -1687,6 +1873,7 @@ public class ResourceMap
         }
     }
 
+/*
     private void injectComponentProperty(Component component, PropertyDescriptor pd, String key)
     {
         Method setter = pd.getWriteMethod();
@@ -1740,9 +1927,11 @@ public class ResourceMap
         String componentName = component.getName();
         if (componentName != null)
         {
-            /* Optimization: punt early if componentName doesn't
+            */
+/* Optimization: punt early if componentName doesn't
             * appear in any componentName.propertyName resource keys
             */
+/*
             boolean matchingResourceFound = false;
             for (String key : keySet())
             {
@@ -1780,9 +1969,11 @@ public class ResourceMap
                     {
                         if ((i + 1) == key.length())
                         {
-                            /* key has no property name suffix, e.g. "myComponentName."
+                            */
+/* key has no property name suffix, e.g. "myComponentName."
                         * This is probably a mistake.
                         */
+/*
                             String msg = "component resource lacks property name suffix";
                             logger.warning(msg);
                             break;
@@ -1810,95 +2001,94 @@ public class ResourceMap
             }
         }
     }
+*/
+
+
+
+
+
 
     /**
-     * Set each property in <tt>target</tt> to the value of
-     * the resource named <tt><i>componentName</i>.propertyName</tt>,
-     * where  <tt><i>componentName</i></tt> is the value of the
-     * target component's name property, i.e. the value of
-     * <tt>target.getName()</tt>.  The type of the resource must
-     * match the type of the corresponding property.  Properties
-     * that aren't defined by a resource aren't set.
-     * <p/>
-     * For example, given a button configured like this:
+     * Set each field with a <tt>&#064;Resource</tt> annotation in the target object,
+     * to the value of a resource whose name is the simple name of the target
+     * class followed by "." followed by the name of the field.  If the
+     * key <tt>&#064;Resource</tt> parameter is specified, then a resource with that name
+     * is used instead.  Array valued fields can also be initialized
+     * with resources whose names end with "[index]".  For example:
      * <pre>
-     * myButton = new JButton();
-     * myButton.setName("myButton");
+     * class MyClass {
+     *   &#064;Resource String sOne;
+     *   &#064;Resource(key="sTwo") String s2;
+     *   &#064;Resource int[] numbers = new int[2];
+     * }
      * </pre>
-     * And a ResourceBundle properties file with the following
-     * resources:
+     * Given the previous class and the following resource file:
      * <pre>
-     * myButton.text = Hello World
-     * myButton.foreground = 0, 0, 0
-     * myButton.preferredSize = 256, 256
+     * MyClass.sOne = One
+     * sTwo = Two
+     * MyClass.numbers[0] = 10
+     * MyClass.numbers[1] = 11
      * </pre>
-     * Then <tt>injectComponent(myButton)</tt> would initialize
-     * myButton's text, foreground, and preferredSize properties
-     * to <tt>Hello World</tt>, <tt>new Color(0,0,0)</tt>, and
-     * <tt>new Dimension(256,256)</tt> respectively.
+     * Then <tt>injectFields(new MyClass())</tt> would initialize the MyClass
+     * <tt>sOne</tt> field to "One", the <tt>s2</tt> field to "Two", and the
+     * two elements of the numbers array to 10 and 11.
      * <p/>
-     * This method calls {@link #getObject} to look up resources
-     * and it uses {@link Introspector#getBeanInfo} to find
-     * the target component's properties.
-     * <p/>
-     * If target is null an IllegalArgumentException is thrown.  If a
-     * resource is found that matches the target component's name but
-     * the corresponding property can't be set, an (unchecked) {@link
-     * PropertyInjectionException} is thrown.
+     * If <tt>target</tt> is null an IllegalArgumentException is
+     * thrown.  If an error occurs during resource lookup, then an
+     * unchecked LookupException is thrown.  If a target field marked
+     * with <tt>&#064;Resource</tt> can't be set, then an unchecked
+     * InjectFieldException is thrown.
      *
-     * @param target the Component to inject
-     * @throws LookupException            if an error occurs during lookup or string conversion
-     * @throws PropertyInjectionException if a property specified by a resource can't be set
-     * @throws IllegalArgumentException   if target is null
-     * @see #injectComponents
+     * @param target the object whose fields will be initialized
+     * @throws LookupException          if an error occurs during lookup or string conversion
+     * @throws InjectFieldException     if a field can't be set
+     * @throws IllegalArgumentException if target is null
      * @see #getObject
-     * @see org.jdesktop.application.ResourceConverter#forType
      */
-    public void injectComponent(Component target)
+    public void injectFields(Object target)
     {
         if (target == null)
         {
             throw new IllegalArgumentException("null target");
         }
-        injectComponentProperties(target);
-    }
-
-
-    /**
-     * Applies {@link #injectComponent} to each Component in the
-     * hierarchy with root <tt>root</tt>.
-     *
-     * @param root the root of the component hierarchy
-     * @throws PropertyInjectionException if a property specified by a resource can't be set
-     * @throws IllegalArgumentException   if target is null
-     * @see #injectComponent
-     */
-    public void injectComponents(Component root)
-    {
-        injectComponent(root);
-        if (root instanceof JMenu)
+        Class targetType = target.getClass();
+        if (targetType.isArray())
         {
-            /* Warning: we're bypassing the popupMenu here because
-            * JMenu#getPopupMenu creates it; doesn't seem right
-            * to do so at injection time.  Unfortunately, this
-            * means that attempts to inject the popup menu's
-            * "label" property will fail.
-            */
-            JMenu menu = (JMenu) root;
-            for (Component child : menu.getMenuComponents())
+            throw new IllegalArgumentException("array target");
+        }
+        String keyPrefix = targetType.getSimpleName() + ".";
+        for (Field field : targetType.getDeclaredFields())
+        {
+            Resource resource = field.getAnnotation(Resource.class);
+            if (resource != null)
             {
-                injectComponents(child);
+                String rKey = resource.key();
+                String key = (rKey.length() > 0) ? rKey : keyPrefix + field.getName();
+                injectField(field, target, key);
             }
         }
-        else if (root instanceof Container)
+        logger.log(Level.FINE, String.format("injectFields called for %s", target));
+        for (Method method : targetType.getMethods())
         {
-            Container container = (Container) root;
-            for (Component child : container.getComponents())
+            String methodName = method.getName();
+            if (methodName.startsWith("set") && method.getParameterTypes().length == 1 && methodName.length() > 3)
             {
-                injectComponents(child);
+                //this is a setter method
+                StringBuilder propName = new StringBuilder(methodName.substring(3));
+                propName.setCharAt(0, Character.toLowerCase(propName.charAt(0)));
+
+                Resource resource = method.getAnnotation(Resource.class);
+                if (resource != null)
+                {
+                    String rKey = resource.key();
+                    String key = (rKey.length() > 0) ? rKey : keyPrefix + propName;
+                    injectMethod(method, target, key);
+                }
+
             }
         }
     }
+
 
     /**
      * Unchecked exception thrown by {@link #injectFields} when
@@ -2056,86 +2246,5 @@ public class ResourceMap
             }
         }
 
-    }
-
-    /**
-     * Set each field with a <tt>&#064;Resource</tt> annotation in the target object,
-     * to the value of a resource whose name is the simple name of the target
-     * class followed by "." followed by the name of the field.  If the
-     * key <tt>&#064;Resource</tt> parameter is specified, then a resource with that name
-     * is used instead.  Array valued fields can also be initialized
-     * with resources whose names end with "[index]".  For example:
-     * <pre>
-     * class MyClass {
-     *   &#064;Resource String sOne;
-     *   &#064;Resource(key="sTwo") String s2;
-     *   &#064;Resource int[] numbers = new int[2];
-     * }
-     * </pre>
-     * Given the previous class and the following resource file:
-     * <pre>
-     * MyClass.sOne = One
-     * sTwo = Two
-     * MyClass.numbers[0] = 10
-     * MyClass.numbers[1] = 11
-     * </pre>
-     * Then <tt>injectFields(new MyClass())</tt> would initialize the MyClass
-     * <tt>sOne</tt> field to "One", the <tt>s2</tt> field to "Two", and the
-     * two elements of the numbers array to 10 and 11.
-     * <p/>
-     * If <tt>target</tt> is null an IllegalArgumentException is
-     * thrown.  If an error occurs during resource lookup, then an
-     * unchecked LookupException is thrown.  If a target field marked
-     * with <tt>&#064;Resource</tt> can't be set, then an unchecked
-     * InjectFieldException is thrown.
-     *
-     * @param target the object whose fields will be initialized
-     * @throws LookupException          if an error occurs during lookup or string conversion
-     * @throws InjectFieldException     if a field can't be set
-     * @throws IllegalArgumentException if target is null
-     * @see #getObject
-     */
-    public void injectFields(Object target)
-    {
-        if (target == null)
-        {
-            throw new IllegalArgumentException("null target");
-        }
-        Class targetType = target.getClass();
-        if (targetType.isArray())
-        {
-            throw new IllegalArgumentException("array target");
-        }
-        String keyPrefix = targetType.getSimpleName() + ".";
-        for (Field field : targetType.getDeclaredFields())
-        {
-            Resource resource = field.getAnnotation(Resource.class);
-            if (resource != null)
-            {
-                String rKey = resource.key();
-                String key = (rKey.length() > 0) ? rKey : keyPrefix + field.getName();
-                injectField(field, target, key);
-            }
-        }
-        logger.log(Level.FINE, String.format("injectFields called for %s", target));
-        for (Method method : targetType.getMethods())
-        {
-            String methodName = method.getName();
-            if (methodName.startsWith("set") && method.getParameterTypes().length == 1 && methodName.length() > 3)
-            {
-                //this is a setter method
-                StringBuilder propName = new StringBuilder(methodName.substring(3));
-                propName.setCharAt(0, Character.toLowerCase(propName.charAt(0)));
-
-                Resource resource = method.getAnnotation(Resource.class);
-                if (resource != null)
-                {
-                    String rKey = resource.key();
-                    String key = (rKey.length() > 0) ? rKey : keyPrefix + propName;
-                    injectMethod(method, target, key);
-                }
-
-            }
-        }
     }
 }

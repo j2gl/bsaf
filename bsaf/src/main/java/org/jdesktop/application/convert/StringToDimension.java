@@ -25,5 +25,10 @@ public class StringToDimension extends ResourceConverter<String, Dimension>
         return d;
     }
 
-
+    @Override
+    public Dimension copy(Dimension source)
+    {
+        assertNotNull(source, Dimension.class, "source");
+        return new Dimension(source);
+    }
 }
