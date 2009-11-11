@@ -76,6 +76,7 @@ public class TestResourceMapCaching1
     } // methodSetup()
 
 
+    @SuppressWarnings({"unchecked"})
     private Object getResource()
     {
         Object value =  null;

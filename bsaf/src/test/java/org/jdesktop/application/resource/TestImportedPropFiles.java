@@ -45,7 +45,7 @@ public class TestImportedPropFiles
                                                "org.jdesktop.application.resource.resources.Actions");
 
         //difference between SAF and my code - these are lazily loaded in SAF, so we have to force a lookup to load all bundles
-        defaultManager.getAsString("foo", null);
+        defaultManager.getString("foo");
 
         List<String> actual = defaultManager.getBundleNames();
 
@@ -58,7 +58,7 @@ public class TestImportedPropFiles
     public void testMainFileProperty()
     {
         String expected = "SpecializedApplication";
-        String actual = defaultManager.getAsString("SpecializedApplication", null);
+        String actual = defaultManager.getString("SpecializedApplication");
         assertEquals("Property value from main bundle should match expected.", expected, actual);
     }
 
@@ -66,7 +66,7 @@ public class TestImportedPropFiles
     public void testPropOverride1()
     {
         String expected = "Hola!";
-        String actual = defaultManager.getAsString("hello", null);
+        String actual = defaultManager.getString("hello");
         assertEquals("Property value from ExprEval should be overriden by main propfile value.", expected, actual);
     }
 
@@ -74,7 +74,7 @@ public class TestImportedPropFiles
     public void testPropOverride2()
     {
         String expected = "La Venta Sin Titulo";
-        String actual = defaultManager.getAsString("UNTITLED_WINDOW_NAME", null);
+        String actual = defaultManager.getString("UNTITLED_WINDOW_NAME");
         assertEquals("Property value from ExprEval should be overriden by main propfile value.", expected, actual);
     }
 
@@ -84,7 +84,7 @@ public class TestImportedPropFiles
         //substitution expression is loaded from ExprEval, but value for key "hello" is overriden in  SpecializedApplication
         //helloworld2 = ${hello} ${world}
         String expected = "Hola! World";
-        String actual = defaultManager.getAsString("helloworld2", null);
+        String actual = defaultManager.getString("helloworld2");
         assertEquals("Substitution value from ExprEval should be overriden by main propfile value.", expected, actual);
     }
 
@@ -93,7 +93,7 @@ public class TestImportedPropFiles
     {
         //expr4 = Here is a nested \\${fooKey${fooKey}} String ${barKey}
         String expected = "Here is a nested ${fooKeyHere is a String} String barValue";
-        String actual = defaultManager.getAsString("expr4", null);
+        String actual = defaultManager.getString("expr4");
         assertEquals("Substitution value from ExprEval should be overriden by main propfile value.", expected, actual);
 
     }
@@ -102,14 +102,14 @@ public class TestImportedPropFiles
     public void testCircularDependency1()
     {
         String expected = "bazKey";
-        String actual = defaultManager.getAsString("bazKey", null);
+        String actual = defaultManager.getString("bazKey");
         assertEquals("bazKey is defined circularly", expected, actual);
     }
     @Test(expected = ResourceMap.LookupException.class)
     public void testCircularDependency2()
     {
         String expected = "expr6";
-        String actual = defaultManager.getAsString("expr6", null);
+        String actual = defaultManager.getString("expr6");
         assertEquals("Substitution value from ExprEval should be overriden by main propfile value.", expected, actual);
     }
 
@@ -118,7 +118,7 @@ public class TestImportedPropFiles
     {
         //longKey
         String expected = "green Hola! La Venta Sin Titulo Here is a String Here is a nested ${fooKeyHere is a String = null = null} String barValue";
-        String actual = defaultManager.getAsString("longKey", null);
+        String actual = defaultManager.getString("longKey");
         assertEquals("long expression should be correctly parsed", expected, actual);
     }
 

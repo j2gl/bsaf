@@ -62,7 +62,7 @@ public class TestExpressionEval
         {
             try
             {
-                actual = defaultMap.getAsString(resourceKey, null);
+                actual = defaultMap.getString(resourceKey);
                 fail(String.format("getting String resource '%s' should throw %s", resourceKey, exceptionType.getClass().getSimpleName()));
 
             }
@@ -80,7 +80,7 @@ public class TestExpressionEval
         }
         else
         {
-            actual = defaultMap.getAsString(resourceKey, null);
+            actual = defaultMap.getString(resourceKey);
             assertEquals(String.format("Evaluating String for resourceKey '%s' should return expected value.", resourceKey), expected, actual);
         }
     }

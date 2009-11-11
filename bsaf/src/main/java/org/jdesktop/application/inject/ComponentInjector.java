@@ -24,12 +24,6 @@ public class ComponentInjector extends ResourceInjector<Component>
         super(Component.class);
     }
 
-    //something that extends Component can be cast to Component safely
-    @SuppressWarnings({"unchecked"})
-    public ComponentInjector(Class<? extends Component> targetType)
-    {
-        super((Class<Component>) targetType);
-    }
 
     @Override
     public Component inject(@NotNull Component target, @NotNull ResourceMap properties, boolean recursively) throws PropertyInjectionException
@@ -51,11 +45,10 @@ public class ComponentInjector extends ResourceInjector<Component>
             Container container = (Container) target;
             for (Component child : container.getComponents())
             {
-                ResourceInjector ri = getInjectorRegistry().injectorFor(child);
+                ResourceInjector<Component> ri = getInjectorRegistry().injectorFor(child);
                 //todo - remove println
                // System.out.println(String.format("ComponentInjector : child = %s, ri = %s",child.getClass().getSimpleName(), ri));
                 ri.inject(child,properties,true);
-                //inject_impl(child, properties, true);
             }
         }
         return target;

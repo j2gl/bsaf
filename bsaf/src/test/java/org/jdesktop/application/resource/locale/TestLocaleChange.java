@@ -48,7 +48,7 @@ public class TestLocaleChange
         ResourceMap child = new ResourceMap(Arrays.asList("org.jdesktop.application.resource.locale.child.resources.Child"), defaultLocale);
         child.setParent(parent);
         //force loading
-        child.getAsString("foo", null);
+        child.getString("foo");
         return child;
     }
 
@@ -58,7 +58,7 @@ public class TestLocaleChange
         ResourceMap child = new ResourceMap(Arrays.asList("org.jdesktop.application.resource.locale.child.resources.Child"), new Locale("es"));
         child.setParent(parent);
         //force loading
-        child.getAsString("foo", null);
+        child.getString("foo");
         return child;
     }
 
@@ -75,23 +75,23 @@ public class TestLocaleChange
         assertArrayEquals("Expect all Parent resource bundles to be loaded", expectedCBundles, rm.getBundleNames().toArray());
 
         //always exists for all locales:
-        assertEquals("Correct property value not found.", "Parent.default", rm.getAsString("Parent.default", null));
-        assertEquals("Correct property value not found.", "Child.default", rm.getAsString("Child.default", null));
+        assertEquals("Correct property value not found.", "Parent.default", rm.getString("Parent.default"));
+        assertEquals("Correct property value not found.", "Child.default", rm.getString("Child.default"));
 
 
         //these properties exist for Parent & Child, but will be shadowed by the es locale
         //Parent:
-        assertEquals("Correct property Parent value not found.", "Parent.default", rm.getAsString("Parent.default",null));
-        assertEquals("Correct property Parent value not found.", "parentKey1.default", rm.getAsString("parentKey1", null));
-        assertEquals("Correct property Parent value not found.", "parentKey2.default", rm.getAsString("parentKey2", null));
+        assertEquals("Correct property Parent value not found.", "Parent.default", rm.getString("Parent.default"));
+        assertEquals("Correct property Parent value not found.", "parentKey1.default", rm.getString("parentKey1"));
+        assertEquals("Correct property Parent value not found.", "parentKey2.default", rm.getString("parentKey2"));
         //Child:
-        assertEquals("Correct property Child value not found.", "Child.default", rm.getAsString("Child.default", null));
-        assertEquals("Correct property Child value not found.", "childKey1.default", rm.getAsString("childKey1", null));
-        assertEquals("Correct property Child value not found.", "childKey2.default", rm.getAsString("childKey2", null));
+        assertEquals("Correct property Child value not found.", "Child.default", rm.getString("Child.default"));
+        assertEquals("Correct property Child value not found.", "childKey1.default", rm.getString("childKey1"));
+        assertEquals("Correct property Child value not found.", "childKey2.default", rm.getString("childKey2"));
 
         //shadowed by both Child and es locale
-        assertEquals("Shared property value not properly shadowed.", "Child.key1.default", rm.getAsString("key1", null));
-        assertEquals("Shared property value not properly shadowed.", "Child.key2.default", rm.getAsString("key2", null));
+        assertEquals("Shared property value not properly shadowed.", "Child.key1.default", rm.getString("key1"));
+        assertEquals("Shared property value not properly shadowed.", "Child.key2.default", rm.getString("key2"));
 
         return true;
     }
@@ -109,25 +109,25 @@ public class TestLocaleChange
         assertArrayEquals("Expect all Parent resource bundles to be loaded", expectedCBundles, rm.getBundleNames().toArray());
 
         //always exists for all locales:
-        assertEquals("Correct property value not found.", "Parent.default", rm.getAsString("Parent.default", null));
-        assertEquals("Correct property value not found.", "Child.default", rm.getAsString("Child.default", null));
+        assertEquals("Correct property value not found.", "Parent.default", rm.getString("Parent.default"));
+        assertEquals("Correct property value not found.", "Child.default", rm.getString("Child.default"));
 
         //only exists for Spanish locale
-        assertEquals("Correct property value not found.", "Parent.es", rm.getAsString("Parent.es", null));
-        assertEquals("Correct property value not found.", "Child.es", rm.getAsString("Child.es", null));
+        assertEquals("Correct property value not found.", "Parent.es", rm.getString("Parent.es"));
+        assertEquals("Correct property value not found.", "Child.es", rm.getString("Child.es"));
 
 
         //these properties exist for Parent & Child, but will be shadowed by the es locale
         //Parent:
-        assertEquals("Correct property Parent value not found.", "parentKey1.es", rm.getAsString("parentKey1", null));
-        assertEquals("Correct property Parent value not found.", "parentKey2.es", rm.getAsString("parentKey2", null));
+        assertEquals("Correct property Parent value not found.", "parentKey1.es", rm.getString("parentKey1"));
+        assertEquals("Correct property Parent value not found.", "parentKey2.es", rm.getString("parentKey2"));
         //Child:
-        assertEquals("Correct property Child value not found.", "childKey1.es", rm.getAsString("childKey1", null));
-        assertEquals("Correct property Child value not found.", "childKey2.es", rm.getAsString("childKey2", null));
+        assertEquals("Correct property Child value not found.", "childKey1.es", rm.getString("childKey1"));
+        assertEquals("Correct property Child value not found.", "childKey2.es", rm.getString("childKey2"));
 
         //shadows both Child and default locale
-        assertEquals("Shared property value not properly shadowed.", "Child.key1.es", rm.getAsString("key1", null));
-        assertEquals("Shared property value not properly shadowed.", "Child.key2.es", rm.getAsString("key2", null));
+        assertEquals("Shared property value not properly shadowed.", "Child.key1.es", rm.getString("key1"));
+        assertEquals("Shared property value not properly shadowed.", "Child.key2.es", rm.getString("key2"));
 
         return true;
     }

@@ -1,7 +1,6 @@
 package org.jdesktop.application.resource;
 
 import org.junit.*;
-import org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertArrayEquals;
@@ -338,11 +337,11 @@ public class TestGetArrays
         //clients from changing its state
         String key = "AbstractApplication.point";
         Point expected = new Point(55,66);
-        Point harness = defaultMap.getAsPoint(key,null);
+        Point harness = defaultMap.getPoint(key);
         assertEquals("Expected Point not retrieved",expected, harness);
         harness.x = -22; harness.y = -33; //mutate the Point instance
         //getting it a second time should produce the original value
-        Point actual = defaultMap.getAsPoint(key, null);
+        Point actual = defaultMap.getPoint(key);
         assertEquals("Expected Point not retrieved", expected, actual);
         assertNotSame("Second get call should return new instance", expected, actual);
     }
@@ -354,11 +353,11 @@ public class TestGetArrays
         //clients from changing its state
         String key = "AbstractApplication.insets";
         Insets expected = new Insets(9, 8, 7, 6);
-        Insets harness = defaultMap.getAsInsets(key, null);
+        Insets harness = defaultMap.getInsets(key);
         assertEquals("Expected Insets not retrieved", expected, harness);
         harness.set(-5,-6,-7,-8); //mutate the Insets instance
         //getting it a second time should produce the original value
-        Insets actual = defaultMap.getAsInsets(key, null);
+        Insets actual = defaultMap.getInsets(key);
         assertEquals("Expected Insets not retrieved", expected, actual);
         assertNotSame("Second get call should return new instance", expected, actual);
     }

@@ -49,7 +49,7 @@ public class ActionInjector extends ResourceInjector<Action>
         String textKey = baseName + ".Action.text";
         if (resourceMap.containsKey(textKey))
         {
-            String text = resourceMap.getAsString(textKey, null);
+            String text = resourceMap.getString(textKey);
             if (text != null)
             {
                 MnemonicTextValue value = resourceMap.getResourceAs(textKey, MnemonicTextValue.class, null);
@@ -67,25 +67,25 @@ public class ActionInjector extends ResourceInjector<Action>
             }
         }
         // Action.mnemonic => Action.MNEMONIC_KEY
-        KeyStroke mnemonicKS = resourceMap.getAsKeyStroke(baseName + ".Action.mnemonic", null);
+        KeyStroke mnemonicKS = resourceMap.getKeyStroke(baseName + ".Action.mnemonic");
         if (mnemonicKS != null)
         {
             action.putValue(Action.MNEMONIC_KEY, mnemonicKS.getKeyCode());
         }
         // Action.mnemonic => Action.DISPLAYED_MNEMONIC_INDEX_KEY
-        Integer index = resourceMap.getAsInteger(baseName + ".Action.displayedMnemonicIndex", null);
+        Integer index = resourceMap.getInteger(baseName + ".Action.displayedMnemonicIndex");
         if (index != null)
         {
             action.putValue(Action.DISPLAYED_MNEMONIC_INDEX_KEY, index);
         }
         // Action.accelerator => Action.ACCELERATOR_KEY
-        KeyStroke key = resourceMap.getAsKeyStroke(baseName + ".Action.accelerator", null);
+        KeyStroke key = resourceMap.getKeyStroke(baseName + ".Action.accelerator");
         if (key != null)
         {
             action.putValue(Action.ACCELERATOR_KEY, key);
         }
         // Action.icon => Action.SMALL_ICON,LARGE_ICON_KEY
-        Icon icon = resourceMap.getAsImageIcon(baseName + ".Action.icon", null);
+        Icon icon = resourceMap.getImageIcon(baseName + ".Action.icon");
         if (icon != null)
         {
             action.putValue(Action.SMALL_ICON, icon);
@@ -93,32 +93,32 @@ public class ActionInjector extends ResourceInjector<Action>
             iconOrNameSpecified = true;
         }
         // Action.smallIcon => Action.SMALL_ICON
-        Icon smallIcon = resourceMap.getAsImageIcon(baseName + ".Action.smallIcon", null);
+        Icon smallIcon = resourceMap.getImageIcon(baseName + ".Action.smallIcon");
         if (smallIcon != null)
         {
             action.putValue(Action.SMALL_ICON, smallIcon);
             iconOrNameSpecified = true;
         }
         // Action.largeIcon => Action.LARGE_ICON
-        Icon largeIcon = resourceMap.getAsImageIcon(baseName + ".Action.largeIcon", null);
+        Icon largeIcon = resourceMap.getImageIcon(baseName + ".Action.largeIcon");
         if (largeIcon != null)
         {
             action.putValue(Action.LARGE_ICON_KEY, largeIcon);
             iconOrNameSpecified = true;
         }
         // Action.shortDescription => Action.SHORT_DESCRIPTION
-        String shortDescription = resourceMap.getAsString(baseName + ".Action.shortDescription", null);
+        String shortDescription = resourceMap.getString(baseName + ".Action.shortDescription");
         if (shortDescription != null && !shortDescription.isEmpty())
         {
             action.putValue(Action.SHORT_DESCRIPTION,
-                     resourceMap.getAsString(baseName + ".Action.shortDescription", null));
+                     resourceMap.getString(baseName + ".Action.shortDescription"));
         }
         // Action.longDescription => Action.LONG_DESCRIPTION
         action.putValue(Action.LONG_DESCRIPTION,
-                 resourceMap.getAsString(baseName + ".Action.longDescription", null));
+                 resourceMap.getString(baseName + ".Action.longDescription"));
         // Action.command => Action.ACTION_COMMAND_KEY
         action.putValue(Action.ACTION_COMMAND_KEY,
-                 resourceMap.getAsString(baseName + ".Action.command", null));
+                 resourceMap.getString(baseName + ".Action.command"));
         // If no visual was defined for this Action, i.e. no text
         // and no icon, then we default Action.NAME
         if (!iconOrNameSpecified)

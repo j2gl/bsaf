@@ -104,12 +104,14 @@ public class ConverterRegistry
      *         converting from sourceType to target type has been registered
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     public <S, D> ResourceConverter<S, D> converterFor(@NotNull Class<S> sourceType, @NotNull Class<D> targetType)
     {
         assertNotNull(sourceType, Class.class, "sourceType");
         assertNotNull(targetType, Class.class, "targetType");
         if (targetType.isPrimitive())
         {
+
             targetType = wrapperClassForPrimativeType(targetType); //not sure about this cast. Can this ever fail?
         }
 

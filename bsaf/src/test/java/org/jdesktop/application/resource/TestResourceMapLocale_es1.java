@@ -64,6 +64,7 @@ public class TestResourceMapLocale_es1
     {
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void testGetResource()
     {

@@ -208,7 +208,7 @@ abstract public class ResourceInjector<T>
             catch (IntrospectionException e)
             {
                 String msg = "introspection failed";
-                ResourceMap.InjectFieldException ife = new ResourceMap.InjectFieldException(msg, null, target, null);
+                InjectFieldException ife = new InjectFieldException(msg, null, target, null);
                 ife.initCause(e);
                 throw ife;
             }
@@ -279,7 +279,7 @@ abstract public class ResourceInjector<T>
             {
                 String pdn = ps.propName;
                 String msg = "property setter failed";
-                ResourceMap.InjectFieldException ife = new ResourceMap.InjectFieldException(msg, setter, target, key);
+                InjectFieldException ife = new InjectFieldException(msg, setter, target, key);
                 ife.initCause(e);
                 throw ife;
             }
@@ -288,13 +288,13 @@ abstract public class ResourceInjector<T>
         {
             String pdn = ps.propName;
             String msg = "no value specified for resource";
-            throw new ResourceMap.InjectFieldException(msg, setter, target, key);
+            throw new InjectFieldException(msg, setter, target, key);
         }
         else if (setter == null)
         {
             String pdn = ps.propName;
             String msg = "can't set read-only property";
-            throw new ResourceMap.InjectFieldException(msg, setter, target, key);
+            throw new InjectFieldException(msg, setter, target, key);
         }
     }
 
@@ -315,6 +315,7 @@ abstract public class ResourceInjector<T>
         }
         return name;
     }
+
     
     protected void assertNotNull(Object o, Class type, String paramName)
     {

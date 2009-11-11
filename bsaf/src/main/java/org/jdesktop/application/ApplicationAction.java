@@ -436,20 +436,20 @@ public class ApplicationAction extends AbstractAction {
             putValue(javax.swing.Action.ACCELERATOR_KEY, key);
         }
         // Action.icon => Action.SMALL_ICON,LARGE_ICON_KEY
-        Icon icon = resourceMap.getIcon(baseName + ".Action.icon");
+        Icon icon = resourceMap.getImageIcon(baseName + ".Action.icon");
         if (icon != null) {
             putValue(javax.swing.Action.SMALL_ICON, icon);
             putValue(LARGE_ICON_KEY, icon);
             iconOrNameSpecified = true;
         }
         // Action.smallIcon => Action.SMALL_ICON
-        Icon smallIcon = resourceMap.getIcon(baseName + ".Action.smallIcon");
+        Icon smallIcon = resourceMap.getImageIcon(baseName + ".Action.smallIcon");
         if (smallIcon != null) {
             putValue(javax.swing.Action.SMALL_ICON, smallIcon);
             iconOrNameSpecified = true;
         }
         // Action.largeIcon => Action.LARGE_ICON
-        Icon largeIcon = resourceMap.getIcon(baseName + ".Action.largeIcon");
+        Icon largeIcon = resourceMap.getImageIcon(baseName + ".Action.largeIcon");
         if (largeIcon != null) {
             putValue(LARGE_ICON_KEY, largeIcon);
             iconOrNameSpecified = true;

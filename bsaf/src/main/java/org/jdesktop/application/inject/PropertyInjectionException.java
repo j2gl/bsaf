@@ -10,6 +10,7 @@ import java.awt.*;
  *
  * @see ResourceInjector#inject
  */
+@SuppressWarnings({"SerializableHasSerializationMethods"})
 public class PropertyInjectionException extends RuntimeException
 {
     private static final long serialVersionUID = 1;

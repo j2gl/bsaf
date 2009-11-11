@@ -94,16 +94,17 @@ public class InjectorRegistry
     /**
      * Returns a specific subclass of ResourceInjector that can be used to inject property resources into the argument instance.
      * This method will return the most specific injector for the type of the argument, or an instance of DefaultInjector if
-     * there are no injectors registered for the type of the argument, or any of its supertyeps.
+     * there are no injectors registered for the type of the argument, or any of its supertypes.
      *
      * @param instance an object to be injected, for which the appropriate ResourceInjector will be returned. Eg, if instance is
      * a JButton, an AbstractButtonInjector is returned.
      * @param <T> The type of the instance to be injected
      * @return a ResourceInjector that can be used to inject property resources into the argument instance.
      */
-    public <T> ResourceInjector<T> injectorFor(T instance)
+    public <T> ResourceInjector<T> injectorFor(@NotNull T instance)
     {
-        Class<?> c = instance.getClass();
+        @SuppressWarnings({"unchecked"})
+        Class<T> c = (Class<T>) instance.getClass(); //if instance is of type T, its class is Class<T>
         return (ResourceInjector<T>) injectorFor((Class<T>)c);
     }
 
@@ -117,6 +118,7 @@ public class InjectorRegistry
      * @param <T> The type of the instance to be injected
      * @return a ResourceInjector that can be used to inject property resources into objects of the argument type.
      */
+    @SuppressWarnings({"unchecked"})
     public <T> ResourceInjector<T> injectorFor(@NotNull Class<T> targetType)
     {
         //first look for an exact match on the targetType

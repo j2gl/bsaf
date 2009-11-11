@@ -7,6 +7,7 @@ import org.jdesktop.application.convert.StringConvertException;
 import org.jdesktop.application.convert.ConverterRegistry;
 import org.jdesktop.application.convert.ResourceConverter;
 import org.jdesktop.application.inject.InjectorRegistry;
+import org.jdesktop.application.inject.AnnotatedFieldInjector;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,10 +16,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -26,8 +24,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /*
@@ -231,6 +227,11 @@ public class ResourceMap
         return (T) maybeCopy(value); //copy/clone if the type is mutable
     }
 
+    public <T> T getResourceAs(@NotNull String resourceKey, @NotNull Class<T> conversionType)
+    {
+        return getResourceAs(resourceKey, conversionType, null);
+    }
+
     private final static Set<Class<?>> IMMUTABLE_TYPES = ConverterRegistry.getImmutableTypes();
 
     private <T> T maybeCopy(T value)
@@ -249,7 +250,8 @@ public class ResourceMap
             System.out.println(String.format("value %s is an array type %s", value, type));
             Object[] objArray = (Object[]) value;
             Object[] copyArray = Arrays.copyOf(objArray, objArray.length);
-            return (T) copyArray;
+            @SuppressWarnings({"unchecked"}) T cast = (T) copyArray;
+            return cast;
         }
         ResourceConverter<String, T> converter = getConverters().converterFor(type);
         if (converter == null)
@@ -404,187 +406,203 @@ public class ResourceMap
      * Overloaded version allows caller to specify a ConverterRegisty, containing a string-to-string converter.
      *
      * @param resourceKey the key for the desired String
-     * @param converters  if null, the ResoureMap's default converters are used. If not null,looks up the converter to use
-     *                    from the object in the argument
      * @return the string value of the resourceKey, converted if a string-to-string converter was provided.
      */
     @Nullable
-    public String getAsString(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public String getString(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
         //all resources are internally stored as strings
-        return getResourceAs(resourceKey, String.class, converters);
+        return getResourceAs(resourceKey, String.class);
     }
+
+    public String getString(@NotNull String resourceKey, Object... args)
+    {
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        if (args.length == 0)
+        {
+            return getString(resourceKey);
+        }
+        else
+        {
+            String format = getString(resourceKey);
+            return (format == null) ? null : String.format(format, args);
+        }
+    }
+
 
     /**
      * @param resourceKey name of property to retrieve as converted to a Boolean type
-     * @param converters  optional (null allowed.) A custom ConverterRegistry used if passed in.
      * @return Boolean.TRUE if the named resource is present in the map and has a value of "true", as specified by the converter.
      *         Returns false if the named resource is present in the map and has a value that does not evaluate to true. Returns null
      *         if the resource is not found
      */
-    public Boolean getAsBoolean(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Boolean getBoolean(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Boolean.class, converters);
+        return getResourceAs(resourceKey, Boolean.class);
     }
 
 
-    public Character getAsCharacter(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Character getCharacter(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Character.class, converters);
+        return getResourceAs(resourceKey, Character.class);
     }
 
-    public Color getAsColor(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Color getColor(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Color.class, converters);
+        return getResourceAs(resourceKey, Color.class);
     }
 
-    public Dimension getAsDimension(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Dimension getDimension(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Dimension.class, converters);
+        return getResourceAs(resourceKey, Dimension.class);
     }
 
-    public EmptyBorder getAsEmptyBorder(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public EmptyBorder getEmptyBorder(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, EmptyBorder.class, converters);
+        return getResourceAs(resourceKey, EmptyBorder.class);
     }
 
-    public Font getAsFont(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Font getFont(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Font.class, converters);
+        return getResourceAs(resourceKey, Font.class);
     }
 
     /**
      * @param resourceKey the resource key who's value represnts a relative or absolute path to a resource that can be
      *                    loaded as an image.
-     * @param converters  optional (null allowed.) A custom ConverterRegistry used if passed in.
      * @return a BufferedImage loaded from the value of the resource key in the first argument
      */
-    public BufferedImage getAsBufferedImage(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public BufferedImage getBufferedImage(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, BufferedImage.class, converters);
+        return getResourceAs(resourceKey, BufferedImage.class);
     }
 
     /**
      * @param resourceKey the resource key who's value represnts a relative or absolute path to a resource that can be
      *                    loaded as an image.
-     * @param converters  optional (null allowed.) A custom ConverterRegistry used if passed in.
      * @return an ImageIcon created with an image loaded from the value of the resource key in the first argument
      */
-    public ImageIcon getAsImageIcon(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public ImageIcon getImageIcon(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, ImageIcon.class, converters);
+        return getResourceAs(resourceKey, ImageIcon.class);
     }
 
-    public Insets getAsInsets(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Insets getInsets(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Insets.class, converters);
+        return getResourceAs(resourceKey, Insets.class);
     }
 
-    public KeyStroke getAsKeyStroke(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public KeyStroke getKeyStroke(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, KeyStroke.class, converters);
+        return getResourceAs(resourceKey, KeyStroke.class);
     }
 
-    public Byte getAsByte(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Integer getKeyCode(String key)
     {
-        assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Byte.class, converters);
+        KeyStroke ks = getKeyStroke(key);
+        return (ks != null) ? new Integer(ks.getKeyCode()) : null;
     }
 
-    public Double getAsDouble(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Byte getByte(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Double.class, converters);
+        return getResourceAs(resourceKey, Byte.class);
     }
 
-    public Float getAsFloat(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Double getDouble(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Float.class, converters);
+        return getResourceAs(resourceKey, Double.class);
     }
 
-    public Integer getAsInteger(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Float getFloat(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Integer.class, converters);
+        return getResourceAs(resourceKey, Float.class);
     }
 
-    public Long getAsLong(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Integer getInteger(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Long.class, converters);
+        return getResourceAs(resourceKey, Integer.class);
     }
 
-    public Short getAsShort(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Long getLong(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Short.class, converters);
+        return getResourceAs(resourceKey, Long.class);
+    }
+
+    public Short getShort(@NotNull String resourceKey)
+    {
+        assertNotNull(resourceKey, String.class, "resourceKey");
+        return getResourceAs(resourceKey, Short.class);
     }
 
 
-    public Point getAsPoint(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Point getPoint(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Point.class, converters);
+        return getResourceAs(resourceKey, Point.class);
     }
 
-    public Point2D.Double getAsPoint2D_Double(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Point2D.Double getPoint2D_Double(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Point2D.Double.class, converters);
+        return getResourceAs(resourceKey, Point2D.Double.class);
     }
 
-    public Point2D.Float getAsPoint2D_Float(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Point2D.Float getPoint2D_Float(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Point2D.Float.class, converters);
+        return getResourceAs(resourceKey, Point2D.Float.class);
     }
 
-    public Rectangle getAsRectangle(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Rectangle getRectangle(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Rectangle.class, converters);
+        return getResourceAs(resourceKey, Rectangle.class);
     }
 
-    public Rectangle2D.Double getAsRectangle2D_Double(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Rectangle2D.Double getRectangle2D_Double(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Rectangle2D.Double.class, converters);
+        return getResourceAs(resourceKey, Rectangle2D.Double.class);
     }
 
-    public Rectangle2D.Float getAsRectangle2D_Float(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public Rectangle2D.Float getRectangle2D_Float(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, Rectangle2D.Float.class, converters);
+        return getResourceAs(resourceKey, Rectangle2D.Float.class);
     }
 
-    public URI getAsURI(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public URI getURI(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, URI.class, converters);
+        return getResourceAs(resourceKey, URI.class);
     }
 
-    public URL getAsURL(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public URL getURL(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, URL.class, converters);
+        return getResourceAs(resourceKey, URL.class);
     }
 
-    public MnemonicTextValue getAsMnemonicText(@NotNull String resourceKey, @Nullable ConverterRegistry converters)
+    public MnemonicTextValue getMnemonicText(@NotNull String resourceKey)
     {
         assertNotNull(resourceKey, String.class, "resourceKey");
-        return getResourceAs(resourceKey, MnemonicTextValue.class, converters);
+        return getResourceAs(resourceKey, MnemonicTextValue.class);
     }
 
     /**
@@ -1069,7 +1087,7 @@ public class ResourceMap
                 }
                 else
                 {
-                    subValue = getAsString(key, null);
+                    subValue = getString(key);
                     if (subValue == null)
                     {
                         //didn't find a value for this key in the ResourceMap chain, see if we find it in System.properties
@@ -1611,8 +1629,8 @@ public class ResourceMap
     // will be removed at some point in the near future
 
     /**
-     * @see #getResourceAs(String, Class, ConverterRegistry)
-     * @deprecated use one of the {@code getAsXXX} convenience methods. For the low level API you can call {@code getResourceAs()}.
+     * @see #getResourceAs(String, Class)
+     * @deprecated use one of the {@code getXXX} convenience methods. For the low level API you can call {@code getResourceAs()}.
      */
     @SuppressWarnings({"unchecked"})
     @Deprecated
@@ -1623,159 +1641,22 @@ public class ResourceMap
         return getResourceAs(key, type, null);
     }
 
-    /**
-     * Deprecated. Formatting of message strings will be the caller's responsibilty. ResourceMap just vends resource properties, converts types,
-     * and performs variable substitution. Further processing is outside scope of class responsibilities. You can also install a custom StringToString ResourceConverter
-     * in this chain's converter registry that does this kind of processing
-     *
-     * @see #getAsString
-     * @deprecated use {@code getAsString()}
-     */
-    @Deprecated
-    public String getString(String key, Object... args)
-    {
-        if (args.length == 0)
-        {
-            return getAsString(key, null);
-        }
-        else
-        {
-            String format = getAsString(key, null);
-            return (format == null) ? null : String.format(format, args);
-        }
-    }
+
+
 
     /**
-     * @see #getAsBoolean
-     * @deprecated use {@code getAsBoolean}
-     */
-    @Deprecated
-    public Boolean getBoolean(String key)
-    {
-        return getAsBoolean(key, null);
-    }
-
-    /**
-     * @see #getAsInteger
-     * @deprecated use {@code getAsInteger}
-     */
-    @Deprecated
-    public Integer getInteger(String key)
-    {
-        return getAsInteger(key, null);
-    }
-
-    /**
-     * @see #getAsLong
-     * @deprecated use {@code getAsLong}
-     */
-    @Deprecated
-    public Long getLong(String key)
-    {
-        return getAsLong(key, null);
-    }
-
-    /**
-     * @see #getAsShort
-     * @deprecated use {@code getAsShort}
-     */
-    @Deprecated
-    public Short getShort(String key)
-    {
-        return getAsShort(key, null);
-    }
-
-    /**
-     * @see #getAsByte
-     * @deprecated use {@code getAsByte}
-     */
-    @Deprecated
-    public Byte getByte(String key)
-    {
-        return getAsByte(key, null);
-    }
-
-    /**
-     * @see #getAsFloat
-     * @deprecated use {@code getAsFloat}
-     */
-    @Deprecated
-    public Float getFloat(String key)
-    {
-        return getAsFloat(key, null);
-    }
-
-    /**
-     * @see #getAsDouble
-     * @deprecated use {@code getAsDouble}
-     */
-    @Deprecated
-    public Double getDouble(String key)
-    {
-        return getAsDouble(key, null);
-    }
-
-    /**
-     * @see #getAsImageIcon
-     * @deprecated this method is redundant and will not be replaced. Use {@code getAsImageIcon}, since ImageIcon implements Icon
+     * @see #getImageIcon
+     * @deprecated this method is redundant and will not be replaced. Use {@code getImageIcon}, since ImageIcon implements Icon
      */
     @Deprecated
     public Icon getIcon(String key)
     {
-        return getAsImageIcon(key, null);
+        return getImageIcon(key);
     }
 
-    /**
-     * @see
-     * @deprecated
-     */
-    @Deprecated
-    public ImageIcon getImageIcon(String key)
-    {
-        return getAsImageIcon(key, null);
-    }
 
-    /**
-     * @see #getAsFont
-     * @deprecated use {@code getAsFont}
-     */
-    @Deprecated
-    public Font getFont(String key)
-    {
-        return getAsFont(key, null);
-    }
 
-    /**
-     * @see #getAsColor
-     * @deprecated use {@code getAsColor}
-     */
-    @Deprecated
-    public Color getColor(String key)
-    {
-        return getAsColor(key, null);
-    }
 
-    /**
-     * @see #getAsKeyStroke
-     * @deprecated use {@code getAsKeyStroke}
-     */
-    @Deprecated
-    public KeyStroke getKeyStroke(String key)
-    {
-        return getAsKeyStroke(key, null);
-    }
-
-    /**
-     * @see #getAsKeyStroke
-     * @see KeyStroke#getKeyCode()
-     * @deprecated this will not be replaced. Call {@code getAsKeyStroke} and on that object you can call {@code getKeyCode}
-     */
-    @Deprecated
-    public Integer getKeyCode(String key)
-    {
-        KeyStroke ks = getAsKeyStroke(key, null);
-        return (ks != null) ? new Integer(ks.getKeyCode()) : null;
-    }
 
 
 
@@ -1822,7 +1703,9 @@ public class ResourceMap
      * @throws IllegalArgumentException   if target is null
      * @see #injectComponents
      * @see #getResourceAs
-     * @see @see org.jdesktop.application.convert.ConverterRegistry#converterFor
+     * @see org.jdesktop.application.convert.ConverterRegistry#converterFor
+     * @see  ResourceInjector#inject
+     * @see InjectorRegistry#injectorFor
      */
     public void injectComponent(Component target)
     {
@@ -1841,7 +1724,8 @@ public class ResourceMap
      * @param root the root of the component hierarchy
      * @throws PropertyInjectionException if a property specified by a resource can't be set
      * @throws IllegalArgumentException   if target is null
-     * @see #injectComponent
+     * @see InjectorRegistry#injectorFor
+     * @see org.jdesktop.application.convert.ConverterRegistry#converterFor
      */
     public void injectComponents(Component root)
     {
@@ -1885,207 +1769,17 @@ public class ResourceMap
      * @throws InjectFieldException     if a field can't be set
      * @throws IllegalArgumentException if target is null
      * @see #getObject
+     *
+     * @deprecated use AnnotatedFieldInjector instead
      */
+    @Deprecated
     public void injectFields(Object target)
     {
         if (target == null)
         {
             throw new IllegalArgumentException("null target");
         }
-        Class targetType = target.getClass();
-        if (targetType.isArray())
-        {
-            throw new IllegalArgumentException("array target");
-        }
-        String keyPrefix = targetType.getSimpleName() + ".";
-        for (Field field : targetType.getDeclaredFields())
-        {
-            Resource resource = field.getAnnotation(Resource.class);
-            if (resource != null)
-            {
-                String rKey = resource.key();
-                String key = (rKey.length() > 0) ? rKey : keyPrefix + field.getName();
-                injectField(field, target, key);
-            }
-        }
-        logger.log(Level.FINE, String.format("injectFields called for %s", target));
-        for (Method method : targetType.getMethods())
-        {
-            String methodName = method.getName();
-            if (methodName.startsWith("set") && method.getParameterTypes().length == 1 && methodName.length() > 3)
-            {
-                //this is a setter method
-                StringBuilder propName = new StringBuilder(methodName.substring(3));
-                propName.setCharAt(0, Character.toLowerCase(propName.charAt(0)));
-
-                Resource resource = method.getAnnotation(Resource.class);
-                if (resource != null)
-                {
-                    String rKey = resource.key();
-                    String key = (rKey.length() > 0) ? rKey : keyPrefix + propName;
-                    injectMethod(method, target, key);
-                }
-
-            }
-        }
+        new AnnotatedFieldInjector().injectFields(target, this);
     }
 
-
-    /**
-     * Unchecked exception thrown by {@link #injectFields} when
-     * an error occurs while attempting to set a field (a field that
-     * had been marked with <tt>&#064;Resource</tt>).
-     *
-     * @see #injectFields
-     */
-    public static class InjectFieldException extends RuntimeException
-    {
-        private final AccessibleObject fieldOrMethod;
-        private final Object target;
-        private final String key;
-
-        /**
-         * Constructs an instance of this class with some useful information
-         * about the failure.
-         *
-         * @param msg    the detail message
-         * @param field  the Field we were attempting to set
-         * @param target the object whose field we were attempting to set
-         * @param key    the name of the resource
-         */
-        public InjectFieldException(String msg, AccessibleObject field, Object target, String key)
-        {
-            super(String.format("%s: resource %s, field %s, target %s", msg, key, field, target));
-            this.fieldOrMethod = field;
-            this.target = target;
-            this.key = key;
-        }
-
-        /**
-         * Return the Field whose value couldn't be set.
-         *
-         * @return the field whose value couldn't be set
-         */
-        public AccessibleObject getFieldOrMethod()
-        {
-            return fieldOrMethod;
-        }
-
-        /**
-         * Return the Object whose Field we were attempting to set
-         *
-         * @return the Object whose Field we were attempting to set
-         */
-        public Object getTarget()
-        {
-            return target;
-        }
-
-        /**
-         * Returns the type of the name of resource for which lookup failed.
-         *
-         * @return the resource name
-         */
-        public String getKey()
-        {
-            return key;
-        }
-    }
-
-    private void injectField(Field field, Object target, String key)
-    {
-        Class type = field.getType();
-        if (type.isArray())
-        {
-            type = type.getComponentType();
-            Pattern p = Pattern.compile(key + "\\[([\\d]+)\\]");  // matches key[12]
-            List<String> arrayKeys = new ArrayList<String>();
-            for (String arrayElementKey : keySet())
-            {
-                Matcher m = p.matcher(arrayElementKey);
-                if (m.matches())
-                {
-                    /* field's value is an array, arrayElementKey is a resource
-                  * name of the form "MyClass.myArray[12]" and m.group(1)
-                  * matches the array index.  Set the index element
-                  * of the field's array to the value of the resource.
-                  */
-                    Object value = getObject(arrayElementKey, type);
-                    if (!field.isAccessible())
-                    {
-                        field.setAccessible(true);
-                    }
-                    try
-                    {
-                        int index = Integer.parseInt(m.group(1));
-                        Array.set(field.get(target), index, value);
-                    }
-                    /* Array.set throws IllegalArgumentException, ArrayIndexOutOfBoundsException
-                  * field.get throws IllegalAccessException(Checked), IllegalArgumentException
-                  * Integer.parseInt throws NumberFormatException (Checked)
-                  */
-                    catch (Exception e)
-                    {
-                        String msg = "unable to set array element";
-                        InjectFieldException ife = new InjectFieldException(msg, field, target, key);
-                        ife.initCause(e);
-                        throw ife;
-                    }
-                }
-            }
-        }
-        else
-        {  // field is not an array
-            Object value = getObject(key, type);
-            if (value != null)
-            {
-                if (!field.isAccessible())
-                {
-                    field.setAccessible(true);
-                }
-                try
-                {
-                    field.set(target, value);
-                }
-                /* Field.set throws IllegalAccessException, IllegalArgumentException,
-             * ExceptionInInitializerError
-             */
-                catch (Exception e)
-                {
-                    String msg = "unable to set field's value";
-                    InjectFieldException ife = new InjectFieldException(msg, field, target, key);
-                    ife.initCause(e);
-                    throw ife;
-                }
-            }
-        }
-    }
-
-    private void injectMethod(Method method, Object target, String key)
-    {
-        Class paramType = method.getParameterTypes()[0];
-        logger.log(Level.FINE, String.format("method : %s : injecting %s of type %s into %s", method, key, paramType, target));
-        Object value = getObject(key, paramType);
-        if (value != null)
-        {
-            if (!method.isAccessible())
-            {
-                method.setAccessible(true);
-            }
-            try
-            {
-                method.invoke(target, value);
-            }
-            /* Method.invoke throws IllegalAccessException, InvocationTargetException,
-            */
-            catch (Exception e)
-            {
-                String msg = "unable to call setter method";
-                InjectFieldException ife = new InjectFieldException(msg, method, target, key);
-                ife.initCause(e);
-                throw ife;
-            }
-        }
-
-    }
 }
