@@ -49,7 +49,7 @@ public class TestStringToKeyStroke
         KeyStroke actual = defaultConverter.convert(s);
     }
 
-    @Test
+    @Test(expected = StringConvertException.class)
     public void testEmptyString() throws StringConvertException
     {
         String s = "";
@@ -58,7 +58,7 @@ public class TestStringToKeyStroke
         assertEquals("Converting empty String should return null", expected, actual);
     }
 
-    @Test
+    @Test (expected = StringConvertException.class)
     public void testBadString() throws StringConvertException
     {
         String s = "12 - a 1 16";

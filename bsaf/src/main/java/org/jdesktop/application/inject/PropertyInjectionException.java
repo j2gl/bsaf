@@ -8,7 +8,7 @@ import java.awt.*;
  * when a property value specified by
  * a resource can not be set.
  *
- * @see ComponentInjector#inject
+ * @see ResourceInjector#inject
  */
 public class PropertyInjectionException extends RuntimeException
 {

@@ -303,17 +303,87 @@ public class ResourceMap
         return converters;
     }
 
+    /**
+     * Sets the converters used by all ResourceMaps in the chain to this ConverterRegistry in the argument. If the argument is null,
+     * the method returns with no action.
+     * @param converters the ConverterRegistry to be set for all ResourceMaps in the chain
+     */
     public void setConverters(ConverterRegistry converters)
     {
         if (converters != null)
         {
-            synchronized (converterMonitor)
+            synchronized (converters)
             {
-                this.converters = converters;
-                if (parent != null)
+                getBottommostChild().setConverters0(converters);
+
+            }
+        }
+    }
+
+    //should only be called on the bottom most child node of a ResourceMap
+    private void setConverters0(ConverterRegistry converters)
+    {
+        synchronized (converters)
+        {
+            this.converters = converters;
+            if (parent != null)
+            {
+                parent.setConverters0(converters);
+            }
+        }
+    }
+
+    /**
+     * @return the InjectorRegistry used by this instance when injecting resource properties into objects. If no InjectorRegistry
+     *         is explicitly installed, creates a default InjectorRegistry and uses the default injectors.
+     */
+    @SuppressWarnings({"DoubleCheckedLocking"})
+    //with injectors volatile, this idiom now works under Java 5 memory model
+    public InjectorRegistry getInjectors()
+    {
+        if (injectors == null)
+        {
+            synchronized (injectorMonitor)
+            {
+                if (injectors == null)
                 {
-                    parent.setConverters(converters);
+                    //every ResourceMap should get its initial default InjectorRegistry from the ResourceManager
+                    // that created it so they all share the same instances. Thus, this situation should only arise if
+                    //the caller has manually created this ResourceMap
+                    injectors = new InjectorRegistry();
+                    injectors.addDefaultInjectors();
                 }
+            }
+        }
+        return injectors;
+    }
+
+    /**
+     * Sets the injectors used by all ResourceMaps in the chain to be this injector. If the argument is null, the method
+     * returns with no action.
+     *
+     * @param injectors the InjectorRegistry to be used by all ResourceMaps in the chain
+     */
+    public void setInjectors(InjectorRegistry injectors)
+    {
+        if (injectors != null)
+        {
+            synchronized (injectors)
+            {
+                getBottommostChild().setInjectors0(injectors);
+            }
+        }
+    }
+
+    //should only be called on the bottom most child node of a ResourceMap
+    private void setInjectors0(InjectorRegistry injectors)
+    {
+        synchronized (injectors)
+        {
+            this.injectors = injectors;
+            if (parent != null)
+            {
+                parent.setInjectors0(injectors);
             }
         }
     }
@@ -822,6 +892,7 @@ public class ResourceMap
         }
     }
 
+
     public static class LookupException extends RuntimeException
     {
         private final Class type;
@@ -1110,6 +1181,9 @@ public class ResourceMap
 
     private volatile ConverterRegistry converters; //converters used by this ResourceMap when converting resources to objects
     private final Object converterMonitor = new Object(); //used to synchronize changes to converter registry instance
+    private volatile InjectorRegistry injectors = null; //injectors used by this ResourceMap when injecting resources into objects
+    private final Object injectorMonitor = new Object(); //used to synchronize changes to injector registry instance
+
     private final String resourcesDir; //the directory from which this ResourceMap's property bundle(s) was(were) loaded
 
 
@@ -1704,18 +1778,7 @@ public class ResourceMap
     }
 
 
-    //todo - this should be moved up to ResourceManager, and let ResourceManager be the entry point for calling inject
-    private InjectorRegistry injectors = null;
 
-    private InjectorRegistry getInjectors()
-    {
-        if (injectors == null)
-        {
-            injectors = new InjectorRegistry();
-            injectors.addDefaultInjectors();
-        }
-        return injectors;
-    }
     //Injection relatd code, copied from original ResourceMap implementation.
     //todo - refactor, extract this into separate classes and make injectors pluggable
     /**
@@ -1744,7 +1807,7 @@ public class ResourceMap
      * to <tt>Hello World</tt>, <tt>new Color(0,0,0)</tt>, and
      * <tt>new Dimension(256,256)</tt> respectively.
      * <p/>
-     * This method calls {@link #getObject} to look up resources
+     * This method calls {@link #getResourceAs} to look up resources
      * and it uses {@link Introspector#getBeanInfo} to find
      * the target component's properties.
      * <p/>
@@ -1758,8 +1821,8 @@ public class ResourceMap
      * @throws PropertyInjectionException if a property specified by a resource can't be set
      * @throws IllegalArgumentException   if target is null
      * @see #injectComponents
-     * @see #getObject
-     * @see org.jdesktop.application.ResourceConverter#forType
+     * @see #getResourceAs
+     * @see @see org.jdesktop.application.convert.ConverterRegistry#converterFor
      */
     public void injectComponent(Component target)
     {
@@ -1767,8 +1830,7 @@ public class ResourceMap
         {
             throw new IllegalArgumentException("null target");
         }
-        getInjectors().injectorFor(target).inject(target,this, false);
-        //injectComponentProperties(target);
+        getInjectors().injectorFor(target).inject(target, this, false);
     }
 
 
@@ -1784,228 +1846,7 @@ public class ResourceMap
     public void injectComponents(Component root)
     {
         getInjectors().injectorFor(root).inject(root, this, true);
-/*
-        injectComponent(root);
-        if (root instanceof JMenu)
-        {
-            *//* Warning: we're bypassing the popupMenu here because
-            * JMenu#getPopupMenu creates it; doesn't seem right
-            * to do so at injection time.  Unfortunately, this
-            * means that attempts to inject the popup menu's
-            * "label" property will fail.
-            *//*
-            JMenu menu = (JMenu) root;
-            for (Component child : menu.getMenuComponents())
-            {
-                injectComponents(child);
-            }
-        }
-        else if (root instanceof Container)
-        {
-            Container container = (Container) root;
-            for (Component child : container.getComponents())
-            {
-                injectComponents(child);
-            }
-        }*/
     }
-
-
-    /**
-     * Unchecked exception thrown by {@link #injectComponent} and
-     * {@link #injectComponents} when a property value specified by
-     * a resource can not be set.
-     *
-     * @see #injectComponent
-     * @see #injectComponents
-     */
-    public static class PropertyInjectionException extends RuntimeException
-    {
-        private final String key;
-        private final Component component;
-        private final String propertyName;
-
-        /**
-         * Constructs an instance of this class with some useful information
-         * about the failure.
-         *
-         * @param msg          the detail message
-         * @param key          the name of the resource
-         * @param component    the component whose property couldn't be set
-         * @param propertyName the name of the component property
-         */
-        public PropertyInjectionException(String msg, String key, Component component, String propertyName)
-        {
-            super(String.format("%s: resource %s, property %s, component %s", msg, key, propertyName, component));
-            this.key = key;
-            this.component = component;
-            this.propertyName = propertyName;
-        }
-
-        /**
-         * Returns the the name of resource whose value was to be used to set the property
-         *
-         * @return the resource name
-         */
-        public String getKey()
-        {
-            return key;
-        }
-
-        /**
-         * Returns the component whose property could not be set
-         *
-         * @return the component
-         */
-        public Component getComponent()
-        {
-            return component;
-        }
-
-        /**
-         * Returns the the name of property that could not be set
-         *
-         * @return the property name
-         */
-        public String getPropertyName()
-        {
-            return propertyName;
-        }
-    }
-
-/*
-    private void injectComponentProperty(Component component, PropertyDescriptor pd, String key)
-    {
-        Method setter = pd.getWriteMethod();
-        Class type = pd.getPropertyType();
-        if ((setter != null) && (type != null) && containsKey(key))
-        {
-            Object value = getObject(key, type);
-            String propertyName = pd.getName();
-            try
-            {
-                // Note: this could be generalized, we could delegate
-                // to a component property injector.
-                if ("text".equals(propertyName) && (component instanceof AbstractButton))
-                {
-                    MnemonicText.configure(component, (String) value);
-                }
-                else if ("text".equals(propertyName) && (component instanceof JLabel))
-                {
-                    MnemonicText.configure(component, (String) value);
-                }
-                else
-                {
-                    setter.invoke(component, value);
-                }
-            }
-            catch (Exception e)
-            {
-                String pdn = pd.getName();
-                String msg = "property setter failed";
-                RuntimeException re = new PropertyInjectionException(msg, key, component, pdn);
-                re.initCause(e);
-                throw re;
-            }
-        }
-        else if (type != null)
-        {
-            String pdn = pd.getName();
-            String msg = "no value specified for resource";
-            throw new PropertyInjectionException(msg, key, component, pdn);
-        }
-        else if (setter == null)
-        {
-            String pdn = pd.getName();
-            String msg = "can't set read-only property";
-            throw new PropertyInjectionException(msg, key, component, pdn);
-        }
-    }
-
-    private void injectComponentProperties(Component component)
-    {
-        String componentName = component.getName();
-        if (componentName != null)
-        {
-            */
-/* Optimization: punt early if componentName doesn't
-            * appear in any componentName.propertyName resource keys
-            */
-/*
-            boolean matchingResourceFound = false;
-            for (String key : keySet())
-            {
-                int i = key.lastIndexOf(".");
-                if ((i != -1) && componentName.equals(key.substring(0, i)))
-                {
-                    matchingResourceFound = true;
-                    break;
-                }
-            }
-            if (!matchingResourceFound)
-            {
-                return;
-            }
-            BeanInfo beanInfo = null;
-            try
-            {
-                beanInfo = Introspector.getBeanInfo(component.getClass());
-            }
-            catch (IntrospectionException e)
-            {
-                String msg = "introspection failed";
-                RuntimeException re = new PropertyInjectionException(msg, null, component, null);
-                re.initCause(e);
-                throw re;
-            }
-            PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-            if ((pds != null) && (pds.length > 0))
-            {
-                for (String key : keySet())
-                {
-                    int i = key.lastIndexOf(".");
-                    String keyComponentName = (i == -1) ? null : key.substring(0, i);
-                    if (componentName.equals(keyComponentName))
-                    {
-                        if ((i + 1) == key.length())
-                        {
-                            */
-/* key has no property name suffix, e.g. "myComponentName."
-                        * This is probably a mistake.
-                        */
-/*
-                            String msg = "component resource lacks property name suffix";
-                            logger.warning(msg);
-                            break;
-                        }
-                        String propertyName = key.substring(i + 1);
-                        boolean matchingPropertyFound = false;
-                        for (PropertyDescriptor pd : pds)
-                        {
-                            if (pd.getName().equals(propertyName))
-                            {
-                                injectComponentProperty(component, pd, key);
-                                matchingPropertyFound = true;
-                                break;
-                            }
-                        }
-                        if (!matchingPropertyFound)
-                        {
-                            String msg = String.format(
-                                    "[resource %s] component named %s doesn't have a property named %s",
-                                    key, componentName, propertyName);
-                            logger.warning(msg);
-                        }
-                    }
-                }
-            }
-        }
-    }
-*/
-
-
-
-
 
 
     /**

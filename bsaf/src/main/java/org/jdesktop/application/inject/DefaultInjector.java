@@ -28,7 +28,7 @@ public class DefaultInjector extends ResourceInjector<Object>
      * @return
      */
     @Override
-    public Object inject(@NotNull Object target, @NotNull ResourceMap properties, boolean recursively)
+    public Object inject(@NotNull Object target, @NotNull ResourceMap properties, boolean recursively) throws PropertyInjectionException
     {
         assertNotNull(target, Object.class, "target");
         assertNotNull(properties, ResourceMap.class, "properties");

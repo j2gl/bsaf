@@ -19,7 +19,7 @@ public class JMenuInjector extends ResourceInjector<JMenu>
     }
 
     @Override
-    public JMenu inject(@NotNull JMenu target, @NotNull ResourceMap properties, boolean recursively)
+    public JMenu inject(@NotNull JMenu target, @NotNull ResourceMap properties, boolean recursively) throws PropertyInjectionException
     {
         assertNotNull(target, JMenu.class, "target");
         assertNotNull(properties, ResourceMap.class, "properties");

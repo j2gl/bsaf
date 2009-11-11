@@ -31,7 +31,7 @@ public class ActionInjector extends ResourceInjector<Action>
      * @return the same Action as in the first argument, as modified by injection
      */
     @Override
-    public Action inject(@NotNull Action action, @NotNull ResourceMap resourceMap, boolean recursively)
+    public Action inject(@NotNull Action action, @NotNull ResourceMap resourceMap, boolean recursively) throws PropertyInjectionException
     {
         assertNotNull(action, Action.class, "action");
         assertNotNull(resourceMap, ResourceMap.class, "resourceMap");

@@ -45,6 +45,11 @@ public class StringToKeyStroke extends ResourceConverter<String, KeyStroke>
             //capitalized correctly
             ks = maybeFixSyntaxrrors(sb.toString());
         }
+        if (ks == null)
+        {
+            //still null, so we could not parse the input and create a KeyStroke for it. this is an error
+            throw new StringConvertException("Could not successfully parse KeyStroke",source);
+        }
         return ks;
     }
 

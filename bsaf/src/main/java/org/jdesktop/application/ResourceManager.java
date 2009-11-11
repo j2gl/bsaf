@@ -6,6 +6,7 @@
 package org.jdesktop.application;
 
 import org.jdesktop.application.convert.ConverterRegistry;
+import org.jdesktop.application.inject.InjectorRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -58,6 +59,7 @@ public class ResourceManager extends AbstractBean {
     private ResourceMap appResourceMap = null;
 
     private ConverterRegistry converters = null; //shared converters used by all the ResourceMaps managed by this RM
+    private InjectorRegistry  injectors = null; //shared resource property injectors used by all ResourceMapes managed by this RM
     private Locale locale = Locale.getDefault();
     private String platform = null;
 
@@ -442,14 +444,20 @@ public class ResourceManager extends AbstractBean {
             converters = new ConverterRegistry();
             converters.addDefaultConverters();
         }
+        if (injectors == null)
+        {
+            injectors = new InjectorRegistry();
+            injectors.addDefaultInjectors();
+        }
         ResourceMap rm = new ResourceMap(parent, classLoader, bundleNames);
         rm.setConverters(converters);
+        rm.setInjectors(injectors);
         return rm;
     }
 
     /**
      * Set the ConverterRegisty used by the ResourceMaps managed by this ResourceManager
-     * @param converters
+     * @param converters the ConverterRegistry to use for converting resource values
      */
     public synchronized void setConverters(ConverterRegistry converters)
     {
@@ -460,9 +468,36 @@ public class ResourceManager extends AbstractBean {
         }
     }
 
+    /**
+     * Return  the ConverterRegisty used by the ResourceMaps managed by this ResourceManager
+     * @return the ConverterRegisty used by the ResourceMaps managed by this ResourceManager when converting string properties
+     * to useful Object types
+     */
     public synchronized ConverterRegistry getConverters()
     {
         return converters;
+    }
+
+    /**
+     * Set the InjectorRegistry used by the ResourceMaps managed by this ResourceManager
+     * @param injectors the InjectorRegistry to use when injecting resources into objects
+     */
+    public synchronized void setInjectors(InjectorRegistry injectors)
+    {
+        if (injectors != null)
+        {
+            this.injectors = injectors;
+            getApplicationResourceMap().setInjectors(injectors);
+        }
+    }
+
+    /**
+     *
+     * @return the InjectorRegistry currently used when injecting resources into objects
+     */
+    public synchronized InjectorRegistry getInjectors()
+    {
+        return injectors;
     }
 
     public synchronized void setLocale(@NotNull Locale newLocale)

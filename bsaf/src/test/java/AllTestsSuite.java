@@ -10,6 +10,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses(value =
         {
                 org.jdesktop.application.convert.AllTests.class,
+                org.jdesktop.application.inject.AllTests.class,
                 org.jdesktop.application.resource.AllTests.class,
                 org.jdesktop.application.AllTests.class
         })

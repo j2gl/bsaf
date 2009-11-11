@@ -5,9 +5,7 @@ import org.jdesktop.application.MnemonicTextValue;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
 
@@ -32,29 +30,29 @@ public class AbstractButtonInjector extends ResourceInjector<AbstractButton>
      * @return
      */
     @Override
-    public AbstractButton inject(@NotNull AbstractButton button, @NotNull ResourceMap resourceMap, boolean recursively)
+    public AbstractButton inject(@NotNull AbstractButton button, @NotNull ResourceMap resourceMap, boolean recursively) throws PropertyInjectionException
     {
-        assertNotNull(button, AbstractButton.class, "button");
+        assertNotNull(button, AbstractButton.class, "jLabel");
         assertNotNull(resourceMap, ResourceMap.class, "resourceMap");
         String targetName = getTargetName(button);
 
         injectProperties(button, targetName, resourceMap);
-        return null;
+        return button;
     }
 
     @Override
-    protected void injectProperty(Object target, PropertyDescriptor pd, String key, ResourceMap properties)
+    protected void injectProperty(Object target, PropertySetter ps, String key, ResourceMap properties)
     {
         if (!(target instanceof AbstractButton))
         {
             throw new IllegalArgumentException("First argument must be an AbstractButton");
         }
         AbstractButton button = (AbstractButton) target;
-        Method setter = pd.getWriteMethod();
-        Class<?> type = pd.getPropertyType();
+        Method setter = ps.methodDescr.getMethod();
+        Class<?> type = ps.type;
         if ((setter != null) && (type != null) && properties.containsKey(key))
         {
-            String propertyName = pd.getName();
+            String propertyName = ps.propName;
             try
             {
                 if ("text".equals(propertyName))
@@ -85,7 +83,7 @@ public class AbstractButtonInjector extends ResourceInjector<AbstractButton>
             }
             catch (Exception e)
             {
-                String pdn = pd.getName();
+                String pdn = ps.propName;
                 String msg = "property setter failed";
                 RuntimeException re = new PropertyInjectionException(msg, key, button, pdn);
                 re.initCause(e);
@@ -94,13 +92,13 @@ public class AbstractButtonInjector extends ResourceInjector<AbstractButton>
         }
         else if (type != null)
         {
-            String pdn = pd.getName();
+            String pdn = ps.propName;
             String msg = "no value specified for resource";
             throw new PropertyInjectionException(msg, key, button, pdn);
         }
         else if (setter == null)
         {
-            String pdn = pd.getName();
+            String pdn = ps.propName;
             String msg = "can't set read-only property";
             throw new PropertyInjectionException(msg, key, button, pdn);
         }

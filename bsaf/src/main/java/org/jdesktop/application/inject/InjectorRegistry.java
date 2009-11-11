@@ -16,16 +16,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * Manages a group of ResourceInjectors and provides services for locating an injector to use for a particular type of object.
  * <p/>
  * It is similar in concept to the ConverterRegistry. One important difference here is that an injector returned may be for a
- * supertype of the target object type. For example, when locating an injector for a JButton instance, an AbstractButtonResourceInjector
- * may be returned if there is no specific JButtonResourceInjector in the registry. In cases where injectors exist for multiple supertypes in the type hierarchy
- * of an object, the most specific injector is returned. For example, there is a ComponentResourceInjector, and an AbstractButtonInjector. If
+ * supertype of the target object type. For example, when locating an injector for a JButton instance, an AbstractButtonInjector
+ * may be returned if there is no specific JButtonInjector in the registry. In cases where injectors exist for multiple supertypes in the type hierarchy
+ * of an object, the most specific injector is returned. For example, there is a ComponentInjector, and an AbstractButtonInjector. If
  * the caller wishes to locate a resource injector for a JButton, both of these injectors would work to inject resources into the JButton, since a JButton
- * is both an AbstractButton and a Component. However, the AbstractButtonResourceInjector is more specific than the ComponentResourceInjector, so the former
+ * is both an AbstractButton and a Component. However, the AbstractButtonInjector is more specific than the ComponentInjector, so the former
  * is returned  in this case.
  * <p/>
- * As with ConverterRegistry, you may create your own injectors subclassed from existing concrete injectors, or from AbstractResourceInjector itself.
+ * As with ConverterRegistry, you may create your own injectors subclassed from existing concrete injectors, or from the
+ * abstract ResourceInjector itself.
  * <p/>
- * To use, call injectorFor, passing the instance to be injected.
+ * To use, call injectorFor, passing  the Class of the instance, or the instance itself to be injected .
  *
  * @author Rob Ross
  * @version Date: Nov 5, 2009  10:37:28 PM
@@ -33,20 +34,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InjectorRegistry
 {
 
-/*
-
-    notes - if we were going to look for exact matches like we do in ConverterRegistry, we could use a simple Map<Class<?>, ResourceInjector>.
-    But, we need a way of not only looking for exact matches, but traversing the Object's family tree
-    First, look for an injector for the object's specific type. If found, we're done.
-    If not found, look for injectors for the object's supertype. Repeat until an injector is found, or the current type has no super-type, in which
-    case return a default injector for an Object.
-    As an optimization, we can keep a cache map of previous lookups, so we only have to navigate the supertype hierachy once, and on subsequent
-    requests, the ResourceInjector to use for a type can be found by a simple map lookup.
-
-    We'll have to invalidate the cache when we add or remove Injectors.
-
-*/
-
+    /**
+     * Adds the ResourceInjector in the argument to this registry of ResourceInjectors. If the injector's type (as determined by
+     * calling getTargetType) has been previously registered, the argument instance replaces the previous mapping to that type.
+     *
+     * @param injector the ResourceInjector to be added to the Registry
+     * @param <T> the target type of the ResourceInjector
+     */
     public <T> void add(@NotNull ResourceInjector<T> injector)
     {
         assertNotNull(injector, ResourceInjector.class, "injector");
@@ -59,6 +53,11 @@ public class InjectorRegistry
         injector.setRegistry(this);
     }
 
+    /**
+     * Calls #add for each element in the argument List.
+     *
+     * @param injectorList a List of ResourceInjectors, all to be added to this registry.
+     */
     public void addAll(@NotNull List<ResourceInjector<?>> injectorList)
     {
         assertNotNull(injectorList, List.class, "injectorList");
@@ -70,7 +69,7 @@ public class InjectorRegistry
     }
 
     /**
-     * Remove from this InjectorRegistry the ResourceInjectorS in the argument. If the injector is not registered, this
+     * Remove from this InjectorRegistry the ResourceInjector in the argument. If the injector is not registered, this
      * method returns false, otherwise it removes the injector and returns true.
      *
      * @param injector the ResourceInjector to remove
@@ -92,12 +91,32 @@ public class InjectorRegistry
         return false;
     }
 
+    /**
+     * Returns a specific subclass of ResourceInjector that can be used to inject property resources into the argument instance.
+     * This method will return the most specific injector for the type of the argument, or an instance of DefaultInjector if
+     * there are no injectors registered for the type of the argument, or any of its supertyeps.
+     *
+     * @param instance an object to be injected, for which the appropriate ResourceInjector will be returned. Eg, if instance is
+     * a JButton, an AbstractButtonInjector is returned.
+     * @param <T> The type of the instance to be injected
+     * @return a ResourceInjector that can be used to inject property resources into the argument instance.
+     */
     public <T> ResourceInjector<T> injectorFor(T instance)
     {
         Class<?> c = instance.getClass();
         return (ResourceInjector<T>) injectorFor((Class<T>)c);
     }
 
+    /**
+     * Returns a specific subclass of ResourceInjector that can be used to inject property resources into objects of the argument type.
+     * This method will return the most specific injector for the type of the argument, or an instance of DefaultInjector if
+     * there are no injectors registered for the type of the argument, or any of its supertyeps.
+     *
+     * @param targetType the type of object to be injected, for which the appropriate ResourceInjector will be returned. Eg, if instance is
+     * a JButton.class, an AbstractButtonInjector is returned.
+     * @param <T> The type of the instance to be injected
+     * @return a ResourceInjector that can be used to inject property resources into objects of the argument type.
+     */
     public <T> ResourceInjector<T> injectorFor(@NotNull Class<T> targetType)
     {
         //first look for an exact match on the targetType
@@ -138,7 +157,7 @@ public class InjectorRegistry
     }
 
     /**
-     * @return all the injectors registered in this instance
+     * @return all the injectors registered in this InjectorRegistry instance
      */
     @NotNull
     public List<ResourceInjector> allInjectors()
@@ -146,6 +165,18 @@ public class InjectorRegistry
         return new ArrayList<ResourceInjector>(registry.values());
     }
 
+    /**
+     * Adds the default ResourceInjectors to this InjectorRegistry instance. This is probably the normal case. The ResourceManager
+     * constructor will create a new InjectorRegistry and call addDefaultInjectors on it. This InjectorRegistry will then be
+     * shared by all ResourceMaps created by that ResourceManager. If you desire to create custom ResourceInjectors, you can add them
+     * to the default InjectorRegistry by calling ResourceManager#getInjectors, and then calling add or addAll, passing in your custom
+     * ResourceInjectors. You can also create a custom InjectorRegistry, and use that by calling ResourceManager#setInjectors
+     * @see org.jdesktop.application.ResourceManager#getInjectors
+     * @see org.jdesktop.application.ResourceManager#setInjectors
+     * @see #add
+     * @see #addAll
+     * 
+     */
     public void addDefaultInjectors()
     {
         ResourceInjector<?>[] defaults = new ResourceInjector[]{
