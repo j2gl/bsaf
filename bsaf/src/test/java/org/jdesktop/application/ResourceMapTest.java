@@ -526,7 +526,7 @@ public class ResourceMapTest
         @Resource
         private String stringField;
         @Resource
-        protected int intField;
+        protected int intField =-76;
         @Resource
         public Color colorField;
         @Resource
@@ -556,14 +556,25 @@ public class ResourceMapTest
         {
             target.numbers[i] = -1;
         }
-        new AnnotatedFieldInjector().injectFields(target, rm);
-        assertEquals("@Resource private String stringField;", "stringField", target.stringField);
+        //These settings duplicate the original functionality of the SAF and allow this unit test to pass.
+        AnnotatedFieldInjector afi = new AnnotatedFieldInjector(AnnotatedFieldInjector.PRIVATE,
+                                                                AnnotatedFieldInjector.EITHER,
+                                                                Resource.class);
+
+        afi.injectFields(target, rm);
         assertEquals("@Resource protected int intField;", 123, target.intField);
         assertEquals("@Resource public Color colorField;", new Color(0, 1, 2), target.colorField);
         assertTrue("@Resource boolean booleanField;", target.booleanField);
-        assertEquals("@Resource static String staticField;", "staticField", target.staticField);
-        assertEquals("@Resource(key=\"F1\") private String stringF1Field;", "stringF1Field", target.stringF1Field);
+        assertEquals("@Resource static String staticField;", "staticField", TestResourceAnnotation.staticField);
         assertEquals("@Resource(key=\"TestResourceAnnotation.objectField\")", "objectField", target.objectField);
+
+        int k = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        String shortcut = (k == Event.META_MASK) ? "meta" : "control";
+        assertEquals(KeyStroke.getKeyStroke(shortcut + " X"), target.shortcutX);
+        assertEquals(KeyStroke.getKeyStroke(shortcut + " shift X"), target.shortcutShiftX);
+
+        assertEquals("@Resource private String stringField;", "stringField", target.stringField);
+        assertEquals("@Resource(key=\"F1\") private String stringF1Field;", "stringF1Field", target.stringF1Field);
         for (int i = 0; i < target.numbers.length; i++)
         {
             if ((i == 2) || (i == 3) || (i == 11))
@@ -577,10 +588,6 @@ public class ResourceMapTest
         }
         checkBlack1x1Icon("@Resource icons[0]", target.icons[0]);
         checkBlack1x1Icon("@Resrouce icons[1]", target.icons[1]);
-        int k = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-        String shortcut = (k == Event.META_MASK) ? "meta" : "control";
-        assertEquals(KeyStroke.getKeyStroke(shortcut + " X"), target.shortcutX);
-        assertEquals(KeyStroke.getKeyStroke(shortcut + " shift X"), target.shortcutShiftX);
 
     }
 

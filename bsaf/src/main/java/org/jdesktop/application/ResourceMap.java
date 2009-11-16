@@ -742,6 +742,30 @@ public class ResourceMap
         return new HashSet<String>(getResourceMap().keySet());
     }
 
+    /**
+     *  Finds all the keys in this ResourceMap and all parent ResourceMaps that start with the string in the argument
+     * @param prefix what a key should start with in order to be returned in the result set
+     * @return a Set containing all the keys in this ResourceMap, and all parent ResourceMaps, that begin with the prefix
+     * specified in the argument
+     */
+    public Set<String> getKeysWithPrefix(String prefix)
+    {
+        //todo - investigate creating a cache for this search, if it's too costly to perform repeatedly. But don't
+        //optimize prematurely!
+        Set<String> keys = new HashSet<String>();
+        for (String s : keySet())
+        {
+            if (s.startsWith(prefix))
+            {
+                //handle array notation - we only want one instance of an array property
+                
+                keys.add(s);
+            }
+        }
+
+        return keys;
+    }
+
 
     /**
      * Makes the parent of this ResourceMap the instance in the argument
@@ -1768,7 +1792,6 @@ public class ResourceMap
      * @throws LookupException          if an error occurs during lookup or string conversion
      * @throws InjectFieldException     if a field can't be set
      * @throws IllegalArgumentException if target is null
-     * @see #getObject
      *
      * @deprecated use AnnotatedFieldInjector instead
      */
