@@ -152,8 +152,6 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
     private boolean userCanCancel = true;
     private boolean progressPropertyIsValid = false;
     private TaskService taskService = null;
-    private T result;
-    private Exception exception;
 
     /**
      * Specifies to what extent the GUI should be blocked a Task 
@@ -306,8 +304,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
     /**
      * Returns the TaskService that this Task has been submitted to,
      * or null.  This property is set when a task is executed by a
-     * TaskService, cleared when the task is done and all of its
-     * completion methods have run.  
+     * TaskService, cleared when the task is done.  
      * <p> 
      * This is a read-only bound property.
      * 
@@ -758,19 +755,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
 
     @Override
     protected final void done() {
-        try {
-            if (isCancelled()) {
-                cancelled();
-            } else {
-                try {
-                    result = get();
-                } catch (Exception ex) {
-                    exception = ex;
-                }
-            }
-        } finally {
-            setTaskService(null);
-        }
+        setTaskService(null);
     }
 
     /**
@@ -1016,30 +1001,33 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             try {
                 task.removePropertyChangeListener(this);
                 firePropertyChange(PROP_DONE, false, true);
-
+            } finally {
                 // execute succeeded only when SwingWorker is done.
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            if (exception == null) {
-                                succeeded(result);
-                            } else if (exception instanceof InterruptedException) {
-                                interrupted((InterruptedException)exception);
+                            if (isCancelled()) {
+                                cancelled();
                             } else {
-                                failed(exception.getCause());
+                                try {
+                                    succeeded(get());
+                                } catch (InterruptedException e) {
+                                    interrupted(e);
+                                } catch (ExecutionException e) {
+                                    failed(e.getCause());
+                                }
                             }
                         } finally {
-                            result = null;
-                            exception = null;
                             finished();
+                            try {
+                                fireCompletionListeners();
+                            } finally {
+                                firePropertyChange(PROP_COMPLETED, false, true);
+                            }
                         }
                     }
                 });
-
-                fireCompletionListeners();
-            } finally {
-                firePropertyChange(PROP_COMPLETED, false, true);
             }
         }
     }
