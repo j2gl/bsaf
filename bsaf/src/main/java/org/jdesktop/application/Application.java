@@ -125,6 +125,7 @@ public abstract class Application extends AbstractBean {
     private static Application application = null;
     private final List<ExitListener> exitListeners;
     private final ApplicationContext context;
+    private boolean ready;
 
     /**
      * Not to be called directly, see {@link #launch launch}.
@@ -380,9 +381,8 @@ public abstract class Application extends AbstractBean {
     /* Keep queuing up NotifyingEvents until the event queue is
      * empty when the NotifyingEvent is dispatched().
      */
-    private void waitForEmptyEventQ() {
+    private void waitForEmptyEventQ(JPanel placeHolder) {
         boolean qEmpty = false;
-        JPanel placeHolder = new JPanel();
         EventQueue q = Toolkit.getDefaultToolkit().getSystemEventQueue();
         while (!qEmpty) {
             NotifyingEvent e = new NotifyingEvent(placeHolder);
@@ -403,19 +403,21 @@ public abstract class Application extends AbstractBean {
      * something, now that the GUI is "ready".
      */
     private class DoWaitForEmptyEventQ extends Task<Void, Void> {
-
+        private final JPanel placeHolder;
         DoWaitForEmptyEventQ() {
             super(Application.this);
+            placeHolder = new JPanel();
         }
 
         @Override
         protected Void doInBackground() {
-            waitForEmptyEventQ();
+            waitForEmptyEventQ(placeHolder);
             return null;
         }
 
         @Override
         protected void finished() {
+            ready = true;
             ready();
         }
     }
@@ -667,5 +669,9 @@ public abstract class Application extends AbstractBean {
 
     public void hide(View view) {
         view.getRootPane().getParent().setVisible(false);
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 }

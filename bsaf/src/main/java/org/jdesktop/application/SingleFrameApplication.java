@@ -379,9 +379,11 @@ public abstract class SingleFrameApplication extends Application {
      */
     @Override
     protected void shutdown() {
-        saveSession(getMainFrame());
-        for (Window window : getVisibleSecondaryWindows()) {
-            saveSession(window);
+        if (isReady()) {
+            saveSession(getMainFrame());
+            for (Window window : getVisibleSecondaryWindows()) {
+                saveSession(window);
+            }
         }
     }
 

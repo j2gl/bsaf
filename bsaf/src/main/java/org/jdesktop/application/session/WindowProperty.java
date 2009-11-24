@@ -79,6 +79,7 @@ public class WindowProperty implements PropertySupport {
                 frameBounds = (Rectangle) r;
             }
         }
+        if (frameBounds.isEmpty()) return null;
         return new WindowState(frameBounds, gcBounds, getScreenCount(), frameState);
     }
 
