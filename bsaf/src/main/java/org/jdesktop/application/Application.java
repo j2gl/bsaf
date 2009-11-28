@@ -121,6 +121,11 @@ import javax.swing.UIManager;
 @ProxyActions({"cut", "copy", "paste", "delete"})
 public abstract class Application extends AbstractBean {
 
+    public static final String KEY_APPLICATION_TITLE = "Application.title";
+    public static final String KEY_APPLICATION_ICON = "Application.icon";
+    public static final String KEY_APPLICATION_VENDOR_ID = "Application.vendorId";
+
+
     private static final Logger logger = Logger.getLogger(Application.class.getName());
     private static Application application = null;
     private final List<ExitListener> exitListeners;

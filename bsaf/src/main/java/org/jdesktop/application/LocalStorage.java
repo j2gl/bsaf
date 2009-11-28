@@ -35,6 +35,7 @@ import javax.jnlp.FileContents;
 import javax.jnlp.PersistenceService;
 import javax.jnlp.ServiceManager;
 import javax.jnlp.UnavailableServiceException;
+import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
 
 /**
  * Access to per application, per user, local file storage.
@@ -202,7 +203,7 @@ public class LocalStorage extends AbstractBean {
     }
 
     private String getVendorId() {
-        return getId("Application.vendorId", "UnknownApplicationVendor");
+        return getId(KEY_APPLICATION_VENDOR_ID, "UnknownApplicationVendor");
     }
 
     /* The following enum and method only exist to distinguish 

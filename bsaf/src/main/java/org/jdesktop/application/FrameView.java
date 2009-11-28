@@ -4,11 +4,16 @@
  */
 package org.jdesktop.application;
 
+import java.awt.Image;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
+import static org.jdesktop.application.Application.KEY_APPLICATION_ICON;
+import static org.jdesktop.application.Application.KEY_APPLICATION_TITLE;
+
 public class FrameView extends View {
+    public static final String MAIN_FRAME_NAME = "mainFrame";
 
     private static final Logger logger = Logger.getLogger(FrameView.class.getName());
     private JFrame frame = null;
@@ -34,9 +39,15 @@ public class FrameView extends View {
      */
     public JFrame getFrame() {
         if (frame == null) {
-            String title = getContext().getResourceMap().getString("Application.title");
+            ResourceMap resourceMap = getContext().getResourceMap();
+            String title = resourceMap.getString(KEY_APPLICATION_TITLE);
+
             frame = new JFrame(title);
-            frame.setName("mainFrame");
+            frame.setName(MAIN_FRAME_NAME);
+            if (resourceMap.containsKey(KEY_APPLICATION_ICON)) {
+                Image icon = resourceMap.getImageIcon(KEY_APPLICATION_ICON).getImage();
+                frame.setIconImage(icon);
+            }
         }
         return frame;
     }
