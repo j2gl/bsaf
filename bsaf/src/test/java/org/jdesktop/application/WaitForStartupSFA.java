@@ -2,8 +2,7 @@
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
- */ 
-
+ */
 package org.jdesktop.application;
 
 /**
@@ -13,43 +12,48 @@ package org.jdesktop.application;
  * waiting until its startup method has finished running on the EDT.  
  */
 public class WaitForStartupSFA extends SingleFrameApplication {
-    private static Object lock = new Object(); // static: Application is a singleton
-    private boolean started = false;
-    
-    /**
-     * Unblock the launchAndWait() method.
-     */
-    protected void startup() { 
-	synchronized(lock) {
-	    started = true;	
-	    lock.notifyAll();
-	}
+
+    private static final Object lock = new Object(); // static: Application is a singleton
+
+    @Override
+    protected void startup() {
+        // do nothing
     }
 
-    boolean isStarted() { return started; }
+    /**
+     * Unblock the launchAndWait() method
+     * when the application is ready
+     */
+    @Override
+    protected void ready() {
+        super.ready();
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+    }
+
 
     /**
      * Launch the specified subclsas of WaitForStartupApplication and block
      * (wait) until it's startup() method has run.
      */
     public static void launchAndWait(Class<? extends WaitForStartupSFA> applicationClass) {
-	synchronized(lock) {
-	    Application.launch(applicationClass, new String[]{});
-	    while(true) {
-		try {
-		    lock.wait();
-		}
-		catch (InterruptedException e) {
-		    System.err.println("launchAndWait interrupted!");
-		    break;
-		}
-		Application app = Application.getInstance(WaitForStartupSFA.class);
-		if (app instanceof WaitForStartupSFA) {
-		    if (((WaitForStartupSFA)app).isStarted()) {
-			break;
-		    }
-		}
-	    }
-	}
+        synchronized (lock) {
+            Application.launch(applicationClass, new String[]{});
+            while (true) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    System.err.println("launchAndWait interrupted!");
+                    break;
+                }
+                Application app = Application.getInstance(WaitForStartupSFA.class);
+                if (app instanceof WaitForStartupSFA) {
+                    if (((WaitForStartupSFA) app).isReady()) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

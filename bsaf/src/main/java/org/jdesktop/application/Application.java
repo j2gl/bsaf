@@ -130,7 +130,7 @@ public abstract class Application extends AbstractBean {
     private static Application application = null;
     private final List<ExitListener> exitListeners;
     private final ApplicationContext context;
-    private boolean ready;
+    protected boolean ready;
 
     /**
      * Not to be called directly, see {@link #launch launch}.
@@ -474,25 +474,39 @@ public abstract class Application extends AbstractBean {
      * @see #shutdown
      * @see #end
      */
-    public void exit(EventObject event) {
-        for (ExitListener listener : exitListeners) {
-            if (!listener.canExit(event)) {
-                return;
-            }
-        }
-        try {
-            for (ExitListener listener : exitListeners) {
+    public void exit(final EventObject event) {
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                for (ExitListener listener : exitListeners) {
+                    if (!listener.canExit(event)) {
+                        return;
+                    }
+                }
                 try {
-                    listener.willExit(event);
+                    for (ExitListener listener : exitListeners) {
+                        try {
+                            listener.willExit(event);
+                        } catch (Exception e) {
+                            logger.log(Level.WARNING, "ExitListener.willExit() failed", e);
+                        }
+                    }
+                    shutdown();
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "ExitListener.willExit() failed", e);
+                    logger.log(Level.WARNING, "unexpected error in Application.shutdown()", e);
+                } finally {
+                    end();
                 }
             }
-            shutdown();
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "unexpected error in Application.shutdown()", e);
-        } finally {
-            end();
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (Exception ignore) {  }
         }
     }
 

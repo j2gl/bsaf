@@ -92,9 +92,10 @@ public class BadSessionStateTest
     public void testBadSessionState() throws Exception
     {
         final BadSessionStateApplication app = Application.getInstance(BadSessionStateApplication.class);
-        assertTrue("BadSessionStateApplication started", app.isStarted());
+        assertTrue("BadSessionStateApplication started", app.isReady());
         Runnable doExit = new Runnable()
         {
+            @Override
             public void run() { app.exit(); }  // override doesn't call System.exit
         };
         SwingUtilities.invokeAndWait(doExit);

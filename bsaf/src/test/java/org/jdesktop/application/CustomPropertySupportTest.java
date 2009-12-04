@@ -180,7 +180,7 @@ public class CustomPropertySupportTest
     public void testCustomSessionState() throws Exception
     {
         final CustomSessionStateApplication app = Application.getInstance(CustomSessionStateApplication.class);
-        assertTrue("CustomSessionStateApplication started", app.isStarted());
+        assertTrue("CustomSessionStateApplication started", app.isReady());
         assertTrue(FIRST_VALUE.equals(app.label.getText()));
 
         Runnable doExit = new Runnable()
