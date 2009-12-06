@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2009 Illya Yalovyy
+ * Use is subject to license terms.
+ */
+
 package org.jdesktop.application.session;
 
 import java.awt.Frame;

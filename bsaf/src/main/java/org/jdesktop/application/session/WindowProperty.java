@@ -1,14 +1,19 @@
+/*
+ * Copyright (C) 2009 Illya Yalovyy
+ * Use is subject to license terms.
+ */
+
 package org.jdesktop.application.session;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
 import javax.swing.JFrame;
+import static org.jdesktop.application.utils.SwingHelper.isResizable;
+import static org.jdesktop.application.utils.SwingHelper.computeVirtualGraphicsBounds;
 
 /**
  * A {@code sessionState} property for Window.
@@ -119,33 +124,12 @@ public class WindowProperty implements PropertySupport {
         if (!w.isLocationByPlatform() && (state != null)) {
             WindowState windowState = (WindowState) state;
             Rectangle gcBounds0 = windowState.getGraphicsConfigurationBounds();
-            if (gcBounds0 != null && computeVirtualGraphicsBounds().contains(gcBounds0.getLocation())) {
-                boolean resizable = true;
-                if (w instanceof Frame) {
-                    resizable = ((Frame) w).isResizable();
-                } else if (w instanceof Dialog) {
-                    resizable = ((Dialog) w).isResizable();
-                }
-                if (resizable) {
-                    w.setBounds(windowState.getBounds());
-                }
+            if (gcBounds0 != null && isResizable(w) && computeVirtualGraphicsBounds().contains(gcBounds0.getLocation())) {
+                w.setBounds(windowState.getBounds());
             }
             if (w instanceof Frame) {
                 ((Frame) w).setExtendedState(windowState.getFrameState());
             }
         }
-    }
-
-    private Rectangle computeVirtualGraphicsBounds() {
-        Rectangle virtualBounds = new Rectangle();
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] gs =
-                ge.getScreenDevices();
-        for (int j = 0; j < gs.length; j++) {
-            GraphicsDevice gd = gs[j];
-            GraphicsConfiguration gc = gd.getDefaultConfiguration();
-            virtualBounds = virtualBounds.union(gc.getBounds());
-        }
-        return virtualBounds;
     }
 }
