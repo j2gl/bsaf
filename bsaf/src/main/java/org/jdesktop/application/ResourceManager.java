@@ -220,6 +220,10 @@ public class ResourceManager extends AbstractBean {
      *       <td>javax.swing.application.resources.Application.properties</td>
      *     </tr>
      * </table>
+     *
+     * <p>Note that inner classes are searched for by "simple" name - eg,
+     * for a class MyApp$InnerClass, the resource bundle must be named
+     * InnerClass.properties. See the notes on {@link #classBundleBaseName classBundleBaseName} </p>
      * 
      * <p>
      * None of the ResourceBundles are required to exist.  If more than one 
