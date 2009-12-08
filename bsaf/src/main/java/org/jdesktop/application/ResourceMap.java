@@ -893,8 +893,11 @@ public class ResourceMap {
      * A convenience method that's shorthand for calling:
      * <tt>getObject(key, KeyStroke.class)</tt>.  This method relies on the
      * KeyStroke ResourceConverter that's registered by this class and 
-     * uses {@link KeyStroke#getKeyStroke} to convert strings.
-     * 
+     * uses {@link KeyStroke#getKeyStroke(String s)} to convert strings.
+     *
+     * For example, <tt>pressed F</tt> reports the "F" key, and <tt>control 
+     * pressed F</tt> reports Control-F. See the <tt>KeyStroke</tt> JavaDoc for
+     * more information.
      * 
      * @param key the name of the resource
      * @return the KeyStroke value of the resource named key
