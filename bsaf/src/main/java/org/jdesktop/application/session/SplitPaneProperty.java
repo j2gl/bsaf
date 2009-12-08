@@ -78,13 +78,15 @@ public class SplitPaneProperty implements PropertySupport {
     @Override
     public void setSessionState(Component c, Object state) {
         checkComponent(c);
-        if ((state != null) && !(state instanceof SplitPaneState)) {
+        if (state == null) return;
+        if (state instanceof SplitPaneState) {
+            JSplitPane p = (JSplitPane) c;
+            SplitPaneState sps = (SplitPaneState) state;
+            if (p.getOrientation() == sps.getOrientation()) {
+                p.setDividerLocation(sps.getDividerLocation());
+            }
+        } else {
             throw new IllegalArgumentException("invalid state");
-        }
-        JSplitPane p = (JSplitPane) c;
-        SplitPaneState sps = (SplitPaneState) state;
-        if (p.getOrientation() == sps.getOrientation()) {
-            p.setDividerLocation(sps.getDividerLocation());
         }
     }
 }

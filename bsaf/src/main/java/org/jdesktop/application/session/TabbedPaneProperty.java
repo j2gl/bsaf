@@ -75,13 +75,15 @@ public class TabbedPaneProperty implements PropertySupport {
     @Override
     public void setSessionState(Component c, Object state) {
         checkComponent(c);
-        if ((state != null) && !(state instanceof TabbedPaneState)) {
+        if (state == null) return;
+        if (state instanceof TabbedPaneState){
+            JTabbedPane p = (JTabbedPane) c;
+            TabbedPaneState tps = (TabbedPaneState) state;
+            if (p.getTabCount() == tps.getTabCount()) {
+                p.setSelectedIndex(tps.getSelectedIndex());
+            }
+        } else {
             throw new IllegalArgumentException("invalid state");
-        }
-        JTabbedPane p = (JTabbedPane) c;
-        TabbedPaneState tps = (TabbedPaneState) state;
-        if (p.getTabCount() == tps.getTabCount()) {
-            p.setSelectedIndex(tps.getSelectedIndex());
         }
     }
 }
