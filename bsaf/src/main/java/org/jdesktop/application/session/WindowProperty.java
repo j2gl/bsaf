@@ -12,6 +12,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
 import javax.swing.JFrame;
+import org.jdesktop.application.utils.SwingHelper;
 import static org.jdesktop.application.utils.SwingHelper.isResizable;
 import static org.jdesktop.application.utils.SwingHelper.computeVirtualGraphicsBounds;
 
@@ -124,8 +125,12 @@ public class WindowProperty implements PropertySupport {
         if (!w.isLocationByPlatform() && (state != null)) {
             WindowState windowState = (WindowState) state;
             Rectangle gcBounds0 = windowState.getGraphicsConfigurationBounds();
-            if (gcBounds0 != null && isResizable(w) && computeVirtualGraphicsBounds().contains(gcBounds0.getLocation())) {
-                w.setBounds(windowState.getBounds());
+            if (gcBounds0 != null && isResizable(w)) {
+                if (computeVirtualGraphicsBounds().contains(gcBounds0.getLocation())) {
+                    w.setBounds(windowState.getBounds());
+                } else {
+                    w.setSize(windowState.getBounds().getSize());
+                }
             }
             if (w instanceof Frame) {
                 ((Frame) w).setExtendedState(windowState.getFrameState());

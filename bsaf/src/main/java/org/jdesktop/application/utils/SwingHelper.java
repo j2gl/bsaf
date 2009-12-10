@@ -10,6 +10,8 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 
@@ -39,5 +41,15 @@ public final class SwingHelper {
             resizable = ((Dialog) window).isResizable();
         }
         return resizable;
+    }
+
+    public static Point defaultLocation(Window window) {
+        GraphicsConfiguration gc =
+                window.getGraphicsConfiguration();
+        Rectangle bounds = gc.getBounds();
+        Insets insets = window.getToolkit().getScreenInsets(gc);
+        int x = bounds.x + insets.left;
+        int y = bounds.y + insets.top;
+        return new Point(x, y);
     }
 }

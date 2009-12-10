@@ -8,7 +8,9 @@ package org.jdesktop.application;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -27,6 +29,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
 import javax.swing.RootPaneContainer;
+import org.jdesktop.application.utils.SwingHelper;
 
 /**
  * An application base class for simple GUIs with one primary JFrame.
@@ -205,22 +208,16 @@ public abstract class SingleFrameApplication extends Application {
         if (root instanceof JFrame) {
             root.addComponentListener(new FrameBoundsListener());
         }
-        // If the window's bounds don't appear to have been set, do it
+
         if (root instanceof Window) {
             Window window = (Window) root;
+
+            // If the window's bounds don't appear to have been set, do it
             if (!root.isValid() || (root.getWidth() == 0) || (root.getHeight() == 0)) {
                 window.pack();
             }
-            if (!window.isLocationByPlatform() && (root.getX() == 0) && (root.getY() == 0)) {
-                Component owner = window.getOwner();
-                if (owner == null) {
-                    owner = (window != mainFrame) ? mainFrame : null;
-                }
-                window.setLocationRelativeTo(owner);  // center the window
-            }
-        }
-        // Restore session state
-        if (root instanceof Window) {
+
+            // Restore session state
             String filename = sessionFilename((Window) root);
             if (filename != null) {
                 try {
@@ -228,6 +225,27 @@ public abstract class SingleFrameApplication extends Application {
                 } catch (Exception e) {
                     String msg = String.format("couldn't restore sesssion [%s]", filename);
                     logger.log(Level.WARNING, msg, e);
+                }
+            }
+
+            // If window location is default and size is not too big
+            // the window should be centered
+            Point defaultLocation = SwingHelper.defaultLocation(window);
+            if (!window.isLocationByPlatform() && 
+                    (root.getX() == defaultLocation.getX()) &&
+                    (root.getY() == defaultLocation.getY())) {
+
+                Dimension screenSize = window.getToolkit().getScreenSize();
+                Dimension windowSIze = window.getSize();
+
+                if (screenSize.getWidth()/windowSIze.getWidth()>1.25 &&
+                    screenSize.getHeight()/windowSIze.getHeight()>1.25) {
+
+                    Component owner = window.getOwner();
+                    if (owner == null) {
+                        owner = (window != mainFrame) ? mainFrame : null;
+                    }
+                    window.setLocationRelativeTo(owner);  // center the window
                 }
             }
         }
