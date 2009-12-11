@@ -277,7 +277,6 @@ public class TaskMonitor extends AbstractBean {
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             Task task = (Task) (e.getSource());
-            Object newValue = e.getNewValue();
             if ((task != null) && (task == getForegroundTask())) {
                 firePropertyChange(e);
                 if ("state".equals(propertyName)) {

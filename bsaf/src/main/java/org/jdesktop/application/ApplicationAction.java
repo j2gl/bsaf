@@ -797,12 +797,12 @@ public class ApplicationAction extends AbstractAction {
      * with the specified arguments, failed.
      */
     private Error newInvokeError(Method m, Exception e, Object... args) {
-        String argsString = (args.length == 0) ? "" : args[0].toString();
+        StringBuilder argsString = new StringBuilder((args.length == 0) ? "" : args[0].toString());
         for (int i = 1; i < args.length; i++) {
-            argsString += ", " + args[i];
+            argsString.append(", ").append(args[i].toString());
         }
         String actionsClassName = appAM.getActionsObject().getClass().getName();
-        String msg = String.format("%s.%s(%s) failed", actionsClassName, m, argsString);
+        String msg = String.format("%s.%s(%s) failed", actionsClassName, m, argsString.toString());
         return new Error(msg, e);
     }
 

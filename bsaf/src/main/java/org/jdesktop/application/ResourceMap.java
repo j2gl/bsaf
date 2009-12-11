@@ -92,7 +92,7 @@ import javax.swing.border.EmptyBorder;
 public class ResourceMap {
 
     private static Logger logger = Logger.getLogger(ResourceMap.class.getName());
-    private final static Object nullResource = new String("null resource");
+    private final static Object NULL_RESOURCE = new String("null resource");
     private final ClassLoader classLoader;
     private final ResourceMap parent;
     private final List<String> bundleNames;
@@ -435,7 +435,7 @@ public class ResourceMap {
         checkNullKey(key);
         Map<String, Object> bundlesMap = getBundlesMap();
         Object value = (bundlesMap != null) ? bundlesMap.get(key) : null;
-        return (value == nullResource) ? null : value;
+        return (value == NULL_RESOURCE) ? null : value;
     }
 
     /**
@@ -462,7 +462,7 @@ public class ResourceMap {
         checkNullKey(key);
         Map<String, Object> bundlesMap = getBundlesMap();
         if (bundlesMap != null) {
-            bundlesMap.put(key, (value == null) ? nullResource : value);
+            bundlesMap.put(key, (value == null) ? NULL_RESOURCE : value);
         }
     }
 
@@ -923,7 +923,7 @@ public class ResourceMap {
      */
     public Integer getKeyCode(String key) {
         KeyStroke ks = getKeyStroke(key);
-        return (ks != null) ? new Integer(ks.getKeyCode()) : null;
+        return (ks != null) ? Integer.valueOf(ks.getKeyCode()) : null;
     }
 
     /** 
@@ -1217,7 +1217,6 @@ public class ResourceMap {
         if (type.isArray()) {
             type = type.getComponentType();
             Pattern p = Pattern.compile(key + "\\[([\\d]+)\\]");  // matches key[12]
-            List<String> arrayKeys = new ArrayList<String>();
             for (String arrayElementKey : keySet()) {
                 Matcher m = p.matcher(arrayElementKey);
                 if (m.matches()) {
@@ -1397,9 +1396,6 @@ public class ResourceMap {
             throw new ResourceConverterException(msg, s, e);
         }
 
-        private void error(String msg, String s) throws ResourceConverterException {
-            error(msg, s, null);
-        }
         /* An improved version of Color.decode() that supports colors
          * with an alpha channel and comma separated RGB[A] values.
          * Legal format for color resources are:

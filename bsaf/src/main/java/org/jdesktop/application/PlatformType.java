@@ -30,7 +30,7 @@ public enum PlatformType {
     }
 
     public String[] getPatterns() {
-        return patterns;
+        return patterns.clone();
     }
 
     public String getResourcePrefix() {
