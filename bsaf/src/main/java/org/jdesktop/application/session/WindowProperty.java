@@ -12,7 +12,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
 import javax.swing.JFrame;
-import org.jdesktop.application.utils.SwingHelper;
 import static org.jdesktop.application.utils.SwingHelper.isResizable;
 import static org.jdesktop.application.utils.SwingHelper.computeVirtualGraphicsBounds;
 
