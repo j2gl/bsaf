@@ -609,13 +609,8 @@ public abstract class Application extends AbstractBean {
     /**
      * The {@code Application} singleton.
      * <p>
-     * Typically this method is only called after an Application has
-     * been launched however in some situations, like tests, it's useful to be 
-     * able to get an {@code Application} object without actually
-     * launching.  In that case, an instance of the specified class
-     * is constructed and configured as it would be by the 
-     * {@link #launch launch} method.  However it's {@code initialize}
-     * and {@code startup} methods are not run.  
+     * This method is only called after an Application has
+     * been launched.
      * 
      * @param <T>
      * @param applicationClass this Application's subclass
@@ -623,65 +618,30 @@ public abstract class Application extends AbstractBean {
      * @see Application#launch
      */
     public static synchronized <T extends Application> T getInstance(Class<T> applicationClass) {
-        if (application == null) {
-            /* Special case: the application hasn't been launched.  We're
-             * constructing the applicationClass here to get the same effect
-             * as the NoApplication class serves for getInstance().  We're
-             * not launching the app, no initialize/startup/wait steps.
-             */
-            try {
-                application = create(applicationClass);
-            } catch (Exception e) {
-                String msg = String.format("Couldn't construct %s", applicationClass);
-                throw (new Error(msg, e));
-            }
-        }
+        checkApplicationLaunched();
         return applicationClass.cast(application);
     }
 
     /**
-     * The {@code Application} singleton, or a placeholder if {@code
-     * launch} hasn't been called yet.  
+     * The {@code Application} singleton.  
      * <p>
-     * Typically this method is only called after an Application has
-     * been launched however in some situations, like tests, it's useful to be 
-     * able to get an {@code Application} object without actually
-     * launching.  The <i>placeholder</i> Application object provides
-     * access to an {@code ApplicationContext} singleton and has
-     * the same semantics as launching an Application defined like this:
-     * <pre>
-     * public class PlaceholderApplication extends Application {
-     *     public void startup() { }
-     * }
-     * Application.launch(PlaceholderApplication.class);
-     * </pre>
+     * This method is only called after an Application has
+     * been launched.
      * 
      * @return the Application singleton or a placeholder
      * @see Application#launch
      * @see Application#getInstance(Class)
      */
     public static synchronized Application getInstance() {
-        if (application == null) {
-            application = new NoApplication();
-        }
+        checkApplicationLaunched();
         return application;
     }
 
-    private static class NoApplication extends Application {
-
-        protected NoApplication() {
-            ApplicationContext ctx = getContext();
-            ctx.setApplicationClass(getClass());
-            ctx.setApplication(this);
-            ResourceMap appResourceMap = ctx.getResourceMap();
-            appResourceMap.putResource(ResourceMap.KEY_PLATFORM, platform());
-        }
-
-        @Override
-        protected void startup() {
+    private static void checkApplicationLaunched() throws IllegalStateException {
+        if (application == null) {
+            throw new IllegalStateException("Application is not launched.");
         }
     }
-
 
     /* Prototype support for the View type */
     public void show(View view) {
