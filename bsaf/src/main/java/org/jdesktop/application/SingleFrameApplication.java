@@ -5,44 +5,29 @@
  */
 package org.jdesktop.application;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Window;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import org.jdesktop.application.utils.SwingHelper;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JWindow;
-import javax.swing.RootPaneContainer;
-import org.jdesktop.application.utils.SwingHelper;
 
 /**
  * An application base class for simple GUIs with one primary JFrame.
  * <p>
  * This class takes care of component property injection, exit processing,
- * and saving/restoring session state in a way that's appropriate for 
- * simple single-frame applications.  The application's JFrame is created 
- * automatically, with a WindowListener that calls exit() when the 
+ * and saving/restoring session state in a way that's appropriate for
+ * simple single-frame applications.  The application's JFrame is created
+ * automatically, with a WindowListener that calls exit() when the
  * window is closed.  Session state is stored when the application
  * shuts down, and restored when the GUI is shown.
  * <p>
- * To use {@code SingleFrameApplication}, one need only override 
- * {@code startup}, create the GUI's main panel, and apply 
+ * To use {@code SingleFrameApplication}, one need only override
+ * {@code startup}, create the GUI's main panel, and apply
  * {@code show} to that.  Here's an example:
  * <pre>
  *class MyApplication extends SingleFrameApplication {
@@ -60,9 +45,9 @@ import org.jdesktop.application.utils.SwingHelper;
  * {@link SessionStorage#restore SessionStorage.restore}.
  * When the application shuts down, session state is saved.
  * <p>
- * A more realistic tiny example would rely on a ResourceBundle for 
- * the JLabel's string and the main frame's title.  The automatic 
- * injection step only initializes the properties of named 
+ * A more realistic tiny example would rely on a ResourceBundle for
+ * the JLabel's string and the main frame's title.  The automatic
+ * injection step only initializes the properties of named
  * components, so:
  * <pre>
  * class MyApplication extends SingleFrameApplication {
@@ -73,21 +58,21 @@ import org.jdesktop.application.utils.SwingHelper;
  *     }
  * }
  * </pre>
- * The ResourceBundle should contain definitions for all of the 
+ * The ResourceBundle should contain definitions for all of the
  * standard Application resources, as well the main frame's title
  * and the label's text.  Note that the JFrame that's implicitly
  * created by the {@code show} method  is named "mainFrame".
  * <pre>
  * # resources/MyApplication.properties
  * Application.id = MyApplication
- * Application.title = My Hello World Application 
+ * Application.title = My Hello World Application
  * Application.version = 1.0
  * Application.vendor = Sun Microsystems, Inc.
  * Application.vendorId = Sun
  * Application.homepage = http://www.javadesktop.org
  * Application.description =  An example of SingleFrameApplication
  * Application.lookAndFeel = system
- * 
+ *
  * mainFrame.title = ${Application.title} ${Application.version}
  * label.text = Hello World
  * </pre>
@@ -95,16 +80,16 @@ import org.jdesktop.application.utils.SwingHelper;
 public abstract class SingleFrameApplication extends Application {
 
     private static final Logger logger = Logger.getLogger(SingleFrameApplication.class.getName());
-    private ResourceMap appResources = null;
+//    private ResourceMap appResources = null;
 
     /**
-     * Return the JFrame used to show this application.  
+     * Return the JFrame used to show this application.
      * <p>
      * The frame's name is set to "mainFrame", its title is
      * initialized with the value of the {@code Application.title}
      * resource and a {@code WindowListener} is added that calls
      * {@code exit} when the user attempts to close the frame.
-     * 
+     *
      * <p>
      * This method may be called at any time; the JFrame is created lazily
      * and cached.  For example:
@@ -114,7 +99,7 @@ public abstract class SingleFrameApplication extends Application {
      *     show(createMainPanel());
      * }
      * </pre>
-     * 
+     *
      * @return this application's  main frame
      * @see #setMainFrame
      * @see #show
@@ -127,7 +112,7 @@ public abstract class SingleFrameApplication extends Application {
     }
 
     /**
-     * Sets the JFrame use to show this application.  
+     * Sets the JFrame use to show this application.
      * <p>
      * This method should be called from the startup method by a
      * subclass that wants to construct and initialize the main frame
@@ -135,14 +120,14 @@ public abstract class SingleFrameApplication extends Application {
      * getMainFrame} lazily constructs the main frame and initializes
      * the {@code mainFrame} property.
      * <p>
-     * If the main frame property was already initialized, either 
+     * If the main frame property was already initialized, either
      * implicitly through a call to {@code getMainFrame} or by
-     * explicitly calling this method, an IllegalStateException is 
+     * explicitly calling this method, an IllegalStateException is
      * thrown.  If {@code mainFrame} is null, an IllegalArgumentException
      * is thrown.
      * <p>
      * This property is bound.
-     * 
+     *
      * @param mainFrame the new value of the mainFrame property
      * @see #getMainFrame
      */
@@ -160,18 +145,18 @@ public abstract class SingleFrameApplication extends Application {
     }
 
     /**
-     * Initialize the hierarchy with the specified root by 
+     * Initialize the hierarchy with the specified root by
      * injecting resources.
      * <p>
-     * By default the {@code show} methods 
+     * By default the {@code show} methods
      * {@link ResourceMap#injectComponents inject resources} before
-     * initializing the JFrame or JDialog's size, location, 
+     * initializing the JFrame or JDialog's size, location,
      * and restoring the window's session state.  If the app
      * is showing a window whose resources have already been injected,
      * or that shouldn't be initialized via resource injection,
-     * this method can be overridden to defeat the default 
-     * behavior. 
-     * 
+     * this method can be overridden to defeat the default
+     * behavior.
+     *
      * @param root the root of the component hierarchy
      * @see ResourceMap#injectComponents
      * @see #show(JComponent)
@@ -254,7 +239,7 @@ public abstract class SingleFrameApplication extends Application {
     /**
      * Show the specified component in the {@link #getMainFrame main frame}.
      * Typical applications will call this method after constructing their
-     * main GUI panel in the {@code startup} method.  
+     * main GUI panel in the {@code startup} method.
      * <p>
      * Before the main frame is made visible, the properties of all of
      * the components in the hierarchy are initialized with {@link
@@ -263,14 +248,14 @@ public abstract class SingleFrameApplication extends Application {
      * SessionStorage#restore SessionStorage.restore}.  When the
      * application shuts down, session state is saved.
      * <p>
-     * Note that the name of the lazily created main frame (see 
+     * Note that the name of the lazily created main frame (see
      * {@link #getMainFrame getMainFrame}) is set by default.
      * Session state is only saved for top level windows with
      * a valid name and then only for component descendants
      * that are named.
      * <p>
      * Throws an IllegalArgumentException if {@code c} is null
-     * 
+     *
      * @param c the main frame's contentPane child
      */
     protected void show(JComponent c) {
@@ -290,12 +275,12 @@ public abstract class SingleFrameApplication extends Application {
      * message dialogs, about boxes, and so on.  Unlike the {@code mainFrame},
      * dismissing a secondary window will not exit the application.
      * <p>
-     * Session state is only automatically saved if the specified 
+     * Session state is only automatically saved if the specified
      * JDialog has a name, and then only for component descendants
      * that are named.
      * <p>
      * Throws an IllegalArgumentException if {@code c} is null
-     * 
+     *
      * @param c the main frame's contentPane child
      * @see #show(JComponent)
      * @see #show(JFrame)
@@ -316,12 +301,12 @@ public abstract class SingleFrameApplication extends Application {
      * message dialogs, about boxes, and so on.  Unlike the {@code mainFrame},
      * dismissing a secondary window will not exit the application.
      * <p>
-     * Session state is only automatically saved if the specified 
+     * Session state is only automatically saved if the specified
      * JFrame has a name, and then only for component descendants
      * that are named.
      * <p>
      * Throws an IllegalArgumentException if {@code c} is null
-     * 
+     *
      * @param c
      * @see #show(JComponent)
      * @see #show(JDialog)
@@ -352,47 +337,24 @@ public abstract class SingleFrameApplication extends Application {
     }
 
     /**
-     * Return all of the visible JWindows, JDialogs, and JFrames per 
-     * Window.getWindows() on Java SE 6, or Frame.getFrames() for earlier 
+     * Return all of the visible JWindows, JDialogs, and JFrames per
+     * Window.getWindows() on Java SE 6, or Frame.getFrames() for earlier
      * Java versions.
      */
     private List<Window> getVisibleSecondaryWindows() {
         List<Window> rv = new ArrayList<Window>();
-        Method getWindowsM = null;
-        try {
-            getWindowsM = Window.class.getMethod("getWindows");
-        } catch (Exception ignore) {
-        }
-        if (getWindowsM != null) {
-            Window[] windows = null;
-            try {
-                windows = (Window[]) getWindowsM.invoke(null);
-            } catch (Exception e) {
-                throw new Error("HCTB - can't get top level windows list", e);
-            }
-            if (windows != null) {
-                for (Window window : windows) {
-                    if (isVisibleWindow(window)) {
-                        rv.add(window);
-                    }
-                }
-            }
-        } else {
-            Frame[] frames = Frame.getFrames();
-            if (frames != null) {
-                for (Frame frame : frames) {
-                    if (isVisibleWindow(frame)) {
-                        rv.add(frame);
-                    }
-                }
+
+        for (Window window : Window.getWindows()) {
+            if (isVisibleWindow(window)) {
+                rv.add(window);
             }
         }
         return rv;
     }
 
     /**
-     * Save session state for the component hierarchy rooted by 
-     * the mainFrame.  SingleFrameApplication subclasses that override 
+     * Save session state for the component hierarchy rooted by
+     * the mainFrame.  SingleFrameApplication subclasses that override
      * shutdown need to remember call {@code super.shutdown()}.
      */
     @Override
