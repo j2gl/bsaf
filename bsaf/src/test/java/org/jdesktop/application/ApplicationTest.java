@@ -109,11 +109,20 @@ public class ApplicationTest
     {
         ApplicationContext ctx = getApplicationContext();
         ResourceManager rm = ctx.getResourceManager();
-        String platform = rm.getPlatform();
-        assertTrue("default".equals(platform) || "osx".equals(platform));
-        ctx.getResourceManager().setPlatform("anotherPlatform");
-        assertEquals("anotherPlatform", ctx.getResourceManager().getPlatform());
-        assertEquals("anotherPlatform", rm.getPlatform());
+        PlatformType platform = rm.getPlatform();
+        String osName = System.getProperty("os.name").toLowerCase();
+        boolean isPlatformSet = false;
+        for (String ptr : platform.getPatterns()) {
+            if (osName.startsWith(ptr)) {
+                isPlatformSet = true;
+                break;
+            }
+        }
+        assertTrue(isPlatformSet);
+        
+        ctx.getResourceManager().setPlatform(PlatformType.FREE_BSD);
+        assertEquals(PlatformType.FREE_BSD, ctx.getResourceManager().getPlatform());
+        assertEquals(PlatformType.FREE_BSD, rm.getPlatform());
     }
 
     private void checkActionName(String msg, javax.swing.Action action, String expectedValue)

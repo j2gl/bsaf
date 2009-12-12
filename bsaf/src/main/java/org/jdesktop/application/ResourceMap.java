@@ -90,8 +90,10 @@ import javax.swing.border.EmptyBorder;
  * @see ResourceBundle
  */
 public class ResourceMap {
-
     private static Logger logger = Logger.getLogger(ResourceMap.class.getName());
+    
+    public static final String KEY_PLATFORM = "platform";
+
     private final static Object NULL_RESOURCE = new String("null resource");
     private final ClassLoader classLoader;
     private final ResourceMap parent;
@@ -314,6 +316,10 @@ public class ResourceMap {
             ResourceMap parent = getParent();
             return (parent != null) ? parent.containsKey(key) : false;
         }
+    }
+
+    public PlatformType getPlatform() {
+        return (PlatformType) getObject(KEY_PLATFORM, PlatformType.class);
     }
 
     /** 

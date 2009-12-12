@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
@@ -169,6 +168,7 @@ public abstract class Application extends AbstractBean {
     public static synchronized <T extends Application> void launch(final Class<T> applicationClass, final String[] args) {
         Runnable doCreateAndShowGUI = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     application = create(applicationClass);
@@ -235,7 +235,7 @@ public abstract class Application extends AbstractBean {
          */
         ResourceMap appResourceMap = ctx.getResourceMap();
 
-        appResourceMap.putResource("platform", platform());
+        appResourceMap.putResource(ResourceMap.KEY_PLATFORM, platform());
 
         if (!Beans.isDesignTime()) {
             /* Initialize the UIManager lookAndFeel property with the
@@ -264,16 +264,22 @@ public abstract class Application extends AbstractBean {
     /* Defines the default value for the platform resource, 
      * either "osx" or "default".
      */
-    private static String platform() {
-        String platform = "default";
+    private static PlatformType platform() {
         try {
             String osName = System.getProperty("os.name");
-            if ((osName != null) && osName.toLowerCase().startsWith("mac os x")) {
-                platform = "osx";
+            if (osName != null) {
+                osName = osName.toLowerCase();
+                for (PlatformType platformType : PlatformType.values()) {
+                    for(String pattern : platformType.getPatterns()) {
+                        if (osName.startsWith(pattern)) {
+                            return platformType;
+                        }
+                    }
+                }
             }
         } catch (SecurityException ignore) {
         }
-        return platform;
+        return PlatformType.DEFAULT;
     }
 
     /* Call the ready method when the eventQ is quiet.
@@ -668,7 +674,7 @@ public abstract class Application extends AbstractBean {
             ctx.setApplicationClass(getClass());
             ctx.setApplication(this);
             ResourceMap appResourceMap = ctx.getResourceMap();
-            appResourceMap.putResource("platform", platform());
+            appResourceMap.putResource(ResourceMap.KEY_PLATFORM, platform());
         }
 
         @Override

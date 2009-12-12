@@ -11,8 +11,10 @@ package org.jdesktop.application;
  */
 public enum PlatformType {
     DEFAULT ("Default", ""),
+    SOLARIS ("Solaris", "sol", "solaris"),
+    FREE_BSD ("FreeBSD", "bsd", "FreeBSD"),
     LINUX ("Linux", "lin", "linux"),
-    OSX ("Mac os", "osx", "osx"),
+    OS_X ("Mac OS X", "osx", "mac os x"),
     WINDOWS ("Windows", "Windows", "windows");
 
     private final String name;

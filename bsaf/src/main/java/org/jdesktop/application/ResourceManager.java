@@ -443,15 +443,13 @@ public class ResourceManager extends AbstractBean {
 
     /**
      * The value of the special Application ResourceMap resource
-     * named "platform".  By default the value of this resource
-     * is "osx" if the underlying operating environment is Apple
-     * OSX or "default".
+     * named "platform".  
      *
      * @return the value of the platform resource
      * @see #setPlatform
      */
-    public String getPlatform() {
-        return getResourceMap().getString("platform");
+    public PlatformType getPlatform() {
+        return getResourceMap().getPlatform();
     }
 
     /**
@@ -477,10 +475,10 @@ public class ResourceManager extends AbstractBean {
      * @see #getPlatform
      * @see System#getProperty
      */
-    public void setPlatform(String platform) {
+    public void setPlatform(PlatformType platform) {
         if (platform == null) {
             throw new IllegalArgumentException("null platform");
         }
-        getResourceMap().putResource("platform", platform);
+        getResourceMap().putResource(ResourceMap.KEY_PLATFORM, platform);
     }
 }
