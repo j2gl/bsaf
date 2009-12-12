@@ -342,7 +342,7 @@ final class DefaultInputBlocker extends Task.InputBlocker {
         if ((delay == null) && (taskResourceMap != null)) {
             delay = taskResourceMap.getInteger(key);
         }
-        return (delay == null) ? 0 : delay.intValue();
+        return (delay == null) ? 0 : delay;
     }
 
     private void showBlockingDialog(boolean f) {
