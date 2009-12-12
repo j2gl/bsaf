@@ -174,7 +174,7 @@ public class ActionManager extends AbstractBean {
                     lastActionMap = lastActionMap.getParent();
                 }
                 lastActionMap.setParent(getActionMap());
-                actionMaps.put(actionsObject, new WeakReference(classActionMap));
+                actionMaps.put(actionsObject, new WeakReference<ApplicationActionMap>(classActionMap));
             }
             return classActionMap;
         }
@@ -189,7 +189,7 @@ public class ActionManager extends AbstractBean {
         }
 
         public void propertyChange(PropertyChangeEvent e) {
-            if (e.getPropertyName() == "permanentFocusOwner") {
+            if ("permanentFocusOwner".equals(e.getPropertyName())) {
                 JComponent oldOwner = getContext().getFocusOwner();
                 Object newValue = e.getNewValue();
                 JComponent newOwner = (newValue instanceof JComponent) ? (JComponent) newValue : null;

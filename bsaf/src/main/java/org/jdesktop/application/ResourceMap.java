@@ -94,7 +94,7 @@ public class ResourceMap {
     
     public static final String KEY_PLATFORM = "platform";
 
-    private final static Object NULL_RESOURCE = new String("null resource");
+    private final static Object NULL_RESOURCE = "null resource";
     private final ClassLoader classLoader;
     private final ResourceMap parent;
     private final List<String> bundleNames;
@@ -321,7 +321,7 @@ public class ResourceMap {
             return true;
         } else {
             ResourceMap parent = getParent();
-            return (parent != null) ? parent.containsKey(key) : false;
+            return (parent != null) && parent.containsKey(key);
         }
     }
 
@@ -641,7 +641,7 @@ public class ResourceMap {
             return null;
         }
         StringBuffer value = new StringBuffer();
-        int i0 = 0, i1 = 0;
+        int i0 = 0, i1;
         while ((i1 = expr.indexOf("${", i0)) != -1) {
             if ((i1 == 0) || ((i1 > 0) && (expr.charAt(i1 - 1) != '\\'))) {
                 int i2 = expr.indexOf("}", i1);
@@ -949,7 +949,7 @@ public class ResourceMap {
      */
     public Integer getKeyCode(String key) {
         KeyStroke ks = getKeyStroke(key);
-        return (ks != null) ? Integer.valueOf(ks.getKeyCode()) : null;
+        return (ks != null) ? ks.getKeyCode() : null;
     }
 
     /** 
@@ -1058,7 +1058,7 @@ public class ResourceMap {
             if (!matchingResourceFound) {
                 return;
             }
-            BeanInfo beanInfo = null;
+            BeanInfo beanInfo;
             try {
                 beanInfo = Introspector.getBeanInfo(component.getClass());
             } catch (IntrospectionException e) {
@@ -1369,16 +1369,14 @@ public class ResourceMap {
     /* If path doesn't have a leading "/" then the resourcesDir
      * is prepended, otherwise the leading "/" is removed. 
      */
-    private static String resourcePath(String path, ResourceMap resourceMap) {
-        String rPath = path;
+    private static String resourcePath(final String path, ResourceMap resourceMap) {
         if (path == null) {
-            rPath = null;
+            return null;
         } else if (path.startsWith("/")) {
-            rPath = (path.length() > 1) ? path.substring(1) : null;
+            return (path.length() > 1) ? path.substring(1) : null;
         } else {
-            rPath = resourceMap.getResourcesDir() + path;
+            return resourceMap.getResourcesDir() + path;
         }
-        return rPath;
     }
 
     private static ImageIcon loadImageIcon(String s, ResourceMap resourceMap)
@@ -1418,9 +1416,9 @@ public class ResourceMap {
             super(Color.class);
         }
 
-        private void error(String msg, String s, Exception e) throws ResourceConverterException {
-            throw new ResourceConverterException(msg, s, e);
-        }
+//        private void error(String msg, String s, Exception e) throws ResourceConverterException {
+//            throw new ResourceConverterException(msg, s, e);
+//        }
 
         /* An improved version of Color.decode() that supports colors
          * with an alpha channel and comma separated RGB[A] values.
@@ -1431,7 +1429,7 @@ public class ResourceMap {
 
         @Override
         public Object parseString(String s, ResourceMap ignore) throws ResourceConverterException {
-            Color color = null;
+            final Color color;
             if (s.startsWith("#")) {
                 switch (s.length()) {
                     // RGB/hex color
