@@ -103,6 +103,7 @@ public class ResourceMap {
     private Locale locale = Locale.getDefault();    // ...
     private Set<String> bundlesMapKeysP = null;     // set getBundlesMapKeys()
     private boolean bundlesLoaded = false;  // ResourceBundles are loaded lazily
+    private PlatformType platform;
 
     /**
      * Creates a ResourceMap that contains all of the resources 
@@ -249,26 +250,32 @@ public class ResourceMap {
             locale = defaultLocale;
         }
         if (!bundlesLoaded) {
+            String resourceSuffix = getPlatform().getResourceSuffix();
             Map<String, Object> bundlesMap = new ConcurrentHashMap<String, Object>();
             for (int i = bundleNames.size() - 1; i >= 0; i--) {
-                try {
-                    String bundleName = bundleNames.get(i);
-                    ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale, classLoader);
-                    Enumeration<String> keys = bundle.getKeys();
-                    while (keys.hasMoreElements()) {
-                        String key = keys.nextElement();
-                        bundlesMap.put(key, bundle.getObject(key));
-                    }
-                } catch (MissingResourceException ignore) {
-                    /* bundleName is just a location to check, it's not
-                     * guaranteed to name a ResourceBundle
-                     */
-                }
+                populateResourceMap(bundleNames.get(i), bundlesMap);
+                if (!resourceSuffix.isEmpty())
+                    populateResourceMap(bundleNames.get(i)+"_"+resourceSuffix, bundlesMap);
             }
             bundlesMapP = bundlesMap;
             bundlesLoaded = true;
         }
         return bundlesMapP;
+    }
+
+    private void populateResourceMap(String bundleName, Map<String, Object> bundlesMap) {
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale, classLoader);
+            Enumeration<String> keys = bundle.getKeys();
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                bundlesMap.put(key, bundle.getObject(key));
+            }
+        } catch (MissingResourceException ignore) {
+            /* bundleName is just a location to check, it's not
+             * guaranteed to name a ResourceBundle
+             */
+        }
     }
 
     private void checkNullKey(String key) {
@@ -319,7 +326,15 @@ public class ResourceMap {
     }
 
     public PlatformType getPlatform() {
-        return (PlatformType) getObject(KEY_PLATFORM, PlatformType.class);
+        if (platform != null) return platform;
+        if (parent != null) return parent.getPlatform();
+        return PlatformType.DEFAULT;
+    }
+
+    public void setPlatform(PlatformType platform) {
+        if(platform == null) throw new IllegalArgumentException("Platform could not be null.");
+        if (this.platform != null) throw new IllegalStateException("The platform attribute is already set for this resource map.");
+        this.platform = platform;
     }
 
     /** 
@@ -466,9 +481,14 @@ public class ResourceMap {
      */
     protected void putResource(String key, Object value) {
         checkNullKey(key);
-        Map<String, Object> bundlesMap = getBundlesMap();
-        if (bundlesMap != null) {
-            bundlesMap.put(key, (value == null) ? NULL_RESOURCE : value);
+
+        if (KEY_PLATFORM.equals(key)) {
+            setPlatform((PlatformType) value);
+        } else {
+            Map<String, Object> bundlesMap = getBundlesMap();
+            if (bundlesMap != null) {
+                bundlesMap.put(key, (value == null) ? NULL_RESOURCE : value);
+            }
         }
     }
 

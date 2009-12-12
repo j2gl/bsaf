@@ -479,6 +479,6 @@ public class ResourceManager extends AbstractBean {
         if (platform == null) {
             throw new IllegalArgumentException("null platform");
         }
-        getResourceMap().putResource(ResourceMap.KEY_PLATFORM, platform);
+        getResourceMap().setPlatform(platform);
     }
 }

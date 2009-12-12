@@ -120,9 +120,14 @@ public class ApplicationTest
         }
         assertTrue(isPlatformSet);
         
-        ctx.getResourceManager().setPlatform(PlatformType.FREE_BSD);
-        assertEquals(PlatformType.FREE_BSD, ctx.getResourceManager().getPlatform());
-        assertEquals(PlatformType.FREE_BSD, rm.getPlatform());
+        try {
+            ctx.getResourceManager().setPlatform(PlatformType.FREE_BSD);
+            fail("It is forbidden to change the platform of a resource map.");
+        } catch (Exception ignore) {
+        }
+
+        String currentPlatform = rm.getResourceMap().getString("currentPlatform");
+        assertEquals(platform.getName(), currentPlatform);
     }
 
     private void checkActionName(String msg, javax.swing.Action action, String expectedValue)
