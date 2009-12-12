@@ -969,13 +969,12 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             String propertyName = e.getPropertyName();
             if ("state".equals(propertyName)) {
                 StateValue state = (StateValue) (e.getNewValue());
-                Task task = (Task) (e.getSource());
                 switch (state) {
                     case STARTED:
-                        taskStarted(task);
+                        taskStarted();
                         break;
                     case DONE:
-                        taskDone(task);
+                        taskDone();
                         break;
                 }
             } else if ("progress".equals(propertyName)) {
@@ -985,20 +984,20 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
             }
         }
 
-        private void taskStarted(Task task) {
-            synchronized (task) {
+        private void taskStarted() {
+            synchronized (Task.this) {
                 startTime = System.currentTimeMillis();
             }
             firePropertyChange(PROP_STARTED, false, true);
             fireDoInBackgroundListeners();
         }
 
-        private void taskDone(Task task) {
-            synchronized (task) {
+        private void taskDone() {
+            synchronized (Task.this) {
                 doneTime = System.currentTimeMillis();
             }
             try {
-                task.removePropertyChangeListener(this);
+                removePropertyChangeListener(this);
                 firePropertyChange(PROP_DONE, false, true);
             } finally {
                 // execute succeeded only when SwingWorker is done.
