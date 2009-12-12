@@ -17,7 +17,7 @@ public final class AppHelper {
     * Defines the default value for the platform resource,
     * either "osx" or "default".
     */
-    public static PlatformType platform() {
+    public static PlatformType getPlatform() {
         if (activePlatformType != null)
             return activePlatformType;
         try {
