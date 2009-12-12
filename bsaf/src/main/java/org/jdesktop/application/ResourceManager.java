@@ -5,6 +5,8 @@
  */
 package org.jdesktop.application;
 
+import org.jdesktop.application.utils.PlatformType;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -355,7 +357,7 @@ public class ResourceManager extends AbstractBean {
         }
         Object oldValue = applicationBundleNames;
         if (bundleNames != null) {
-            applicationBundleNames = Collections.unmodifiableList(new ArrayList(bundleNames));
+            applicationBundleNames = Collections.unmodifiableList(new ArrayList<String>(bundleNames));
         } else {
             applicationBundleNames = null;
         }

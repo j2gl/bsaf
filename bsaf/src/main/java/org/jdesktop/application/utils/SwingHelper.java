@@ -20,13 +20,16 @@ import java.awt.Window;
  * @author etf
  */
 public final class SwingHelper {
+
+    private SwingHelper() {
+    }
+
     public static Rectangle computeVirtualGraphicsBounds() {
         Rectangle virtualBounds = new Rectangle();
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs =
                 ge.getScreenDevices();
-        for (int j = 0; j < gs.length; j++) {
-            GraphicsDevice gd = gs[j];
+        for (GraphicsDevice gd : gs) {
             GraphicsConfiguration gc = gd.getDefaultConfiguration();
             virtualBounds = virtualBounds.union(gc.getBounds());
         }

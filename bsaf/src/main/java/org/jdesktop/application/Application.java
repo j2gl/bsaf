@@ -4,6 +4,8 @@
  */
 package org.jdesktop.application;
 
+import org.jdesktop.application.utils.AppHelper;
+
 import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -235,7 +237,7 @@ public abstract class Application extends AbstractBean {
          */
         ResourceMap appResourceMap = ctx.getResourceMap();
 
-        appResourceMap.putResource(ResourceMap.KEY_PLATFORM, platform());
+        appResourceMap.putResource(ResourceMap.KEY_PLATFORM, AppHelper.platform());
 
         if (!Beans.isDesignTime()) {
             /* Initialize the UIManager lookAndFeel property with the
@@ -259,27 +261,6 @@ public abstract class Application extends AbstractBean {
         }
 
         return application;
-    }
-
-    /* Defines the default value for the platform resource, 
-     * either "osx" or "default".
-     */
-    private static PlatformType platform() {
-        try {
-            String osName = System.getProperty("os.name");
-            if (osName != null) {
-                osName = osName.toLowerCase();
-                for (PlatformType platformType : PlatformType.values()) {
-                    for(String pattern : platformType.getPatterns()) {
-                        if (osName.startsWith(pattern)) {
-                            return platformType;
-                        }
-                    }
-                }
-            }
-        } catch (SecurityException ignore) {
-        }
-        return PlatformType.DEFAULT;
     }
 
     /* Call the ready method when the eventQ is quiet.
@@ -403,6 +384,7 @@ public abstract class Application extends AbstractBean {
                     try {
                         e.wait();
                     } catch (InterruptedException ie) {
+                        //ignore
                     }
                 }
                 qEmpty = e.isEventQEmpty();

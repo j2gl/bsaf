@@ -6,6 +6,8 @@
 package org.jdesktop.application;
 
 import org.jdesktop.application.ResourceConverter.ResourceConverterException;
+import org.jdesktop.application.utils.PlatformType;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;

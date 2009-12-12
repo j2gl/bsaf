@@ -3,7 +3,7 @@
  * Use is subject to license terms.
  */
 
-package org.jdesktop.application;
+package org.jdesktop.application.utils;
 
 /**
  *
