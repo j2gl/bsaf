@@ -188,6 +188,7 @@ public class ActionManager extends AbstractBean {
             textActions = new TextActions(getContext());
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             if ("permanentFocusOwner".equals(e.getPropertyName())) {
                 JComponent oldOwner = getContext().getFocusOwner();
