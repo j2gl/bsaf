@@ -9,12 +9,13 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
+import org.jdesktop.application.utils.PlatformType;
 
 /**
  * ApplicationTest.java
