@@ -8,6 +8,7 @@ package org.jdesktop.application;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.jdesktop.application.utils.PlatformType;
 
 import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;

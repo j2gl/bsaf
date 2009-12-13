@@ -21,10 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 
 /**
  * Support for storing GUI state that persists between Application sessions.  
@@ -39,7 +36,7 @@ import javax.swing.JTable;
  * for Windows, the {@code dividerLocation} for {@code JSliderPanes} and the
  * {@code selectedIndex} for {@code JTabbedPanes} are defined by default.  The
  * {@code ApplicationContext} {@link
- * ApplicationContext#getSessionStorage getSesssionStorage} method
+ * ApplicationContext#getSessionStorage getSessionStorage} method
  * provides a shared {@code SessionStorage} object.
  * <p>
  * A typical Application saves session state in its 
@@ -176,7 +173,7 @@ public class SessionStorage {
      * @param clazz
      * @param property
      */
-    public void registerPropertySupport(Class clazz, PropertySupport property) {
+    public void registerPropertySupport(Class<JLabel> clazz, PropertySupport property) {
         if (clazz == null) throw new IllegalArgumentException("Class argument must not ne null.");
 
         // Remove property support for the clazz in case property argument is null

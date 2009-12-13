@@ -1,45 +1,26 @@
-
 /*
- * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
- * subject to license terms.
- */
+* Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved. Use is
+* subject to license terms.
+*/
 package org.jdesktop.application;
 
-import java.awt.Rectangle;
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.ExceptionListener;
-import java.beans.Expression;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
+import org.jdesktop.application.utils.AppHelper;
+import org.jdesktop.application.utils.PlatformType;
+
+import javax.jnlp.*;
+import java.awt.*;
+import java.beans.*;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.jnlp.BasicService;
-import javax.jnlp.FileContents;
-import javax.jnlp.PersistenceService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
-import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
 
 /**
  * Access to per application, per user, local file storage.
- * 
+ *
  * @see ApplicationContext#getLocalStorage
  * @see SessionStorage
  * @author Hans Muller (Hans.Muller@Sun.COM)
@@ -71,16 +52,66 @@ public class LocalStorage extends AbstractBean {
         }
     }
 
+    /**
+     * Opens an input stream to read from the entry
+     * specified by the {@code name} parameter.
+     * If the named entry cannot be opened for reading
+     * then a {@code IOException} is thrown.
+     *
+     * @param fileName  the storage-dependent name
+     * @return an {@code InputStream} object
+     * @throws IOException if the specified name is invalid,
+     *                     or an input stream cannot be opened
+     */
     public InputStream openInputFile(String fileName) throws IOException {
         checkFileName(fileName);
         return getLocalIO().openInputFile(fileName);
     }
 
-    public OutputStream openOutputFile(String fileName) throws IOException {
-        checkFileName(fileName);
-        return getLocalIO().openOutputFile(fileName);
+    /**
+     * Opens an output stream to write to the entry
+     * specified by the {@code name} parameter.
+     * If the named entry cannot be opened for writing
+     * then a {@code IOException} is thrown.
+     * If the named entry does not exist it can be created.
+     * The entry will be recreated if already exists.
+     *
+     * @param fileName  the storage-dependent name
+     * @return an {@code OutputStream} object
+     * @throws IOException if the specified name is invalid,
+     *                     or an output stream cannot be opened
+     */
+    public OutputStream openOutputFile(final String fileName) throws IOException {
+        return openOutputFile(fileName, false);
     }
 
+    /**
+     * Opens an output stream to write to the entry
+     * specified by the {@code name} parameter.
+     * If the named entry cannot be opened for writing
+     * then a {@code IOException} is thrown.
+     * If the named entry does not exist it can be created.
+     * You can decide whether data will be appended via append parameter.
+     *
+     * @param fileName  the storage-dependent name
+     * @param append if <code>true</code>, then bytes will be written
+     *                   to the end of the output entry rather than the beginning
+     * @return an {@code OutputStream} object
+     * @throws IOException if the specified name is invalid,
+     *                     or an output stream cannot be opened
+     */
+    public OutputStream openOutputFile(String fileName, boolean append) throws IOException {
+        checkFileName(fileName);
+        return getLocalIO().openOutputFile(fileName, append);
+    }
+
+    /**
+     * Deletes the entry specified by the {@code name} parameter.
+     *
+     * @param fileName  the storage-dependent name
+     * @throws IOException if the specified name is invalid,
+     *                     or an internal entry cannot be deleted
+     */
     public boolean deleteFile(String fileName) throws IOException {
         checkFileName(fileName);
         return getLocalIO().deleteFile(fileName);
@@ -102,6 +133,7 @@ public class LocalStorage extends AbstractBean {
             }
         }
     }
+
     private static boolean persistenceDelegatesInitialized = false;
 
     public void save(Object bean, final String fileName) throws IOException {
@@ -139,7 +171,7 @@ public class LocalStorage extends AbstractBean {
     }
 
     public Object load(String fileName) throws IOException {
-        InputStream ist = null;
+        InputStream ist;
         try {
             ist = openInputFile(fileName);
         } catch (IOException e) {
@@ -162,15 +194,15 @@ public class LocalStorage extends AbstractBean {
         }
     }
 
-    private void closeStream(Closeable st, String fileName) throws IOException {
-        if (st != null) {
-            try {
-                st.close();
-            } catch (java.io.IOException e) {
-                throw new LSException("close failed \"" + fileName + "\"", e);
-            }
-        }
-    }
+//    private void closeStream(Closeable st, String fileName) throws IOException {
+//        if (st != null) {
+//            try {
+//                st.close();
+//            } catch (java.io.IOException e) {
+//                throw new LSException("close failed \"" + fileName + "\"", e);
+//            }
+//        }
+//    }
 
     public long getStorageLimit() {
         return storageLimit;
@@ -206,34 +238,6 @@ public class LocalStorage extends AbstractBean {
         return getId(KEY_APPLICATION_VENDOR_ID, "UnknownApplicationVendor");
     }
 
-    /* The following enum and method only exist to distinguish 
-     * Windows and OSX for the sake of getDirectory().
-     */
-    private enum OSId {
-
-        WINDOWS, OSX, UNIX
-    }
-
-    private OSId getOSId() {
-        PrivilegedAction<String> doGetOSName = new PrivilegedAction<String>() {
-
-            @Override
-            public String run() {
-                return System.getProperty("os.name");
-            }
-        };
-        OSId id = OSId.UNIX;
-        String osName = AccessController.doPrivileged(doGetOSName);
-        if (osName != null) {
-            if (osName.toLowerCase().startsWith("mac os x")) {
-                id = OSId.OSX;
-            } else if (osName.contains("Windows")) {
-                id = OSId.WINDOWS;
-            }
-        }
-        return id;
-    }
-
     public File getDirectory() {
         if (directory == unspecifiedFile) {
             directory = null;
@@ -243,9 +247,9 @@ public class LocalStorage extends AbstractBean {
             } catch (SecurityException ignore) {
             }
             if (userHome != null) {
-                String applicationId = getApplicationId();
-                OSId osId = getOSId();
-                if (osId == OSId.WINDOWS) {
+                final String applicationId = getApplicationId();
+                final PlatformType osId = AppHelper.getPlatform();
+                if (osId == PlatformType.WINDOWS) {
                     File appDataDir = null;
                     try {
                         String appDataEV = System.getenv("APPDATA");
@@ -264,7 +268,7 @@ public class LocalStorage extends AbstractBean {
                         String path = "Application Data\\" + vendorId + "\\" + applicationId + "\\";
                         directory = new File(userHome, path);
                     }
-                } else if (osId == OSId.OSX) {
+                } else if (osId == PlatformType.OS_X) {
                     // ${userHome}/Library/Application Support/${applicationId}
                     String path = "Library/Application Support/" + applicationId + "/";
                     directory = new File(userHome, path);
@@ -316,7 +320,7 @@ public class LocalStorage extends AbstractBean {
         protected Expression instantiate(Object oldInstance, Encoder out) {
             Rectangle oldR = (Rectangle) oldInstance;
             Object[] constructorArgs = new Object[]{
-                oldR.x, oldR.y, oldR.width, oldR.height
+                    oldR.x, oldR.y, oldR.width, oldR.height
             };
             return new Expression(oldInstance, oldInstance.getClass(), "new", constructorArgs);
         }
@@ -334,18 +338,70 @@ public class LocalStorage extends AbstractBean {
 
     private abstract class LocalIO {
 
+        /**
+         * Opens an input stream to read from the entry
+         * specified by the {@code name} parameter.
+         * If the named entry cannot be opened for reading
+         * then a {@code IOException} is thrown.
+         *
+         * @param fileName  the storage-dependent name
+         * @return an {@code InputStream} object
+         * @throws IOException if the specified name is invalid,
+         *                     or an input stream cannot be opened
+         */
         public abstract InputStream openInputFile(String fileName) throws IOException;
 
-        public abstract OutputStream openOutputFile(String fileName) throws IOException;
 
+        /**
+         * Opens an output stream to write to the entry
+         * specified by the {@code name} parameter.
+         * If the named entry cannot be opened for writing
+         * then a {@code IOException} is thrown.
+         * If the named entry does not exist it can be created.
+         * The entry will be recreated if already exists.
+         *
+         * @param fileName  the storage-dependent name
+         * @return an {@code OutputStream} object
+         * @throws IOException if the specified name is invalid,
+         *                     or an output stream cannot be opened
+         */
+        public OutputStream openOutputFile(final String fileName) throws IOException {
+            return openOutputFile(fileName, false);
+        }
+
+
+        /**
+         * Opens an output stream to write to the entry
+         * specified by the {@code name} parameter.
+         * If the named entry cannot be opened for writing
+         * then a {@code IOException} is thrown.
+         * If the named entry does not exist it can be created.
+         * You can decide whether data will be appended via append parameter.
+         *
+         * @param fileName  the storage-dependent name
+         * @param append if <code>true</code>, then bytes will be written
+         *                   to the end of the output entry rather than the beginning
+         * @return an {@code OutputStream} object
+         * @throws IOException if the specified name is invalid,
+         *                     or an output stream cannot be opened
+         */
+        public abstract OutputStream openOutputFile(final String fileName, boolean append) throws IOException;
+
+        /**
+         * Deletes the entry specified by the {@code name} parameter.
+         *
+         * @param fileName  the storage-dependent name
+         * @throws IOException if the specified name is invalid,
+         *                     or an internal entry cannot be deleted
+         */
         public abstract boolean deleteFile(String fileName) throws IOException;
     }
 
-    private class LocalFileIO extends LocalIO {
+    private final class LocalFileIO extends LocalIO {
 
         @Override
         public InputStream openInputFile(String fileName) throws IOException {
-            File path = new File(getDirectory(), fileName);
+            File path = getFile(fileName);
             try {
                 return new BufferedInputStream(new FileInputStream(path));
             } catch (IOException e) {
@@ -354,18 +410,17 @@ public class LocalStorage extends AbstractBean {
         }
 
         @Override
-        public OutputStream openOutputFile(String fileName) throws IOException {
-            File dir = getDirectory();
-            if (!dir.isDirectory()) {
-                if (!dir.mkdirs()) {
-                    throw new LSException("couldn't create directory " + dir);
-                }
-            }
-            File path = new File(dir, fileName);
+        public OutputStream openOutputFile(String name, boolean append) throws IOException {
             try {
-                return new BufferedOutputStream(new FileOutputStream(path));
-            } catch (IOException e) {
-                throw new LSException("couldn't open output file \"" + fileName + "\"", e);
+                File file = getFile(name);
+                File dir = file.getParentFile();
+                if (!dir.isDirectory() && !dir.mkdirs()) {
+                    throw new IOException("couldn't create directory " + dir);
+                }
+                return new BufferedOutputStream(new FileOutputStream(file, append));
+            }
+            catch (SecurityException exception) {
+                throw new IOException("could not write to entry: " + name, exception);
             }
         }
 
@@ -374,6 +429,14 @@ public class LocalStorage extends AbstractBean {
             File path = new File(getDirectory(), fileName);
             return path.delete();
         }
+
+        private File getFile(String name) throws IOException {
+            if (name == null) {
+                throw new IOException("name is not set");
+            }
+            return new File(getDirectory(), name);
+        }
+
     }
 
     /* Determine if we're a web started application and the
@@ -404,7 +467,7 @@ public class LocalStorage extends AbstractBean {
         return null;
     }
 
-    private class PersistenceServiceIO extends LocalIO {
+    private final class PersistenceServiceIO extends LocalIO {
 
         private BasicService bs;
         private PersistenceService ps;
@@ -431,6 +494,9 @@ public class LocalStorage extends AbstractBean {
         }
 
         private URL fileNameToURL(String name) throws IOException {
+            if (name == null) {
+                throw new IOException("name is not set");
+            }
             try {
                 return new URL(bs.getCodeBase(), name);
             } catch (MalformedURLException e) {
@@ -450,7 +516,7 @@ public class LocalStorage extends AbstractBean {
         }
 
         @Override
-        public OutputStream openOutputFile(String fileName) throws IOException {
+        public OutputStream openOutputFile(String fileName, boolean append) throws IOException {
             checkBasics("openOutputFile");
             URL fileURL = fileNameToURL(fileName);
             try {
@@ -468,7 +534,7 @@ public class LocalStorage extends AbstractBean {
                     }
                 }
                 if ((fc != null) && (fc.canWrite())) {
-                    return new BufferedOutputStream(fc.getOutputStream(true));
+                    return new BufferedOutputStream(fc.getOutputStream(append));
                 } else {
                     throw new IOException("unable to create FileContents object");
                 }

@@ -208,7 +208,7 @@ public abstract class SingleFrameApplication extends Application {
                 try {
                     getContext().getSessionStorage().restore(root, filename);
                 } catch (Exception e) {
-                    String msg = String.format("couldn't restore sesssion [%s]", filename);
+                    String msg = String.format("couldn't restore session [%s]", filename);
                     logger.log(Level.WARNING, msg, e);
                 }
             }
@@ -326,7 +326,7 @@ public abstract class SingleFrameApplication extends Application {
             try {
                 getContext().getSessionStorage().save(window, filename);
             } catch (IOException e) {
-                logger.log(Level.WARNING, "couldn't save sesssion", e);
+                logger.log(Level.WARNING, "couldn't save session", e);
             }
         }
     }

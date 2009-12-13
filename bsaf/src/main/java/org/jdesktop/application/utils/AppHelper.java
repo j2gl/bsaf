@@ -1,5 +1,8 @@
 package org.jdesktop.application.utils;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 /**
  *
  * Class containing help methods on application level.
@@ -20,20 +23,25 @@ public final class AppHelper {
     public static PlatformType getPlatform() {
         if (activePlatformType != null)
             return activePlatformType;
-        try {
-            String osName = System.getProperty("os.name");
-            if (osName != null) {
-                osName = osName.toLowerCase();
-                for (PlatformType platformType : PlatformType.values()) {
-                    for (String pattern : platformType.getPatterns()) {
-                        if (osName.startsWith(pattern)) {
-                            return activePlatformType = platformType;
-                        }
+        activePlatformType = PlatformType.DEFAULT;
+        PrivilegedAction<String> doGetOSName = new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty("os.name");
+            }
+        };
+
+        String osName = AccessController.doPrivileged(doGetOSName);
+        if (osName != null) {
+            osName = osName.toLowerCase();
+            for (PlatformType platformType : PlatformType.values()) {
+                for (String pattern : platformType.getPatterns()) {
+                    if (osName.startsWith(pattern)) {
+                        return activePlatformType = platformType;
                     }
                 }
             }
-        } catch (SecurityException ignore) {
-            //ignore
         }
         return activePlatformType = PlatformType.DEFAULT;
     }

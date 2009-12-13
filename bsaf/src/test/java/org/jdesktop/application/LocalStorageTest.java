@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Scanner;
 
 /**
  * Test the LocalStorage class.
@@ -103,4 +105,51 @@ public class LocalStorageTest
         ls.deleteFile(filename);
         assertTrue(filename + " was deleted", !file.exists());
     }
+
+     @Test
+     public void testInputOutput() throws IOException {
+        final LocalStorage localStorage = context.getLocalStorage();
+        final String f = "testFile.tmp";
+        try {
+            localStorage.deleteFile(f);
+        } catch (IOException e) {
+            //ignore if the file does not exist
+        }
+        OutputStream out = localStorage.openOutputFile(f);//testing method openOutputStream
+        out.write("start".getBytes());
+        out.close();
+        Scanner in = new Scanner(localStorage.openInputFile(f));
+        assertEquals("Test write/read", "start", in.nextLine());
+        in.close();
+        //test append
+        out = localStorage.openOutputFile(f, true);//append to file
+        out.write("appended".getBytes());
+        out.close();
+        in = new Scanner(localStorage.openInputFile(f));
+        assertEquals("Test write/read2", "startappended", in.nextLine());
+        in.close();
+
+        out = localStorage.openOutputFile(f, false);//no append
+        out.write("start".getBytes());
+        out.close();
+        in = new Scanner(localStorage.openInputFile(f));
+        assertEquals("Test write/read3", "start", in.nextLine());
+        in.close();
+
+        try {
+            //test delete
+            localStorage.deleteFile(f);
+        } catch (IOException e) {
+            //ignore if the file does not exist
+        }
+
+        try {
+            //file does not exists
+            localStorage.openInputFile(f);
+            throw new Error("Should throw IOexception - method deleteEntry does not work properly?");
+        } catch (IOException e) {
+            //ignore - OK
+        }
+    }
+
 }
