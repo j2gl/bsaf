@@ -3,7 +3,6 @@
                         "http://www.puppycrawl.com/dtds/configuration_1_1.dtd">
 <module name="Checker">
     <module name="TreeWalker">
-        
         <module name="LineLength">
             <property name="max" value="120"/>
         </module>
