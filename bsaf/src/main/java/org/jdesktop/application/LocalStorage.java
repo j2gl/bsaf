@@ -534,7 +534,7 @@ public class LocalStorage extends AbstractBean {
                     }
                 }
                 if ((fc != null) && (fc.canWrite())) {
-                    return new BufferedOutputStream(fc.getOutputStream(append));
+                    return new BufferedOutputStream(fc.getOutputStream(!append));
                 } else {
                     throw new IOException("unable to create FileContents object");
                 }
