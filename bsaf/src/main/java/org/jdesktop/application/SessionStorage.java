@@ -173,7 +173,7 @@ public class SessionStorage {
      * @param clazz the class of the component the property support will be registered for
      * @param propertySupport the property support implementation for the component
      */
-    public void registerPropertySupport(Class<Component> clazz, PropertySupport propertySupport) {
+    public void registerPropertySupport(Class<? extends Component> clazz, PropertySupport propertySupport) {
         if (clazz == null) throw new IllegalArgumentException("Class argument must not ne null.");
 
         // Remove property support for the clazz in case property argument is null
