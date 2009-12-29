@@ -170,19 +170,19 @@ public class SessionStorage {
      *
      * @exception IllegalArgumentException - in case clazz == null
      * @since 1.9
-     * @param clazz
-     * @param property
+     * @param clazz the class of the component the property support will be registered for
+     * @param propertySupport the property support implementation for the component
      */
-    public void registerPropertySupport(Class<JLabel> clazz, PropertySupport property) {
+    public void registerPropertySupport(Class<Component> clazz, PropertySupport propertySupport) {
         if (clazz == null) throw new IllegalArgumentException("Class argument must not ne null.");
 
         // Remove property support for the clazz in case property argument is null
-        if (property == null) {
+        if (propertySupport == null) {
             propertyMap.remove(clazz);
             return;
         }
 
-        propertyMap.put(clazz, property);
+        propertyMap.put(clazz, propertySupport);
     }
 
     private void checkSaveRestoreArgs(Component root, String fileName) {
@@ -454,7 +454,7 @@ public class SessionStorage {
      * Throws an {@code IllegalArgumentException} if {@code cls} is null.
      * 
      * @param cls the class to which {@code property} applies.
-     * @param property the {@code Property} object to register or null.
+     * @param propertySupport the {@code Property} object to register or null.
      * @see #getProperty(Component)
      * @see #getProperty(Class)
      * @see #save
