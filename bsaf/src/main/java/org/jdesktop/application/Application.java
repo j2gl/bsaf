@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.jdesktop.application.utils.PlatformType;
 
 /**
  * The base class for Swing applications. 
@@ -600,6 +601,17 @@ public abstract class Application extends AbstractBean {
      * @see Application#launch
      */
     public static synchronized <T extends Application> T getInstance(Class<T> applicationClass) {
+
+        if (Beans.isDesignTime() && application==null) {
+            try {
+                application = create(applicationClass);
+            } catch (Exception ex) {
+                String msg = String.format("Couldn't construct %s", applicationClass);
+                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, msg, ex);
+                throw new Error(msg, ex);
+            }
+        }
+
         checkApplicationLaunched();
         return applicationClass.cast(application);
     }
@@ -609,12 +621,17 @@ public abstract class Application extends AbstractBean {
      * <p>
      * This method is only called after an Application has
      * been launched.
-     * 
+     *
      * @return the Application singleton or a placeholder
      * @see Application#launch
      * @see Application#getInstance(Class)
      */
     public static synchronized Application getInstance() {
+
+        if (Beans.isDesignTime() && application==null) {
+            application = new DesignTimeApplication();
+        }
+
         checkApplicationLaunched();
         return application;
     }
@@ -640,5 +657,20 @@ public abstract class Application extends AbstractBean {
 
     public boolean isReady() {
         return ready;
+    }
+
+    private static class DesignTimeApplication extends Application {
+
+        protected DesignTimeApplication() {
+            ApplicationContext ctx = getContext();
+            ctx.setApplicationClass(getClass());
+            ctx.setApplication(this);
+            ResourceMap appResourceMap = ctx.getResourceMap();
+            appResourceMap.setPlatform(PlatformType.DEFAULT);
+        }
+
+        @Override
+        protected void startup() {
+        }
     }
 }
