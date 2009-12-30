@@ -659,7 +659,7 @@ public abstract class Application extends AbstractBean {
         return ready;
     }
 
-    private static class DesignTimeApplication extends Application {
+    private static final class DesignTimeApplication extends Application {
 
         protected DesignTimeApplication() {
             ApplicationContext ctx = getContext();

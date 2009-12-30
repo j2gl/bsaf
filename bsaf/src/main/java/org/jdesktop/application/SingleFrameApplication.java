@@ -360,7 +360,6 @@ public abstract class SingleFrameApplication extends Application {
     @Override
     protected void shutdown() {
         if (isReady()) {
-            saveSession(getMainFrame());
             for (Window window : getVisibleSecondaryWindows()) {
                 saveSession(window);
             }
