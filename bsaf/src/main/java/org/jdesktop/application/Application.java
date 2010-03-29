@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+
 import org.jdesktop.application.utils.PlatformType;
 
 /**
@@ -252,6 +254,13 @@ public abstract class Application extends AbstractBean {
                 if (lnf.equalsIgnoreCase("system")) {
                     String name = UIManager.getSystemLookAndFeelClassName();
                     UIManager.setLookAndFeel(name);
+                } else if (lnf.equalsIgnoreCase("nimbus")) {    
+                    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                        if ("Nimbus".equals(info.getName())) {
+                            UIManager.setLookAndFeel(info.getClassName());
+                            break;
+                	    }
+                    }
                 } else if (!lnf.equalsIgnoreCase("default")) {
                     UIManager.setLookAndFeel(lnf);
                 }
