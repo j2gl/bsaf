@@ -290,7 +290,9 @@ public class TaskMonitor extends AbstractBean {
                             break;
                         case DONE:
                             fireStateChange(task, "done");
-                            setForegroundTask(null);
+                            if (autoUpdateForegroundTask) {
+                            	setForegroundTask(taskQueue.isEmpty() ? null : taskQueue.getLast());
+                            }
                     }
                 }
             }
