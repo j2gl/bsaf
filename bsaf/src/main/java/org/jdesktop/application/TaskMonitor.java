@@ -63,6 +63,7 @@ import javax.swing.SwingWorker.StateValue;
  */
 public class TaskMonitor extends AbstractBean {
 
+    public static final String PROP_FOREGROUND_TASK = "foregroundTask";
     private final PropertyChangeListener applicationPCL;
     private final PropertyChangeListener taskServicePCL;
     private final PropertyChangeListener taskPCL;
@@ -108,7 +109,7 @@ public class TaskMonitor extends AbstractBean {
         if (newTask != null) {
             newTask.addPropertyChangeListener(taskPCL);
         }
-        firePropertyChange("foregroundTask", oldTask, newTask);
+        firePropertyChange(PROP_FOREGROUND_TASK, oldTask, newTask);
     }
 
     /**

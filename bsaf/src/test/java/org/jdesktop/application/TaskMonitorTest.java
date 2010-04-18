@@ -4,70 +4,70 @@
  */
 package org.jdesktop.application;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
  * @author Illya Yalovyy
  */
 public class TaskMonitorTest{
-    private enum State {
-        PCL,
-        SUCCEEDED,
-        FAILED
-    }
 
+    public static final String MESSAGE_TASK0 = "* Task 0";
+    public static final String MESSAGE_TASK1 = "* Task 1";    
+    
     public static class SimpleApplication extends WaitForStartupApplication {
 
         public boolean startupOnEDT;
     }
 
-    public static class SimpleTask extends Task<Void, Void> {
-        boolean fired = false;
-
-        SimpleTask() {
-            super(Application.getInstance(SimpleApplication.class), "SimpleTask");
-        }
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            
-            Thread.sleep(100);
-            setMessage("SimpleTask message");
-            fired = true;
-            return null;
-        }
-
-    }
-    
-    public static class FireAnotherTask extends Task<Void, Void> {
-        boolean fired = false;
-        Task other;
+    public static class LatchTask extends Task<Void, Void> {
+        final CountDownLatch allTasksDoneLatch;
+        final CountDownLatch startLatch;
+        final LatchTask other;
+        private final String message;
+        volatile boolean fired = false;
         
-        FireAnotherTask(Task other) {
-            super(Application.getInstance(SimpleApplication.class), "FireAnotherTask");
+        public LatchTask(String message, CountDownLatch startLatch, CountDownLatch allTasksDoneLatch, LatchTask other) {
+            super(Application.getInstance(SimpleApplication.class));
+            this.message = message;
+            this.startLatch = startLatch;
+            this.allTasksDoneLatch = allTasksDoneLatch;
             this.other = other;
         }
 
         @Override
         protected Void doInBackground() throws Exception {
             
+            if (startLatch!=null) startLatch.await(100, TimeUnit.MILLISECONDS);
+            
+            setMessage(message);
+            
             fired = true;
-            Thread.sleep(50);
-            setMessage("FireAnotherTask message");
-            Application.getInstance().getContext().getTaskService().execute(other);
+            
+            if (other != null) {
+                Application.getInstance().getContext().getTaskService().execute(other);
+            }
+            
             return null;
-        }
+        }        
+        
+        @Override
+        protected void finished() {
+            if (other != null) {
+                other.startLatch.countDown();
+            }
+            allTasksDoneLatch.countDown();
+        }        
     }
 
     @Before
@@ -76,32 +76,39 @@ public class TaskMonitorTest{
         SimpleApplication.launchAndWait(SimpleApplication.class);
     }
 
+    CountDownLatch allTasksDoneLatch = new CountDownLatch(2);
+    CountDownLatch startLatch = new CountDownLatch(1);
+
     @Test
     public void testSucceeded() throws InterruptedException {
+        
         TaskMonitor mon = Application.getInstance().getContext().getTaskMonitor();
         RecordingPropertyChangeListener pcl = new RecordingPropertyChangeListener();
         mon.addPropertyChangeListener(pcl);
-        SimpleTask t0 = new SimpleTask();
-        FireAnotherTask t1 = new FireAnotherTask(t0);
+        LatchTask t0 = new LatchTask(MESSAGE_TASK0, new CountDownLatch(1), allTasksDoneLatch, null);
+        LatchTask t1 = new LatchTask(MESSAGE_TASK1, startLatch, allTasksDoneLatch, t0);
         Application.getInstance().getContext().getTaskService().execute(t1);
 
-        Thread.sleep(200);
+        allTasksDoneLatch.await(300, TimeUnit.MILLISECONDS);
+        
         assertTrue(t0.fired);
         assertTrue(t1.fired);
-        assertTrue(pcl.gotFireAnotherMessage);
-        assertTrue(pcl.gotSimpleTaskMessage);
+        assertTrue(pcl.messages.contains(MESSAGE_TASK0));
+        assertTrue(pcl.messages.contains(MESSAGE_TASK1));
     }
-
+    
     private class RecordingPropertyChangeListener implements PropertyChangeListener{
-        boolean gotFireAnotherMessage = false;
-        boolean gotSimpleTaskMessage = false;
+        List<String> messages = new ArrayList<String>();
         
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("message".equals(evt.getPropertyName())){
-                if (evt.getSource().getClass() == FireAnotherTask.class)
-                    gotFireAnotherMessage = true;
-                if (evt.getSource().getClass() == SimpleTask.class)
-                    gotSimpleTaskMessage = true;
+            
+            if (TaskMonitor.PROP_FOREGROUND_TASK.equals(evt.getPropertyName())) {
+                // Wait until TaskMonitor insert listeners. may be this process should be synchronized?
+                startLatch.countDown();
+            }
+            
+            if (Task.PROP_MESSAGE.equals(evt.getPropertyName())){
+                messages.add((String) evt.getNewValue());
             }
         }
     }
