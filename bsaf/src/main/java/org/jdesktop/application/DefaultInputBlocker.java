@@ -37,6 +37,7 @@ import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
+import static org.jdesktop.application.utils.SwingHelper.findRootPaneContainer;
 
 final class DefaultInputBlocker extends Task.InputBlocker {
 
@@ -150,11 +151,16 @@ final class DefaultInputBlocker extends Task.InputBlocker {
 
         /* Create the JDialog.  If the task can be canceled, then 
          * map closing the dialog window to canceling the task.
+         * 
+         * BSAF-77 related: Dialog should appear centered over the window
+         * ancestor of the target component, not over the component itself.
+         * Therefore, use findRootPaneContainer and cast to Component.
          */
+
         Component dialogOwner = (Component) getTarget();
         String taskTitle = getTask().getTitle();
-        String dialogTitle = (taskTitle == null) ? "BlockingDialog" : taskTitle;
-        final JDialog dialog = optionPane.createDialog(dialogOwner, dialogTitle);
+        String dialogTitle = (taskTitle == null) ? "BlockingDialog" : taskTitle;        
+        final JDialog dialog = optionPane.createDialog((Component) findRootPaneContainer(dialogOwner), dialogTitle);
         dialog.setModal(true);
         dialog.setName("BlockingDialog");
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -259,15 +265,13 @@ final class DefaultInputBlocker extends Task.InputBlocker {
     }
 
     private void showBusyGlassPane(boolean f) {
-        RootPaneContainer rpc = null;
-        Component root = (Component) getTarget();
-        while (root != null) {
-            if (root instanceof RootPaneContainer) {
-                rpc = (RootPaneContainer) root;
-                break;
-            }
-            root = root.getParent();
-        }
+       /*
+        * Use SwingHelper.findRootPaneContainer to find the nearest
+        * RootPaneContainer ancestor.
+        * FIXED: BSAF-77
+        */
+        RootPaneContainer rpc = findRootPaneContainer((Component) getTarget());
+        
         if (rpc != null) {
             if (f) {
                 JMenuBar menuBar = rpc.getRootPane().getJMenuBar();
