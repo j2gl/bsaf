@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
  * An encapsulation of the PropertyChangeSupport methods based on 
@@ -22,7 +23,7 @@ public class AbstractBean {
     private final PropertyChangeSupport pcs;
 
     public AbstractBean() {
-        pcs = new EDTPropertyChangeSupport(this);
+        pcs = new SwingPropertyChangeSupport(this, true);
     }
 
     /**
@@ -135,26 +136,5 @@ public class AbstractBean {
      */
     protected void firePropertyChange(PropertyChangeEvent e) {
         pcs.firePropertyChange(e);
-    }
-
-    private static class EDTPropertyChangeSupport extends PropertyChangeSupport {
-
-        EDTPropertyChangeSupport(Object source) {
-            super(source);
-        }
-
-        public void firePropertyChange(final PropertyChangeEvent e) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                super.firePropertyChange(e);
-            } else {
-                Runnable doFirePropertyChange = new Runnable() {
-
-                    public void run() {
-                        firePropertyChange(e);
-                    }
-                };
-                SwingUtilities.invokeLater(doFirePropertyChange);
-            }
-        }
     }
 }
