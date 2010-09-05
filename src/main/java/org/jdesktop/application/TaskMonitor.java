@@ -291,9 +291,11 @@ public class TaskMonitor extends AbstractBean {
                             break;
                         case DONE:
                             fireStateChange(task, "done");
-                            if (autoUpdateForegroundTask) {
-                            	setForegroundTask(taskQueue.isEmpty() ? null : taskQueue.getLast());
-                            }
+                    }
+                }
+                if (Task.PROP_COMPLETED.equals(propertyName)) {
+                    if (autoUpdateForegroundTask) {
+                        setForegroundTask(taskQueue.isEmpty() ? null : taskQueue.getLast());
                     }
                 }
             }

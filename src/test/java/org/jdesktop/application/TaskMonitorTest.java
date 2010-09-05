@@ -9,7 +9,10 @@ import static org.junit.Assert.assertTrue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -96,7 +99,113 @@ public class TaskMonitorTest{
         assertTrue(pcl.messages.contains(MESSAGE_TASK0));
         assertTrue(pcl.messages.contains(MESSAGE_TASK1));
     }
-    
+
+    @Test
+    public void testMessageSucceeded()  throws InterruptedException {
+        TaskMonitor mon = Application.getInstance().getContext().getTaskMonitor();
+
+        TaskService srv = Application.getInstance().getContext().getTaskService();
+
+        final CountDownLatch cdl = new CountDownLatch(1);
+
+        final String MESSAGE_0 = "doInBackground";
+        final String MESSAGE_1 = "succeeded";
+        final String MESSAGE_2 = "finished";
+
+        final Set<String> messages = Collections.synchronizedSet(new HashSet<String>(10));
+
+        mon.addPropertyChangeListener(Task.PROP_MESSAGE, new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String message = (String) evt.getNewValue();
+                messages.add(message);
+            }
+        });
+
+        srv.execute(new Task(Application.getInstance()) {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                setMessage("doInBackground");
+                return null;
+            }
+
+            @Override
+            protected void succeeded(Object result) {
+                super.succeeded(result);
+                setMessage("succeeded");
+            }
+
+            @Override
+            protected void finished() {
+                super.finished();
+                setMessage("finished");
+                cdl.countDown();
+            }
+
+        });
+
+        cdl.await();
+
+        assertTrue(MESSAGE_0, messages.contains(MESSAGE_0));
+        assertTrue(MESSAGE_1, messages.contains(MESSAGE_1));
+        assertTrue(MESSAGE_2, messages.contains(MESSAGE_2));
+
+    }
+
+    @Test
+    public void testMessageFailed()  throws InterruptedException {
+        TaskMonitor mon = Application.getInstance().getContext().getTaskMonitor();
+
+        TaskService srv = Application.getInstance().getContext().getTaskService();
+
+        final CountDownLatch cdl = new CountDownLatch(1);
+
+        final String MESSAGE_0 = "doInBackground";
+        final String MESSAGE_1 = "failed";
+        final String MESSAGE_2 = "finished";
+
+        final Set<String> messages = Collections.synchronizedSet(new HashSet<String>(10));
+
+        mon.addPropertyChangeListener(Task.PROP_MESSAGE, new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String message = (String) evt.getNewValue();
+                messages.add(message);
+            }
+        });
+
+        srv.execute(new Task(Application.getInstance()) {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                setMessage("doInBackground");
+                Thread.sleep(100);
+                throw new Exception("Test Exception");
+            }
+
+            @Override
+            protected void failed(Throwable cause) {
+                setMessage("failed");
+            }
+
+            @Override
+            protected void finished() {
+                setMessage("finished");
+                cdl.countDown();
+            }
+
+        });
+
+        cdl.await();
+        assertTrue(MESSAGE_0, messages.contains(MESSAGE_0));
+        assertTrue(MESSAGE_1, messages.contains(MESSAGE_1));
+        assertTrue(MESSAGE_2, messages.contains(MESSAGE_2));
+
+    }
+
     private class RecordingPropertyChangeListener implements PropertyChangeListener{
         List<String> messages = new ArrayList<String>();
         
