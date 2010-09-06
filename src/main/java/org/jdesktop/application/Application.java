@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import org.jdesktop.application.utils.OSXAdapter;
 
 import org.jdesktop.application.utils.PlatformType;
 
@@ -247,8 +248,16 @@ public abstract class Application extends AbstractBean {
          * Application.* properties.
          */
         ResourceMap appResourceMap = ctx.getResourceMap();
+        final PlatformType platform = AppHelper.getPlatform();
+        appResourceMap.putResource(ResourceMap.KEY_PLATFORM, platform);
 
-        appResourceMap.putResource(ResourceMap.KEY_PLATFORM, AppHelper.getPlatform());
+        //Generic registration with the Mac OS X application menu
+        if (PlatformType.OS_X.equals(platform)) {
+            try {
+                OSXAdapter.setQuitHandler(application, application.getClass().getDeclaredMethod("exit", (Class[])null));
+            } catch (Exception e) {
+            }
+        }
 
         if (!Beans.isDesignTime()) {
             /* Initialize the UIManager lookAndFeel property with the
