@@ -254,8 +254,9 @@ public abstract class Application extends AbstractBean {
         //Generic registration with the Mac OS X application menu
         if (PlatformType.OS_X.equals(platform)) {
             try {
-                OSXAdapter.setQuitHandler(application, application.getClass().getDeclaredMethod("exit", (Class[])null));
+                OSXAdapter.setQuitHandler(application, Application.class.getDeclaredMethod("handleQuit", (Class[])null));
             } catch (Exception e) {
+                logger.log(Level.SEVERE, "Cannot set Mac Os X specific handler for Quit event", e);
             }
         }
 
@@ -452,6 +453,16 @@ public abstract class Application extends AbstractBean {
      */
     public final void exit() {
         exit(null);
+    }
+
+    /**
+     * Handles quit even on Mac Os X
+     * Developer should not use it directly
+     * @return always <tt>true</tt>
+     */
+    public boolean handleQuit() {
+        exit();
+        return false;
     }
 
     /**
