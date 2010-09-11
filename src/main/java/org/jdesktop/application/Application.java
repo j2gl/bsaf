@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.PaintEvent;
 import java.beans.Beans;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.List;
