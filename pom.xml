@@ -1,11 +1,9 @@
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jdesktop.bsaf</groupId>
     <artifactId>bsaf</artifactId>
     <packaging>jar</packaging>
-    <version>1.9-SNAPSHOT</version>
+    <version>1.9RC5</version>
     <name>bsaf</name>
     <url>http://kenai.com/projects/bsaf</url>
     <description>An Application Framework for Swing</description>
@@ -31,9 +29,9 @@
         </repository>
     </distributionManagement>
     <scm>
-        <connection>scm:svn:https://kenai.com/svn/bsaf~main/framework/trunk</connection>
-        <developerConnection>scm:svn:https://kenai.com/svn/bsaf~main/framework/trunk</developerConnection>
-        <url>scm:svn:https://kenai.com/svn/bsaf~main/framework/trunk</url>
+        <connection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9RC5</connection>
+        <developerConnection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9RC5</developerConnection>
+        <url>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9RC5</url>
     </scm>
     <build>
         <plugins>
@@ -210,5 +208,3 @@
         </repository>
     </repositories>
 </project>
-
-
