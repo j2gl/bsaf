@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.event.ActionEvent;
+import javax.swing.JCheckBox;
 
 /**
  * Test the Actions that are defined by the Application class:
@@ -24,10 +25,21 @@ public class ApplicationActionsTest
     public static class DefaultActionsApplication extends WaitForStartupApplication
     {
         boolean deleteCalled = false;
+        boolean selected = true;
 
         @Action
         public void delete()
         { deleteCalled = true; }
+
+        @Action(selectedProperty="selected")
+        public void selectableAction() {
+
+        }
+
+        public boolean isSelected() {
+            return selected;
+        }
+
     }
 
     @BeforeClass
@@ -122,6 +134,13 @@ public class ApplicationActionsTest
         assertEquals("delete.Action.text", "D", actionText(parentAction));
         assertEquals("delete.Action.shortDescription", "D", actionShortDescription(parentAction));
         assertNotSame(action, parentAction);
+    }
+
+    @Test
+    public void testSelectableAction() {
+        ApplicationActionMap actionMap = actionMap();
+        JCheckBox checkBox = new JCheckBox(actionMap.get("selectableAction"));
+        assertTrue(checkBox.isSelected());
     }
 
 }
