@@ -232,7 +232,7 @@ public class ApplicationAction extends AbstractAction {
             if (isSelectedMethod == null) {
                 throw newNoSuchPropertyException(selectedProperty);
             }
-            super.putValue(SELECTED_KEY, Boolean.FALSE);
+            super.putValue(SELECTED_KEY, invokeBooleanMethod(appAM.getActionsObject(), isSelectedMethod));
         } else {
             this.isSelectedMethod = null;
             this.setSelectedMethod = null;
@@ -740,13 +740,17 @@ public class ApplicationAction extends AbstractAction {
             Object v = getValue(SELECTED_KEY);
             return (v instanceof Boolean) && (Boolean) v;
         } else {
-            try {
-                Object b = isSelectedMethod.invoke(appAM.getActionsObject());
-                return (Boolean) b;
-            } catch (Exception e) {
-                throw newInvokeError(isSelectedMethod, e);
-            }
+            return invokeBooleanMethod(appAM.getActionsObject(), isSelectedMethod);
         }
+    }
+
+    private Boolean invokeBooleanMethod(Object obj, Method method) {
+        try {
+            Object b = method.invoke(obj);
+            return (Boolean) b;
+        } catch (Exception e) {
+            throw newInvokeError(method, e);
+        }        
     }
 
     /**
