@@ -350,7 +350,7 @@ public class ResourceManager extends AbstractBean {
     public void setApplicationBundleNames(List<String> bundleNames) {
         if (bundleNames != null) {
             for (String bundleName : bundleNames) {
-                if ((bundleName == null) || (bundleNames.size() == 0)) {
+                if ((bundleName == null) || (bundleNames.isEmpty())) {
                     throw new IllegalArgumentException("invalid bundle name \"" + bundleName + "\"");
                 }
             }
@@ -378,7 +378,7 @@ public class ResourceManager extends AbstractBean {
      */
     private String classBundleBaseName(Class cls) {
         String className = cls.getName();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int i = className.lastIndexOf('.');
         if (i > 0) {
             sb.append(className.substring(0, i));
