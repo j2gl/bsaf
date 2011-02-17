@@ -117,6 +117,7 @@ public class ApplicationAction extends AbstractAction {
     private javax.swing.Action proxy = null;
     private Object proxySource = null;
     private PropertyChangeListener proxyPCL = null;
+    private final boolean enabledNegated; // support for negated enabledProperty
 
     /**
      * Construct an <tt>ApplicationAction</tt> that implements an <tt>&#064;Action</tt>.
@@ -213,12 +214,22 @@ public class ApplicationAction extends AbstractAction {
          * verify that the former exists.
          */
         if (enabledProperty != null) {
-            setEnabledMethod = propertySetMethod(enabledProperty, boolean.class);
-            isEnabledMethod = propertyGetMethod(enabledProperty);
+            final String epn;
+            if (enabledProperty.startsWith("!")) {
+                enabledNegated = true;
+                epn = enabledProperty.substring(1).trim();
+            } else {
+                enabledNegated = false;
+                epn = enabledProperty;
+            }
+            
+            setEnabledMethod = propertySetMethod(epn, boolean.class);
+            isEnabledMethod = propertyGetMethod(epn);
             if (isEnabledMethod == null) {
-                throw newNoSuchPropertyException(enabledProperty);
+                throw newNoSuchPropertyException(epn);
             }
         } else {
+            this.enabledNegated = false;
             this.isEnabledMethod = null;
             this.setEnabledMethod = null;
         }
@@ -691,8 +702,8 @@ public class ApplicationAction extends AbstractAction {
             return super.isEnabled();
         } else {
             try {
-                Object b = isEnabledMethod.invoke(appAM.getActionsObject());
-                return (Boolean) b;
+                boolean b = (Boolean) isEnabledMethod.invoke(appAM.getActionsObject());
+                return enabledNegated?!b:b;
             } catch (Exception e) {
                 throw newInvokeError(isEnabledMethod, e);
             }
@@ -717,7 +728,7 @@ public class ApplicationAction extends AbstractAction {
             super.setEnabled(enabled);
         } else {
             try {
-                setEnabledMethod.invoke(appAM.getActionsObject(), enabled);
+                setEnabledMethod.invoke(appAM.getActionsObject(), enabledNegated?!enabled:enabled);
             } catch (Exception e) {
                 throw newInvokeError(setEnabledMethod, e, enabled);
             }

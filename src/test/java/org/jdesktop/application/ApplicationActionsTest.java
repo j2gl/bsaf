@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.event.ActionEvent;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
 /**
@@ -26,6 +27,7 @@ public class ApplicationActionsTest
     {
         boolean deleteCalled = false;
         boolean selected = true;
+        boolean flag = true;
 
         @Action
         public void delete()
@@ -36,8 +38,22 @@ public class ApplicationActionsTest
 
         }
 
+        @Action(enabledProperty="flag")
+        public void enabledAction() {
+
+        }
+
+        @Action(enabledProperty="!flag")
+        public void disabledAction() {
+
+        }
+
         public boolean isSelected() {
             return selected;
+        }
+
+        public boolean isFlag() {
+            return flag;
         }
 
     }
@@ -143,4 +159,17 @@ public class ApplicationActionsTest
         assertTrue(checkBox.isSelected());
     }
 
+    @Test
+    public void testEnabledAction() {
+        ApplicationActionMap actionMap = actionMap();
+        JButton button = new JButton(actionMap.get("enabledAction"));
+        assertTrue(button.isEnabled());
+    }
+
+    @Test
+    public void testDisabledAction() {
+        ApplicationActionMap actionMap = actionMap();
+        JButton button = new JButton(actionMap.get("disabledAction"));
+        assertFalse(button.isEnabled());
+    }
 }
