@@ -206,7 +206,13 @@ public class ApplicationAction extends AbstractAction {
         this.resourceMap = resourceMap;
         this.actionName = baseName;
         this.actionMethod = actionMethod;
-        this.enabledProperty = enabledProperty;
+        if (enabledProperty != null && enabledProperty.startsWith("!")) {
+            enabledNegated = true;
+            this.enabledProperty = enabledProperty.substring(1).trim();
+        } else {
+            enabledNegated = false;
+            this.enabledProperty = enabledProperty;
+        }
         this.selectedProperty = selectedProperty;
         this.block = block;
 
@@ -214,22 +220,12 @@ public class ApplicationAction extends AbstractAction {
          * verify that the former exists.
          */
         if (enabledProperty != null) {
-            final String epn;
-            if (enabledProperty.startsWith("!")) {
-                enabledNegated = true;
-                epn = enabledProperty.substring(1).trim();
-            } else {
-                enabledNegated = false;
-                epn = enabledProperty;
-            }
-            
-            setEnabledMethod = propertySetMethod(epn, boolean.class);
-            isEnabledMethod = propertyGetMethod(epn);
+            setEnabledMethod = propertySetMethod(this.enabledProperty, boolean.class);
+            isEnabledMethod = propertyGetMethod(this.enabledProperty);
             if (isEnabledMethod == null) {
-                throw newNoSuchPropertyException(epn);
+                throw newNoSuchPropertyException(this.enabledProperty);
             }
         } else {
-            this.enabledNegated = false;
             this.isEnabledMethod = null;
             this.setEnabledMethod = null;
         }
@@ -703,7 +699,7 @@ public class ApplicationAction extends AbstractAction {
         } else {
             try {
                 boolean b = (Boolean) isEnabledMethod.invoke(appAM.getActionsObject());
-                return enabledNegated?!b:b;
+                return enabledNegated^b;
             } catch (Exception e) {
                 throw newInvokeError(isEnabledMethod, e);
             }
@@ -728,7 +724,7 @@ public class ApplicationAction extends AbstractAction {
             super.setEnabled(enabled);
         } else {
             try {
-                setEnabledMethod.invoke(appAM.getActionsObject(), enabledNegated?!enabled:enabled);
+                setEnabledMethod.invoke(appAM.getActionsObject(), enabledNegated^enabled);
             } catch (Exception e) {
                 throw newInvokeError(setEnabledMethod, e, enabled);
             }
