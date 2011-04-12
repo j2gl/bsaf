@@ -48,7 +48,7 @@ public class ApplicationActionsTest
 
         }
 
-        @Action(enabledProperty="!flag2")
+        @Action(disabledProperty="flag2")
         public void negatedAction() {
 
         }
