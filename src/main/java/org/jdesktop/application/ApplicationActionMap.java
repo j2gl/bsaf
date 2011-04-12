@@ -156,11 +156,18 @@ public class ApplicationActionMap extends ActionMap {
             if (action != null) {
                 String methodName = m.getName();
                 String enabledProperty = aString(action.enabledProperty(), null);
+                String disabledProperty = aString(action.disabledProperty(), null);
                 String selectedProperty = aString(action.selectedProperty(), null);
                 String actionName = aString(action.name(), methodName);
                 Task.BlockingScope block = action.block();
+
+                if(enabledProperty != null && disabledProperty != null)
+                    throw new IllegalArgumentException("Action annotation contains both enabled and disabled attributes.");
+
+                boolean inverted = disabledProperty != null;
+
                 ApplicationAction appAction =
-                        new ApplicationAction(this, resourceMap, actionName, m, enabledProperty, selectedProperty, block);
+                        new ApplicationAction(this, resourceMap, actionName, m, inverted?disabledProperty:enabledProperty, inverted, selectedProperty, block);
                 putAction(actionName, appAction);
             }
         }

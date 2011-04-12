@@ -182,6 +182,7 @@ public class ApplicationAction extends AbstractAction {
      * @param baseName the name of the &#064;Action
      * @param actionMethod unless a proxy is specified, actionPerformed calls this method.
      * @param enabledProperty name of the enabled property.
+     * @param enabledNegated enabled property is inverted
      * @param selectedProperty name of the selected property.
      * @param block how much of the GUI to block while this action executes.
      * 
@@ -194,6 +195,7 @@ public class ApplicationAction extends AbstractAction {
             String baseName,
             Method actionMethod,
             String enabledProperty,
+            boolean enabledNegated,
             String selectedProperty,
             Task.BlockingScope block) {
         if (appAM == null) {
@@ -206,13 +208,8 @@ public class ApplicationAction extends AbstractAction {
         this.resourceMap = resourceMap;
         this.actionName = baseName;
         this.actionMethod = actionMethod;
-        if (enabledProperty != null && enabledProperty.startsWith("!")) {
-            enabledNegated = true;
-            this.enabledProperty = enabledProperty.substring(1).trim();
-        } else {
-            enabledNegated = false;
-            this.enabledProperty = enabledProperty;
-        }
+        this.enabledProperty = enabledProperty;
+        this.enabledNegated = enabledNegated;
         this.selectedProperty = selectedProperty;
         this.block = block;
 
@@ -254,7 +251,7 @@ public class ApplicationAction extends AbstractAction {
      * see ApplicationActionMap.addProxyAction().
      */
     ApplicationAction(ApplicationActionMap appAM, ResourceMap resourceMap, String actionName) {
-        this(appAM, resourceMap, actionName, null, null, null, Task.BlockingScope.NONE);
+        this(appAM, resourceMap, actionName, null, null, false, null, Task.BlockingScope.NONE);
     }
 
     private IllegalArgumentException newNoSuchPropertyException(String propertyName) {
