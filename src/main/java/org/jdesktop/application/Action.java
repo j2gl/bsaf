@@ -81,11 +81,16 @@ public @interface Action {
     String selectedProperty() default "";
 
     /**
+     * The parameter associates this action to a specific task service
+     */
+    String taskService() default TaskService.DEFAULT_NAME;
+    
+    /**
      * The parameter indicates that the GUI should be blocked while the background task is running.
      * @see Task
      */
     BlockingScope block() default BlockingScope.NONE;
-
+    
     /**
      * This annotation is not used yet
      */

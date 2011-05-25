@@ -113,6 +113,7 @@ public class ApplicationAction extends AbstractAction {
     private final String selectedProperty;  // names a bound appAM.getActionsClass() property
     private final Method isSelectedMethod;  // Method object for is/getSelectedProperty
     private final Method setSelectedMethod; // Method object for setSelectedProperty
+    private String taskService;
     private final Task.BlockingScope block;
     private javax.swing.Action proxy = null;
     private Object proxySource = null;
@@ -184,6 +185,7 @@ public class ApplicationAction extends AbstractAction {
      * @param enabledProperty name of the enabled property.
      * @param enabledNegated enabled property is inverted
      * @param selectedProperty name of the selected property.
+     * @param taskService name of the task service for this action
      * @param block how much of the GUI to block while this action executes.
      * 
      * @see #getName
@@ -197,6 +199,7 @@ public class ApplicationAction extends AbstractAction {
             String enabledProperty,
             boolean enabledNegated,
             String selectedProperty,
+            String taskService,
             Task.BlockingScope block) {
         if (appAM == null) {
             throw new IllegalArgumentException("null appAM");
@@ -211,6 +214,7 @@ public class ApplicationAction extends AbstractAction {
         this.enabledProperty = enabledProperty;
         this.enabledNegated = enabledNegated;
         this.selectedProperty = selectedProperty;
+        this.taskService = taskService;
         this.block = block;
 
         /* If enabledProperty is specified, lookup up the is/set methods and
@@ -251,7 +255,7 @@ public class ApplicationAction extends AbstractAction {
      * see ApplicationActionMap.addProxyAction().
      */
     ApplicationAction(ApplicationActionMap appAM, ResourceMap resourceMap, String actionName) {
-        this(appAM, resourceMap, actionName, null, null, false, null, Task.BlockingScope.NONE);
+        this(appAM, resourceMap, actionName, null, null, false, null, TaskService.DEFAULT_NAME, Task.BlockingScope.NONE);
     }
 
     private IllegalArgumentException newNoSuchPropertyException(String propertyName) {
@@ -391,6 +395,7 @@ public class ApplicationAction extends AbstractAction {
      */
     private class ProxyPCL implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ((propertyName == null) ||
@@ -649,8 +654,13 @@ public class ApplicationAction extends AbstractAction {
             if (task.getInputBlocker() == null) {
                 task.setInputBlocker(createInputBlocker(task, actionEvent));
             }
-            ApplicationContext ctx = appAM.getContext();
-            ctx.getTaskService().execute(task);
+            final ApplicationContext ctx = appAM.getContext();
+            final TaskService ts = ctx.getTaskService(taskService);
+            if (ts != null) {
+                ts.execute(task);
+            } else {
+                actionFailed(new IllegalArgumentException("Task Service ["+taskService+"] does not exist."));
+            }
         }
     }
 
@@ -667,6 +677,7 @@ public class ApplicationAction extends AbstractAction {
      * @see #getActionArgument
      * @see Task
      */
+    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         javax.swing.Action proxy = getProxy();
         if (proxy != null) {
@@ -791,6 +802,7 @@ public class ApplicationAction extends AbstractAction {
      * @param key {@inheritDoc}
      * @param value {@inheritDoc}
      */
+    @Override
     public void putValue(String key, Object value) {
         if (SELECTED_KEY.equals(key) && (value instanceof Boolean)) {
             setSelected((Boolean) value);
@@ -845,6 +857,7 @@ public class ApplicationAction extends AbstractAction {
      *
      * @return A string representation of this ApplicationAction
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
