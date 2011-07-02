@@ -153,7 +153,6 @@
                     <findbugsXmlOutput>true</findbugsXmlOutput>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -162,7 +161,6 @@
                     <targetJdk>1.5</targetJdk>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -171,7 +169,6 @@
                     <configLocation>configs/checkstyle.xml</configLocation>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
@@ -179,7 +176,6 @@
                 <configuration>
                     <onlyCurrentVersion>true</onlyCurrentVersion>
                 </configuration>
-
                 <reportSets>
                     <reportSet>
                         <reports>
