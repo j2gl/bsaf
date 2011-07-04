@@ -4,7 +4,7 @@
   <groupId>org.jdesktop.bsaf</groupId>
   <artifactId>bsaf</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.3-SNAPSHOT</version>
+  <version>1.9.2-SNAPSHOT</version>
   <name>bsaf</name>
   <description>A Better Application Framework for Swing</description>
   <url>http://kenai.com/projects/bsaf</url>
