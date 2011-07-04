@@ -4,7 +4,7 @@
   <groupId>org.jdesktop.bsaf</groupId>
   <artifactId>bsaf</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.2</version>
+  <version>1.9.3-SNAPSHOT</version>
   <name>bsaf</name>
   <description>A Better Application Framework for Swing</description>
   <url>http://kenai.com/projects/bsaf</url>
@@ -29,9 +29,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <scm>
-    <connection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9.2</connection>
-    <developerConnection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9.2</developerConnection>
-    <url>http://kenai.com/projects/bsaf/sources/main/show/tags/bsaf-1.9.2</url>
+    <connection>scm:svn:https://kenai.com/svn/bsaf~main/framework/trunk</connection>
+    <developerConnection>scm:svn:https://kenai.com/svn/bsaf~main/framework/trunk</developerConnection>
+    <url>http://kenai.com/projects/bsaf/sources/main/show</url>
   </scm>
   <developers>
     <developer>
