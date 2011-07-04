@@ -28,12 +28,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <distributionManagement>
-    <repository>
-      <id>java.net-m2-repository</id>
-      <url>java-net:/maven2-repository/trunk/repository/</url>
-    </repository>
-  </distributionManagement>
   <scm>
     <connection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9.2</connection>
     <developerConnection>scm:svn:https://kenai.com/svn/bsaf~main/framework/tags/bsaf-1.9.2</developerConnection>
