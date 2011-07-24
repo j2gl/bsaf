@@ -4,11 +4,13 @@
  */
 package org.jdesktop.application;
 
+import java.awt.EventQueue;
 import static org.junit.Assert.assertTrue;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -100,12 +103,13 @@ public class TaskMonitorTest{
         assertTrue(pcl.messages.contains(MESSAGE_TASK1));
     }
 
+    
     @Test
     public void testMessageSucceeded()  throws InterruptedException {
         TaskMonitor mon = Application.getInstance().getContext().getTaskMonitor();
-
+        
         TaskService srv = Application.getInstance().getContext().getTaskService();
-
+        
         final CountDownLatch cdl = new CountDownLatch(1);
 
         final String MESSAGE_0 = "doInBackground";
@@ -128,6 +132,7 @@ public class TaskMonitorTest{
             @Override
             protected Object doInBackground() throws Exception {
                 setMessage("doInBackground");
+                Thread.sleep(100);
                 return null;
             }
 
@@ -147,7 +152,7 @@ public class TaskMonitorTest{
         });
 
         cdl.await();
-
+        
         assertTrue(MESSAGE_0, messages.contains(MESSAGE_0));
         assertTrue(MESSAGE_1, messages.contains(MESSAGE_1));
         assertTrue(MESSAGE_2, messages.contains(MESSAGE_2));
