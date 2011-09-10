@@ -4,7 +4,6 @@
 */
 package org.jdesktop.application;
 
-import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
 import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.PlatformType;
 
@@ -15,8 +14,12 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
 
 /**
  * Access to per application, per user, local file storage.
@@ -33,12 +36,20 @@ public class LocalStorage extends AbstractBean {
     private LocalIO localIO = null;
     private final File unspecifiedFile = new File("unspecified");
     private File directory = unspecifiedFile;
+    private Map<Class<?>, PersistenceDelegate> persistentDelegatesMap;
+    private RectanglePD rectanglePD = null;
+
 
     protected LocalStorage(ApplicationContext context) {
         if (context == null) {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
+        this.persistentDelegatesMap = new HashMap<Class<?>, PersistenceDelegate>(2);
+        //most often used classes to persist  - help for beginners
+        final PrimitivePersistenceDelegate primitivePersistenceDelegate = new PrimitivePersistenceDelegate();
+        this.persistentDelegatesMap.put(URL.class, primitivePersistenceDelegate);
+        this.persistentDelegatesMap.put(File.class, primitivePersistenceDelegate);
     }
 
     // FIXME - documentation
@@ -134,7 +145,6 @@ public class LocalStorage extends AbstractBean {
         }
     }
 
-    private static boolean persistenceDelegatesInitialized = false;
 
     /**
      * Saves the {@code bean} to the local storage
@@ -151,9 +161,16 @@ public class LocalStorage extends AbstractBean {
         ByteArrayOutputStream bst = new ByteArrayOutputStream();
         try {
             e = new XMLEncoder(bst);
-            if (!persistenceDelegatesInitialized) {
-                e.setPersistenceDelegate(Rectangle.class, new RectanglePD());
-                persistenceDelegatesInitialized = true;
+            //necessary for JDK 7
+            //we need to set it up every time XMLEncoder is being instantiated
+            if (rectanglePD == null) {
+                rectanglePD = new RectanglePD();
+            }
+            e.setPersistenceDelegate(Rectangle.class, rectanglePD);
+            if (persistentDelegatesMap != null) {
+                for (Map.Entry<Class<?>, PersistenceDelegate> entry : persistentDelegatesMap.entrySet()) {
+                    e.setPersistenceDelegate(entry.getKey(), entry.getValue());
+                }
             }
             e.setExceptionListener(el);
             e.writeObject(bean);
@@ -256,6 +273,31 @@ public class LocalStorage extends AbstractBean {
 
     private String getVendorId() {
         return getId(KEY_APPLICATION_VENDOR_ID, "UnknownApplicationVendor");
+    }
+
+
+    /**
+     * Method sets persistent delegates for XML Encoder which is being used for serialization of the bean.<br />
+     * By default, the map contains persistent delegates for <code>java.io.File</code> and <code>java.net.URL</code> <br />
+     * @see java.beans.Encoder#setPersistenceDelegate(java.lang.Class<?>, java.beans.PersistenceDelegate)
+     * @param persistentDelegatesMap map with persistent delegates
+     * @since 1.9.3
+     */
+    public void setPersistentDelegates(Map<Class<?>, PersistenceDelegate> persistentDelegatesMap) {
+        this.persistentDelegatesMap = persistentDelegatesMap;
+    }
+
+
+    /**
+     * Method returns persistent delegates for XML Encoder, which is being used for serialization of the bean.<br />
+     * By default, the map contains persistent delegates for <code>java.io.File</code> and <code>java.net.URL</code> <br />
+     * See http://kenai.com/jira/browse/BSAF-61 for more details.
+     * @see java.beans.Encoder#getPersistenceDelegate<?>
+     * @param persistentDelegatesMap map with persistent delegates
+     * @since 1.9.3
+     */
+    public Map<Class<?>, PersistenceDelegate> getPersistentDelegates() {
+        return persistentDelegatesMap;
     }
 
     /**
@@ -431,8 +473,7 @@ public class LocalStorage extends AbstractBean {
                     throw new IOException("couldn't create directory " + dir);
                 }
                 return new BufferedOutputStream(new FileOutputStream(file, append));
-            }
-            catch (SecurityException exception) {
+            } catch (SecurityException exception) {
                 throw new IOException("could not write to entry: " + name, exception);
             }
         }
@@ -568,4 +609,14 @@ public class LocalStorage extends AbstractBean {
             }
         }
     }
+
+
+    class PrimitivePersistenceDelegate extends PersistenceDelegate {
+
+        protected Expression instantiate(Object oldInstance, Encoder out) {
+            return new Expression(oldInstance, oldInstance.getClass(),
+                    "new", new Object[]{oldInstance.toString()});
+        }
+    }
+
 }

@@ -5,14 +5,17 @@
 
 package org.jdesktop.application;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Scanner;
+
+import static org.junit.Assert.*;
 
 /**
  * Test the LocalStorage class.
@@ -70,8 +73,16 @@ public class LocalStorageTest
 
     public static class ABean
     {
+
+
+        private URL testURL;
+        private File file = new File("tempfile");
         private boolean b = false;
         private String s = "not initialized";
+
+        public ABean() throws MalformedURLException {
+            testURL = new URL("http://google.com");            
+        }
 
         public String getS() { return s; }
 
@@ -80,6 +91,14 @@ public class LocalStorageTest
         public boolean isB() { return b; }
 
         public void setB(boolean b) { this.b = b; }
+
+        public URL getTestURL() {
+            return testURL;
+        }
+
+        public File getFile() {
+            return file;
+        }
     }
 
     @Test
@@ -102,6 +121,10 @@ public class LocalStorageTest
         aBean = (ABean) o;
         assertEquals("aBean.getS()", "setS", aBean.getS());
         assertEquals("aBean.getB()", true, aBean.isB());
+        assertEquals("aBean.getTestURL()", "http://google.com", aBean.getTestURL().toExternalForm());
+        assertEquals("aBean.getTestFile()", "tempfile", aBean.getFile().toString());
+
+
         ls.deleteFile(filename);
         assertTrue(filename + " was deleted", !file.exists());
     }
