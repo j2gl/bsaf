@@ -5,7 +5,8 @@
  */
 package org.jdesktop.application;
 
-import java.awt.KeyboardFocusManager;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -14,8 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
 
 /**
  * The application's {@code ActionManager} provides read-only cached
@@ -145,13 +144,14 @@ public class ActionManager extends AbstractBean {
      * 
      * @param actionsClass
      * @param actionsObject
+     * @param resourceMap custom defined resourcemap, if this value is null, default resourmap is being used
      * @see #getActionMap()
      * @see ApplicationContext#getActionMap()
      * @see ApplicationContext#getActionMap(Class, Object)
      * @see ApplicationContext#getActionMap(Object)
      * @return the {@code ApplicationActionMap} for {@code actionsClass} and {@code actionsObject}
      */
-    public ApplicationActionMap getActionMap(Class actionsClass, Object actionsObject) {
+    public ApplicationActionMap getActionMap(final Class actionsClass, final Object actionsObject, ResourceMap resourceMap) {
         if (actionsClass == null) {
             throw new IllegalArgumentException("null actionsClass");
         }
@@ -165,9 +165,9 @@ public class ActionManager extends AbstractBean {
             WeakReference<ApplicationActionMap> ref = actionMaps.get(actionsObject);
             ApplicationActionMap classActionMap = (ref != null) ? ref.get() : null;
             if ((classActionMap == null) || (classActionMap.getActionsClass() != actionsClass)) {
-                ApplicationContext ctx = getContext();
                 Class actionsObjectClass = actionsObject.getClass();
-                ResourceMap resourceMap = ctx.getResourceMap(actionsObjectClass, actionsClass);
+                if (resourceMap == null)
+                    resourceMap = getContext().getResourceMap(actionsObjectClass, actionsClass);
                 classActionMap = createActionMapChain(actionsObjectClass, actionsClass, actionsObject, resourceMap);
                 ActionMap lastActionMap = classActionMap;
                 while (lastActionMap.getParent() != null) {
@@ -178,6 +178,53 @@ public class ActionManager extends AbstractBean {
             }
             return classActionMap;
         }
+    }
+
+    /**
+     * Returns the {@code ApplicationActionMap} chain for the specified
+     * actions class and target object.
+     * <p>
+     * The specified class can contain methods marked with
+     * the {@code @Action} annotation.  Each one will be turned
+     * into an {@link ApplicationAction ApplicationAction} object
+     * and all of them will be added to a single
+     * {@link ApplicationActionMap ApplicationActionMap}.  All of the
+     * {@code ApplicationActions} invoke their {@code actionPerformed}
+     * method on the specified {@code actionsObject}.
+     * The parent of the returned {@code ActionMap} is the global
+     * {@code ActionMap} that contains the {@code @Actions} defined
+     * in this application's {@code Application} subclass.
+     *
+     * <p>
+     * To bind an {@code @Action} to a Swing component, one specifies
+     * the {@code @Action's} name in an expression like this:
+     * <pre>
+     * ApplicationContext ctx = Application.getInstance(MyApplication.class).getContext();
+     * MyActions myActions = new MyActions();
+     * myComponent.setAction(ac.getActionMap(myActions).get("myAction"));
+     * </pre>
+     *
+     * <p>
+     * The value returned by this method is cached.  The lifetime of
+     * the cached entry will be the same as the lifetime of the {@code
+     * actionsObject} and the {@code ApplicationActionMap} and {@code
+     * ApplicationActions} that refer to it.  In other words, if you
+     * drop all references to the {@code actionsObject}, including
+     * its {@code ApplicationActions} and their {@code
+     * ApplicationActionMaps}, then the cached {@code ActionMap} entry
+     * will be cleared.
+     *
+     * @param actionsClass
+     * @param actionsObject
+     * @see #getActionMap()
+     * @see #getActionMap(Class, Object, ResourceMap)
+     * @see ApplicationContext#getActionMap()
+     * @see ApplicationContext#getActionMap(Class, Object)
+     * @see ApplicationContext#getActionMap(Object)
+     * @return the {@code ApplicationActionMap} for {@code actionsClass} and {@code actionsObject}
+     */
+    public ApplicationActionMap getActionMap(final Class actionsClass, final Object actionsObject) {
+        return getActionMap(actionsClass, actionsObject, null);
     }
 
     private final class KeyboardFocusPCL implements PropertyChangeListener {
