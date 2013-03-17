@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 
 import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
 
@@ -37,19 +38,29 @@ public class LocalStorage extends AbstractBean {
     private final File unspecifiedFile = new File("unspecified");
     private File directory = unspecifiedFile;
     private Map<Class<?>, PersistenceDelegate> persistentDelegatesMap;
-    private RectanglePD rectanglePD = null;
+    
+    static {
+        Map<Class<?>, PersistenceDelegate> fixInternals = new HashMap<Class<?>, PersistenceDelegate>();
 
+        fixInternals.put(DefaultListModel.class, new DefaultListModelPD());
+        fixInternals.put(File.class, new DefaultPersistenceDelegate(new String[] {"path"}));
+        fixInternals.put(Rectangle.class, new RectanglePD());
+        fixInternals.put(URL.class, new PrimitivePersistenceDelegate());
+
+        for (Map.Entry<Class<?>, PersistenceDelegate> fixInternal : fixInternals.entrySet()) {
+            try {
+                Introspector.getBeanInfo(fixInternal.getKey()).getBeanDescriptor().setValue("persistenceDelegate", fixInternal.getValue());
+            } catch (IntrospectionException ex) {
+                throw new ExceptionInInitializerError("Unable to load " + fixInternal.getKey() + " fix.");
+            }
+        }
+    }
 
     protected LocalStorage(ApplicationContext context) {
         if (context == null) {
             throw new IllegalArgumentException("null context");
         }
         this.context = context;
-        this.persistentDelegatesMap = new HashMap<Class<?>, PersistenceDelegate>(2);
-        //most often used classes to persist  - help for beginners
-        final PrimitivePersistenceDelegate primitivePersistenceDelegate = new PrimitivePersistenceDelegate();
-        this.persistentDelegatesMap.put(URL.class, primitivePersistenceDelegate);
-        this.persistentDelegatesMap.put(File.class, primitivePersistenceDelegate);
     }
 
     // FIXME - documentation
@@ -163,10 +174,6 @@ public class LocalStorage extends AbstractBean {
             e = new XMLEncoder(bst);
             //necessary for JDK 7
             //we need to set it up every time XMLEncoder is being instantiated
-            if (rectanglePD == null) {
-                rectanglePD = new RectanglePD();
-            }
-            e.setPersistenceDelegate(Rectangle.class, rectanglePD);
             if (persistentDelegatesMap != null) {
                 for (Map.Entry<Class<?>, PersistenceDelegate> entry : persistentDelegatesMap.entrySet()) {
                     e.setPersistenceDelegate(entry.getKey(), entry.getValue());
@@ -242,8 +249,8 @@ public class LocalStorage extends AbstractBean {
     }
 
     /**
-     * Sets the limit of the lical storage
-     * @param storageLimit the limit of the lical storage
+     * Sets the limit of the local storage
+     * @param storageLimit the limit of the local storage
      */
     public void setStorageLimit(long storageLimit) {
         if (storageLimit < -1L) {
@@ -278,7 +285,6 @@ public class LocalStorage extends AbstractBean {
 
     /**
      * Method sets persistent delegates for XML Encoder which is being used for serialization of the bean.<br />
-     * By default, the map contains persistent delegates for <code>java.io.File</code> and <code>java.net.URL</code> <br />
      * @see java.beans.Encoder#setPersistenceDelegate(java.lang.Class<?>, java.beans.PersistenceDelegate)
      * @param persistentDelegatesMap map with persistent delegates
      * @since 1.9.3
@@ -290,13 +296,16 @@ public class LocalStorage extends AbstractBean {
 
     /**
      * Method returns persistent delegates for XML Encoder, which is being used for serialization of the bean.<br />
-     * By default, the map contains persistent delegates for <code>java.io.File</code> and <code>java.net.URL</code> <br />
      * See http://kenai.com/jira/browse/BSAF-61 for more details.
      * @see java.beans.Encoder#getPersistenceDelegate<?>
      * @param persistentDelegatesMap map with persistent delegates
      * @since 1.9.3
      */
     public Map<Class<?>, PersistenceDelegate> getPersistentDelegates() {
+        if (persistentDelegatesMap == null) {
+            persistentDelegatesMap = new HashMap<Class<?>, PersistenceDelegate>();
+        }
+        
         return persistentDelegatesMap;
     }
 
@@ -380,6 +389,38 @@ public class LocalStorage extends AbstractBean {
             return new Expression(oldInstance, oldInstance.getClass(), "new", constructorArgs);
         }
     }
+    
+    /* The JVM's persistence delegate in Java 1.6 and 1.7 is invalid in that the persisted model is a list of null values.
+     * The problem is that the author incorrectly assumed that the newInstance would be created empty when, in
+     * fact, it is fully populated with null values (See setSize in DefaultListModel).
+     */
+    private static class DefaultListModelPD extends DefaultPersistenceDelegate {
+        @Override
+        protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
+            // Note, the "size" property will be set here.
+            super.initialize(type, oldInstance, newInstance, out);
+            javax.swing.DefaultListModel oldDLM = (javax.swing.DefaultListModel) oldInstance;
+            javax.swing.DefaultListModel newDLM = (javax.swing.DefaultListModel) newInstance;
+            // At this point newDLM will be a list of null values
+            // It should be the same size as oldDLM but play it safe anyway
+            int oldSize = oldDLM.getSize();
+            int newSize = newDLM.getSize();
+            int maxSet = (newSize < oldSize ? newSize : oldSize);
+            int i = 0;
+            for (; i < maxSet; i++) {
+                out.writeStatement(new Statement(oldInstance, "set", new Object[]{i, oldDLM.getElementAt(i)}));
+                // Mutate the newInstance to match the oldInstance
+                newDLM.set(i, oldDLM.getElementAt(i));
+            }
+            for (; i < oldSize; i++) {
+                out.writeStatement(new Statement(oldInstance, "add", // Can also use "addElement".
+                        new Object[]{oldDLM.getElementAt(i)}));
+                // Mutate the newInstance to match the oldInstance
+                newDLM.add(i, oldDLM.getElementAt(i));
+            }
+        }
+    }
+
 
     private synchronized LocalIO getLocalIO() {
         if (localIO == null) {
@@ -611,7 +652,7 @@ public class LocalStorage extends AbstractBean {
     }
 
 
-    class PrimitivePersistenceDelegate extends PersistenceDelegate {
+    static class PrimitivePersistenceDelegate extends PersistenceDelegate {
 
         protected Expression instantiate(Object oldInstance, Encoder out) {
             return new Expression(oldInstance, oldInstance.getClass(),

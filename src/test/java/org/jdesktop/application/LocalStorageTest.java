@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.DefaultListModel;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
@@ -73,15 +74,12 @@ public class LocalStorageTest
 
     public static class ABean
     {
-
-
-        private URL testURL;
-        private File file = new File("tempfile");
+        private URL url = null;
+        private File file = null;
         private boolean b = false;
         private String s = "not initialized";
 
         public ABean() throws MalformedURLException {
-            testURL = new URL("http://google.com");            
         }
 
         public String getS() { return s; }
@@ -92,23 +90,31 @@ public class LocalStorageTest
 
         public void setB(boolean b) { this.b = b; }
 
-        public URL getTestURL() {
-            return testURL;
-        }
+        public URL getUrl() { return url; }
 
-        public File getFile() {
-            return file;
-        }
+        public void setUrl(URL url) { this.url = url; }
+
+        public File getFile() { return file; }
+
+        public void setFile(File file) { this.file = file; }
     }
 
     @Test
-    public void testBasics() throws IOException
-    {
+    public void testBasics() throws IOException {
         LocalStorage ls = context.getLocalStorage();
         assertEquals("LocalStorage.getDirectory", localStorageDirectory, ls.getDirectory());
+
+        String expectedS = "setS";
+        boolean expectedB = true;
+        File expectedFile = new File("testFile");
+        URL expectedURL = new URL("http://www.google.com");
+
         ABean aBean = new ABean();
-        aBean.setS("setS");
-        aBean.setB(true);
+        aBean.setS(expectedS);
+        aBean.setB(expectedB);
+        aBean.setFile(expectedFile);
+        aBean.setUrl(expectedURL);
+
         String filename = "aBean.xml";
         ls.save(aBean, filename);
         File file = new File(ls.getDirectory(), filename);
@@ -119,14 +125,13 @@ public class LocalStorageTest
         assertNotNull("Loaded " + dir + "/" + filename, o);
         assertTrue("Loaded " + dir + "/" + filename + " - ABean", o instanceof ABean);
         aBean = (ABean) o;
-        assertEquals("aBean.getS()", "setS", aBean.getS());
-        assertEquals("aBean.getB()", true, aBean.isB());
-        assertEquals("aBean.getTestURL()", "http://google.com", aBean.getTestURL().toExternalForm());
-        assertEquals("aBean.getTestFile()", "tempfile", aBean.getFile().toString());
-
+        assertEquals("aBean.getS()", expectedS, aBean.getS());
+        assertEquals("aBean.getB()", expectedB, aBean.isB());
+        assertEquals("aBean.getURL()", expectedURL, aBean.getUrl());
+        assertEquals("aBean.getFile()", expectedFile, aBean.getFile());
 
         ls.deleteFile(filename);
-        assertTrue(filename + " was deleted", !file.exists());
+        assertTrue(file.getPath() + " was deleted", !file.exists());
     }
 
      @Test
@@ -174,5 +179,31 @@ public class LocalStorageTest
             //ignore - OK
         }
     }
-
+ 
+    @Test
+    public void testDefaultListModel() throws IOException
+    {
+        LocalStorage ls = context.getLocalStorage();
+        assertEquals("LocalStorage.getDirectory", localStorageDirectory, ls.getDirectory());
+        
+        DefaultListModel expected = new DefaultListModel();
+        String member1 = "A";
+        String member2 = "B";
+        
+        expected.addElement(member1);
+        expected.addElement(member2);
+        
+        String filename = "defaultListModel.xml";
+        File file = new File(ls.getDirectory(), filename);
+        ls.save(expected, filename);
+        
+        DefaultListModel actual = (DefaultListModel) ls.load(filename);
+        
+        assertEquals("model.getSize()", expected.getSize(), actual.getSize());
+        assertEquals("model.get(0)", expected.get(0), actual.get(0));
+        assertEquals("model.get(1)", expected.get(1), actual.get(1));
+        
+        ls.deleteFile(filename);
+        assertTrue(file.getPath()+ " was deleted", !file.exists());
+    }
 }
