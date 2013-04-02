@@ -197,7 +197,33 @@ public class TaskService extends AbstractBean {
      *         denies access.
      */
     public final List<Runnable> shutdownNow() {
-        return executorService.shutdownNow();
+        final List<Runnable> tasksAwaitingExecution = executorService.shutdownNow();
+
+        // Tasks that are cancelled are never run by the executorService so they 
+        // are never removed from the TaskService or TaskMonitor.
+
+        List<Task> oldTaskList, newTaskList;
+        synchronized (tasks) {
+            // Remove all of the unexecuted runnables from tasks so that
+            // TaskMonitor is brought up to date
+            oldTaskList = getTasks();
+
+            for (Runnable runnable : tasksAwaitingExecution) {
+                if (runnable instanceof Task) {
+                    Task task = (Task) runnable;
+
+                    tasks.remove(task);
+
+                    task.removePropertyChangeListener(taskPCL);
+                }
+            }
+
+            newTaskList = getTasks();
+        }
+
+        firePropertyChange("tasks", oldTaskList, newTaskList);
+
+        return tasksAwaitingExecution;
     }
 
     /**
