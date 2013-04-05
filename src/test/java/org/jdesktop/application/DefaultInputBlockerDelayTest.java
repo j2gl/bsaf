@@ -41,7 +41,10 @@ public class DefaultInputBlockerDelayTest {
 		final javax.swing.Action goAction = app.getContext().getActionMap().get("go");
 		
 		goAction.actionPerformed(new ActionEvent(app.goItem, ActionEvent.ACTION_PERFORMED, ""));
-		Thread.sleep(40);
+                
+            // Give time for the delay task to start and then for the EDL to raise
+            // the blocking glass pane
+            Thread.sleep(1000);
 		
 		final boolean menuEnabled = app.getMainView().getMenuBar().isEnabled();
 		final boolean normalGlass = app.getMainFrame().getGlassPane() == app.normalGlass;
@@ -114,7 +117,7 @@ public class DefaultInputBlockerDelayTest {
 					Thread.sleep(5000l);
 					return null;
 				} catch (final InterruptedException exc) {
-					return null;
+ 					return null;
 				}
 			}
 
