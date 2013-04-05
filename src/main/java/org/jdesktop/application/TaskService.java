@@ -7,8 +7,6 @@ package org.jdesktop.application;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,7 +25,7 @@ public class TaskService extends AbstractBean {
 
     private final String name;
     private final ExecutorService executorService;
-    private final List<Task> tasks;
+    private final Journal tasks;
     private final PropertyChangeListener taskPCL;
 
     /**
@@ -44,7 +42,7 @@ public class TaskService extends AbstractBean {
         }
         this.name = name;
         this.executorService = executorService;
-        this.tasks = new ArrayList<Task>();
+        this.tasks = new Journal();
         this.taskPCL = new TaskPCL();
     }
 
@@ -70,32 +68,24 @@ public class TaskService extends AbstractBean {
         return name;
     }
 
-    private List<Task> copyTasksList() {
-        synchronized (tasks) {
-            if (tasks.isEmpty()) {
-                return Collections.emptyList();
-            } else {
-                return new ArrayList<Task>(tasks);
-            }
-        }
-    }
-
     private class TaskPCL implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ("done".equals(propertyName)) {
-                Task task = (Task) (e.getSource());
+                Task task = (Task) e.getSource();
                 if (task.isDone()) {
-                    List<Task> oldTaskList, newTaskList;
+                    task.removePropertyChangeListener(taskPCL);
+
+                    List<Task<?, ?>> oldTaskList, newTaskList;
                     synchronized (tasks) {
-                        oldTaskList = copyTasksList();
+                        oldTaskList = tasks.getList();
                         tasks.remove(task);
-                        task.removePropertyChangeListener(taskPCL);
-                        newTaskList = copyTasksList();
+                        newTaskList = tasks.getList();
                     }
-                    firePropertyChange("tasks", oldTaskList, newTaskList);
+                    firePropertyChange(new TaskPropertyChangeEvent(oldTaskList, newTaskList, task, null));
+
                     Task.InputBlocker inputBlocker = task.getInputBlocker();
                     if (inputBlocker != null) {
                         inputBlocker.unblock();
@@ -131,7 +121,7 @@ public class TaskService extends AbstractBean {
      *
      * @param task the task to be executed
      */
-    public void execute(Task task) {
+    public void execute(Task<?, ?> task) {
         if (task == null) {
             throw new IllegalArgumentException("null task");
         }
@@ -140,14 +130,16 @@ public class TaskService extends AbstractBean {
         }
         task.setTaskService(this);
         // TBD: what if task has already been submitted?
-        List<Task> oldTaskList, newTaskList;
+        task.addPropertyChangeListener(taskPCL);
+
+        List<Task<?, ?>> oldTaskList, newTaskList;
         synchronized (tasks) {
-            oldTaskList = copyTasksList();
-            tasks.add(task);
-            newTaskList = copyTasksList();
-            task.addPropertyChangeListener(taskPCL);
+            oldTaskList = tasks.getList();
+            tasks.addLast(task);
+            newTaskList = tasks.getList();
         }
-        firePropertyChange("tasks", oldTaskList, newTaskList);
+        firePropertyChange(new TaskPropertyChangeEvent(oldTaskList, newTaskList, null, task));
+
         maybeBlockTask(task);
         executorService.execute(task);
     }
@@ -156,8 +148,8 @@ public class TaskService extends AbstractBean {
      * Returns the list of tasks which are executing by this service
      * @return the list of tasks which are executing by this service
      */
-    public List<Task> getTasks() {
-        return copyTasksList();
+    public List<Task<?, ?>> getTasks() {
+        return tasks.getList();
     }
 
     /**
@@ -202,11 +194,11 @@ public class TaskService extends AbstractBean {
         // Tasks that are cancelled are never run by the executorService so they 
         // are never removed from the TaskService or TaskMonitor.
 
-        List<Task> oldTaskList, newTaskList;
+        List<Task<?, ?>> oldTaskList, newTaskList;
         synchronized (tasks) {
             // Remove all of the unexecuted runnables from tasks so that
             // TaskMonitor is brought up to date
-            oldTaskList = getTasks();
+            oldTaskList = tasks.getList();
 
             for (Runnable runnable : tasksAwaitingExecution) {
                 if (runnable instanceof Task) {
@@ -218,7 +210,7 @@ public class TaskService extends AbstractBean {
                 }
             }
 
-            newTaskList = getTasks();
+            newTaskList = tasks.getList();
         }
 
         firePropertyChange("tasks", oldTaskList, newTaskList);
@@ -259,5 +251,41 @@ public class TaskService extends AbstractBean {
      */
     public final boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         return executorService.awaitTermination(timeout, unit);
+    }
+
+    /**
+     * Custom property change event used by TaskService to inform TaskMonitor of
+     * the specific task being added, or removed, without requiring TaskMonitor
+     * to perform an N^2 search of the before, and after, task lists.
+     */
+    final class TaskPropertyChangeEvent extends PropertyChangeEvent {
+        boolean armed = false;
+        final Task<?, ?> removed;
+        final Task<?, ?> added;
+
+        public TaskPropertyChangeEvent(List<Task<?, ?>> oldList, List<Task<?, ?>> newList, Task<?, ?> removed, Task<?, ?> added) {
+            super(TaskService.this, "tasks", oldList, newList);
+
+            this.removed = removed;
+            this.added = added;
+        }
+
+        @Override
+        public Object getNewValue() {
+            return super.getNewValue();
+        }
+
+        @Override
+        public Object getOldValue() {
+            return super.getOldValue();
+        }
+
+        public Task getRemoved() {
+            return removed;
+        }
+
+        public Task getAdded() {
+            return added;
+        }
     }
 }

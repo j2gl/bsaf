@@ -7,7 +7,9 @@ package org.jdesktop.application;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -152,6 +154,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
     private boolean userCanCancel = true;
     private boolean progressPropertyIsValid = false;
     private TaskService taskService = null;
+    private Map<Object, Object> properties = null;
 
     /**
      * Specifies to what extent the GUI should be blocked a Task 
@@ -261,7 +264,7 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
      * prefix, whose ResourceMap is the value of <code>
      * ApplicationContext.getInstance().getResourceMap(this.getClass(), Task.class)
      * </code>.  The {@code resourcePrefix} is used to construct
-     * the resource names for the intial values of the 
+     * the resource names for the initial values of the 
      *  {@code title}, {@code description}, and {@code message} Task properties
      * and for message {@link java.util.Formatter format} strings.
      * 
@@ -592,6 +595,26 @@ public abstract class Task<T, V> extends SwingWorker<T, V> {
         return unit.convert(dt, TimeUnit.MILLISECONDS);
     }
 
+    Object getProperty(Object key) {
+        return properties == null ? null : properties.get(key);
+    }
+    
+    void removeProperty(Object key) {
+        if (properties != null && properties.remove(key) != null && properties.isEmpty()) {
+            properties = null;
+        }
+    }
+    
+    void setProperty(Object key, Object value) {
+        if (value != null) {
+            if (properties == null) {
+                properties = new HashMap<Object, Object>();
+            }
+            
+            properties.put(key, value);
+        }
+    }
+    
     /**
      * Returns the value of the {@code userCanCancel} property.
      * The default value of this property is true.

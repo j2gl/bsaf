@@ -298,7 +298,6 @@ public class LocalStorage extends AbstractBean {
      * Method returns persistent delegates for XML Encoder, which is being used for serialization of the bean.<br />
      * See http://kenai.com/jira/browse/BSAF-61 for more details.
      * @see java.beans.Encoder#getPersistenceDelegate<?>
-     * @param persistentDelegatesMap map with persistent delegates
      * @since 1.9.3
      */
     public Map<Class<?>, PersistenceDelegate> getPersistentDelegates() {

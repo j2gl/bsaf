@@ -2,100 +2,86 @@ package org.jdesktop.application;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.SwingWorker.StateValue;
 
 /**
- * This class is intended to serve as the model for GUI components,
- * like status bars, that display the state of an application's
- * background tasks.  {@code TaskMonitor} provides an overview of all
- * the ApplicationContext's Tasks, as well as the state of a single
- * {@code foreground} Task.  
- * 
- * <p>
- * The value of {@link #getTasks getTasks()} is a list of all of the
+ * This class is intended to serve as the model for GUI components, like status
+ * bars, that display the state of an application's background tasks.
+ * {@code TaskMonitor} provides an overview of all the ApplicationContext's
+ * Tasks, as well as the state of a single {@code foreground} Task.
+ *
+ * <p> The value of {@link #getTasks getTasks()} is a list of all of the
  * {@code Tasks} whose state is not {@link
- * Task#isDone DONE} for all of the
- * ApplicationContext's {@code TaskServices}.  In other words: all of
- * the ApplicationContext's background tasks that haven't finished
- * executing.  Each time a new TaskService Task is executed it's added
- * to the list; when the Task finishes it's removed.  Each time the
- * list changes {@code PropertyChangeListeners} are fired.
- * Applications that wish to create a detailed visualization of all
- * Tasks should monitor the TaskMonitor {@code "tasks"} property.
- * 
- * <p>
- * Users are often only interested in the status of a single
- * <i>foreground</i> task, typically the one associated with GUI
- * element they're working with, or with the most recent command
- * they've issued.  The TaskMonitor's PropertyChangeListener is
- * notified each time a property of the {@link #setForegroundTask
- * foregroundTask} changes.  Additionally the TaskMonitor fires
- * synthetic PropertyChangeEvents for properties named "pending", 
- * "started", and "done" when the corresponding Task {@code state}
- * property changes occur.
- * 
- * <p>
- * TaskMonitor manages a queue of new Tasks.  The
- * foregroundTask is automatically set to the first new Task, and when
- * that Task finishes, the next Task in the queue, and so on.
- * Applications can set the foregroundTask explicitly, to better
- * reflect what the user is doing.  For example, a tabbed browsing GUI
- * that launched one Task per tab might set the foreground Task each
- * time the user selected a tab.  To prevent the foregroundTask
- * property from (ever) being reset automatically, one must set {@link
+ * Task#isDone DONE} for all of the ApplicationContext's {@code TaskServices}.
+ * In other words: all of the ApplicationContext's background tasks that haven't
+ * finished executing. Each time a new TaskService Task is executed it's added
+ * to the list; when the Task finishes it's removed. Each time the list changes
+ * {@code PropertyChangeListeners} are fired. Applications that wish to create a
+ * detailed visualization of all Tasks should monitor the TaskMonitor
+ * {@code "tasks"} property.
+ *
+ * <p> Users are often only interested in the status of a single
+ * <i>foreground</i> task, typically the one associated with GUI element they're
+ * working with, or with the most recent command they've issued. The
+ * TaskMonitor's PropertyChangeListener is notified each time a property of the {@link #setForegroundTask
+ * foregroundTask} changes. Additionally the TaskMonitor fires synthetic
+ * PropertyChangeEvents for properties named "pending", "started", and "done"
+ * when the corresponding Task {@code state} property changes occur.
+ *
+ * <p> TaskMonitor manages a queue of new Tasks. The foregroundTask is
+ * automatically set to the first new Task, and when that Task finishes, the
+ * next Task in the queue, and so on. Applications can set the foregroundTask
+ * explicitly, to better reflect what the user is doing. For example, a tabbed
+ * browsing GUI that launched one Task per tab might set the foreground Task
+ * each time the user selected a tab. To prevent the foregroundTask property
+ * from (ever) being reset automatically, one must set {@link
  * #setAutoUpdateForegroundTask autoUpdateForegroundTask} to false.
- * 
- * <p>
- * This class is not thread-safe.  All of its methods must be called 
- * on the event dispatching thread (EDT) and all of its listeners will 
- * run on the EDT.
- * 
- * 
+ *
+ * <p> This class is not thread-safe. All of its methods must be called on the
+ * event dispatching thread (EDT) and all of its listeners will run on the EDT.
+ *
+ *
  * @author Hans Muller (Hans.Muller@Sun.COM)
  * @see ApplicationContext#getTaskServices
  * @see TaskService#getTasks
  * @see TaskService#execute
  */
 public class TaskMonitor extends AbstractBean {
-
     public static final String PROP_FOREGROUND_TASK = "foregroundTask";
     private final PropertyChangeListener applicationPCL;
     private final PropertyChangeListener taskServicePCL;
     private final PropertyChangeListener taskPCL;
-    private final LinkedList<Task> taskQueue;
+    private final Journal taskQueue;
     private boolean autoUpdateForegroundTask = true;
     private Task foregroundTask = null;
 
     /**
      * Construct a TaskMonitor.
+     *
      * @param context
      */
     public TaskMonitor(ApplicationContext context) {
         applicationPCL = new ApplicationPCL();
         taskServicePCL = new TaskServicePCL();
         taskPCL = new TaskPCL();
-        taskQueue = new LinkedList<Task>();
+        taskQueue = new Journal();
         context.addPropertyChangeListener(applicationPCL);
-        for (TaskService taskService : context.getTaskServices()) {
+        for (final TaskService taskService : context.getTaskServices()) {
             taskService.addPropertyChangeListener(taskServicePCL);
         }
     }
 
     /**
-     * The TaskMonitor's PropertyChangeListeners are fired each time 
-     * any property of the the {@code foregroundTask} changes.  By
-     * default this property is set to the first Task to be executed
-     * and then, when that Task finishes, reset to the next most
-     * recently executed Task.  If the {@code
-     * autoUpdateForegroundTask} is false, then the foregroundTask
-     * property is not reset automatically.
-     * 
-     * @param foregroundTask the task whose properties are reflected by this class
+     * The TaskMonitor's PropertyChangeListeners are fired each time any
+     * property of the the {@code foregroundTask} changes. By default this
+     * property is set to the first Task to be executed and then, when that Task
+     * finishes, reset to the next most recently executed Task. If the {@code
+     * autoUpdateForegroundTask} is false, then the foregroundTask property is
+     * not reset automatically.
+     *
+     * @param foregroundTask the task whose properties are reflected by this
+     * class
      * @see #setAutoUpdateForegroundTask
      * @see #getForegroundTask
      */
@@ -113,10 +99,10 @@ public class TaskMonitor extends AbstractBean {
     }
 
     /**
-     * Indicates the {@code Task} whose status the ApplicationContext's GUI wants 
-     * to be displayed, typically in the main window's status bar.
-     * 
-     * 
+     * Indicates the {@code Task} whose status the ApplicationContext's GUI
+     * wants to be displayed, typically in the main window's status bar.
+     *
+     *
      * @return the value of the foregroundTask property.
      * @see #setForegroundTask
      */
@@ -125,11 +111,10 @@ public class TaskMonitor extends AbstractBean {
     }
 
     /**
-     * True if the {@code foregroundTask} property should be automatically
-     * reset to the oldest Task in the queue when it finishes running.
-     * <p>
-     * This property is true by default.
-     * 
+     * True if the {@code foregroundTask} property should be automatically reset
+     * to the oldest Task in the queue when it finishes running. <p> This
+     * property is true by default.
+     *
      * @return true if the foregroundTask should be set automatically.
      * @see #setAutoUpdateForegroundTask
      * @see #setForegroundTask
@@ -139,14 +124,13 @@ public class TaskMonitor extends AbstractBean {
     }
 
     /**
-     * True if the {@code foregroundTask} property should be automatically
-     * reset to the oldest Task in the queue when it finishes running.  An 
-     * application that wants explicit control over the Task being monitored
-     * can set this property to false.
-     * <p>
-     * This property is true by default.
-     * 
-     * @param autoUpdateForegroundTask true if the foregroundTask should be set automatically
+     * True if the {@code foregroundTask} property should be automatically reset
+     * to the oldest Task in the queue when it finishes running. An application
+     * that wants explicit control over the Task being monitored can set this
+     * property to false. <p> This property is true by default.
+     *
+     * @param autoUpdateForegroundTask true if the foregroundTask should be set
+     * automatically
      * @see #getAutoUpdateForegroundTask
      */
     public void setAutoUpdateForegroundTask(boolean autoUpdateForegroundTask) {
@@ -155,27 +139,19 @@ public class TaskMonitor extends AbstractBean {
         firePropertyChange("autoUpdateForegroundTask", oldValue, this.autoUpdateForegroundTask);
     }
 
-    private List<Task> copyTaskQueue() {
-        synchronized (taskQueue) {
-            if (taskQueue.isEmpty()) {
-                return Collections.emptyList();
-            } else {
-                return new ArrayList<Task>(taskQueue);
-            }
-        }
-    }
-
     /**
-     * All of the Application Tasks whose {@code state} is not {@code DONE}.
-     * <p>
+     * <p>All of the Application Tasks whose {@code state} is not {@code DONE}. <p>
      * Each time the list of Tasks changes, a PropertyChangeEvent for the
-     * property named "tasks" is fired.  Applications that want to monitor all
+     * property named "tasks" is fired. Applications that want to monitor all
      * background Tasks should monitor the tasks property.
-     * 
+     *
+     * <p>KJG: This list is unmodifiable. For optimum performance, do not retain
+     * this list. If you must retain a list, make a copy of this list.
+     *
      * @return a list of all Tasks that aren't {@code DONE}
      */
-    public List<Task> getTasks() {
-        return copyTaskQueue();
+    public List<Task<?, ?>> getTasks() {
+        return taskQueue.getList();
     }
 
     /* Called on the EDT, each time a TaskService's list of tasks changes,
@@ -184,42 +160,69 @@ public class TaskMonitor extends AbstractBean {
      */
     private void updateTasks(List<Task> oldTasks, List<Task> newTasks) {
         boolean tasksChanged = false;  // has the "tasks" property changed?
-        List<Task> oldTaskQueue = copyTaskQueue();
-        // Remove each oldTask that's not in the newTasks list from taskQueue
+
+        List<Task<?, ?>> oldTaskQueue = taskQueue.getList();//copyTaskQueue();
+        // Remove each oldTask that is either done or not in the newTasks list from taskQueue
         for (Task oldTask : oldTasks) {
-            if (!(newTasks.contains(oldTask))) {
+            if (oldTask.isDone() || !(newTasks.contains(oldTask))) {
                 if (taskQueue.remove(oldTask)) {
                     tasksChanged = true;
                 }
             }
         }
-        // Add each newTask that's not in the oldTasks list to the taskQueue
+        // Add each newTask that's not cancelled, done, or already in the taskQueue
         for (Task newTask : newTasks) {
-            if (!(taskQueue.contains(newTask))) {
+            if (!newTask.isCancelled() && !newTask.isDone() && !(taskQueue.getList().contains(newTask))) {
                 taskQueue.addLast(newTask);
                 tasksChanged = true;
             }
         }
-        // Remove any tasks that are DONE for the sake of tasksChanged
-        Iterator<Task> tasks = taskQueue.iterator();
-        while (tasks.hasNext()) {
-            Task task = tasks.next();
-            if (task.isDone()) {
-                tasks.remove();
-                tasksChanged = true;
-            }
-        }
+
         // Maybe fire the "tasks" PCLs
         if (tasksChanged) {
-            List<Task> newTaskQueue = copyTaskQueue();
+            List<Task<?, ?>> newTaskQueue = taskQueue.getList();
             firePropertyChange("tasks", oldTaskQueue, newTaskQueue);
         }
 
         if (autoUpdateForegroundTask && (getForegroundTask() == null)) {
-            setForegroundTask(taskQueue.isEmpty() ? null : taskQueue.getLast());
+            Task last = null;
+            List<Task<?, ?>> currentTasks = taskQueue.getList();
+
+            if (!currentTasks.isEmpty()) {
+                last = currentTasks.get(currentTasks.size() - 1);
+            }
+            setForegroundTask(last);
         }
     }
 
+    /* Called on the EDT each time a TaskService's list of tasks changes,
+     * i.e. each time a new Task is executed and each time a Task's
+     * state changes to DONE.
+     */
+    private void updateTasks(Task removed, Task added) {
+        List<Task<?, ?>> oldTaskQueue = taskQueue.getList();
+
+        if (removed != null) {
+            taskQueue.remove(removed);
+        }
+
+        if (added != null) {
+            taskQueue.addLast(added);
+        }
+
+        List<Task<?, ?>> newTaskQueue = taskQueue.getList();
+        firePropertyChange("tasks", oldTaskQueue, newTaskQueue);
+
+        if (autoUpdateForegroundTask && (getForegroundTask() == null)) {
+            Task last = null;
+            List<Task<?, ?>> currentTasks = taskQueue.getList();
+
+            if (!currentTasks.isEmpty()) {
+                last = currentTasks.get(currentTasks.size() - 1);
+            }
+            setForegroundTask(last);
+        }
+    }
 
     /* Each time an ApplicationContext TaskService is added or removed, we 
      * remove our taskServicePCL from the old ones, add it to the new
@@ -228,7 +231,6 @@ public class TaskMonitor extends AbstractBean {
      * This listener runs on the EDT.
      */
     private class ApplicationPCL implements PropertyChangeListener {
-
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
@@ -238,7 +240,7 @@ public class TaskMonitor extends AbstractBean {
                 for (TaskService oldTaskService : oldList) {
                     oldTaskService.removePropertyChangeListener(taskServicePCL);
                 }
-                for (TaskService newTaskService : newList) {
+                for (final TaskService newTaskService : newList) {
                     newTaskService.addPropertyChangeListener(taskServicePCL);
                 }
             }
@@ -251,14 +253,21 @@ public class TaskMonitor extends AbstractBean {
      * This listener runs on the EDT.
      */
     private class TaskServicePCL implements PropertyChangeListener {
-
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ("tasks".equals(propertyName)) {
-                List<Task> oldList = (List<Task>) e.getOldValue();
-                List<Task> newList = (List<Task>) e.getNewValue();
-                updateTasks(oldList, newList);
+                if (e instanceof TaskService.TaskPropertyChangeEvent) {
+                    TaskService.TaskPropertyChangeEvent tpce = (TaskService.TaskPropertyChangeEvent) e;
+
+                    updateTasks(tpce.getRemoved(), tpce.getAdded());
+                } else {
+                    // I don't expect any non TPCE events to arrive but, should they, handle them
+                    // correctly even if inefficiently.
+                    List<Task> oldList = (List<Task>) e.getOldValue();
+                    List<Task> newList = (List<Task>) e.getNewValue();
+                    updateTasks(oldList, newList);
+                }
             }
         }
     }
@@ -269,7 +278,6 @@ public class TaskMonitor extends AbstractBean {
      * This listener runs on the EDT.
      */
     private class TaskPCL implements PropertyChangeListener {
-
         private void fireStateChange(Task task, String propertyName) {
             firePropertyChange(new PropertyChangeEvent(task, propertyName, false, true));
         }
@@ -295,7 +303,13 @@ public class TaskMonitor extends AbstractBean {
                 }
                 if (Task.PROP_COMPLETED.equals(propertyName)) {
                     if (autoUpdateForegroundTask) {
-                        setForegroundTask(taskQueue.isEmpty() ? null : taskQueue.getLast());
+                        Task last = null;
+                        List<Task<?, ?>> currentTasks = taskQueue.getList();
+
+                        if (!currentTasks.isEmpty()) {
+                            last = currentTasks.get(currentTasks.size() - 1);
+                        }
+                        setForegroundTask(last);
                     }
                 }
             }
