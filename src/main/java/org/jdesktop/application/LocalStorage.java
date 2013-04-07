@@ -31,7 +31,7 @@ import static org.jdesktop.application.Application.KEY_APPLICATION_VENDOR_ID;
  */
 public class LocalStorage extends AbstractBean {
 
-    private static Logger logger = Logger.getLogger(LocalStorage.class.getName());
+    private static final Logger logger = Logger.getLogger(LocalStorage.class.getName());
     private final ApplicationContext context;
     private long storageLimit = -1L;
     private LocalIO localIO = null;
@@ -43,9 +43,15 @@ public class LocalStorage extends AbstractBean {
         Map<Class<?>, PersistenceDelegate> fixInternals = new HashMap<Class<?>, PersistenceDelegate>();
 
         fixInternals.put(DefaultListModel.class, new DefaultListModelPD());
-        fixInternals.put(File.class, new DefaultPersistenceDelegate(new String[] {"path"}));
-        fixInternals.put(Rectangle.class, new RectanglePD());
+        fixInternals.put(File.class, new DefaultPersistenceDelegate(new String[]{"path"}));
         fixInternals.put(URL.class, new PrimitivePersistenceDelegate());
+       
+        // JDK bug ID 4741757 was fixed with the release of JDK 1.6 (It is listed in the JDK 6 Adoption Guide).
+        // As a consequence, the RectanglePD is not needed since its release.
+        // Removing it resolves BSAF-107.
+        if (System.getProperty("java.version").compareTo("1.6") < 0) {
+            fixInternals.put(Rectangle.class, new RectanglePD());
+        }
 
         for (Map.Entry<Class<?>, PersistenceDelegate> fixInternal : fixInternals.entrySet()) {
             try {
@@ -201,7 +207,7 @@ public class LocalStorage extends AbstractBean {
     }
 
     /**
-     * Loads the been from the local storage
+     * Loads the bean from the local storage
      * @param fileName name of the file to be read from
      * @return loaded object
      * @throws IOException
@@ -371,7 +377,9 @@ public class LocalStorage extends AbstractBean {
      * Rectangle with XMLEncoder causes a security exception because 
      * DefaultPersistenceDelegate calls Field.setAccessible(true) to gain
      * access to private fields.  This is a workaround for that problem.
-     * A bug has been filed, see JDK bug ID 4741757  
+     * A bug has been filed, see JDK bug ID 4741757.
+     * 
+     * The JDK bug was fixed in version 1.6 b76.
      */
     private static class RectanglePD extends DefaultPersistenceDelegate {
 
@@ -652,7 +660,7 @@ public class LocalStorage extends AbstractBean {
 
 
     static class PrimitivePersistenceDelegate extends PersistenceDelegate {
-
+        @Override
         protected Expression instantiate(Object oldInstance, Encoder out) {
             return new Expression(oldInstance, oldInstance.getClass(),
                     "new", new Object[]{oldInstance.toString()});
