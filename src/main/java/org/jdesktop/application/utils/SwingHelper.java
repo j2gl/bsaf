@@ -30,6 +30,7 @@ import javax.swing.RootPaneContainer;
  */
 public final class SwingHelper {
 	private static final String WINDOW_STATE_NORMAL_BOUNDS = "WindowState.normalBounds";
+	private static final String FRAME_PERSISTENT_EXTENDED_STATE_MASK = "FrameState.persistentExtendedStateMask";
 
     private SwingHelper() {
     }
@@ -126,5 +127,37 @@ public final class SwingHelper {
         if (window instanceof JFrame) {
             ((JFrame) window).getRootPane().putClientProperty(WINDOW_STATE_NORMAL_BOUNDS, bounds);
         }
+    }
+
+    /**
+     * Gets {@code JFrame} extended state mask for this frame. Defaults to
+     * Integer.MAX_VALUE (all bits set).
+     *
+     * @param frame the source {@code JFrame}
+     * @return extended state mask from the source
+     */
+    public static int getPersistentExtendedStateMask(JFrame frame) {
+        Object res = frame.getRootPane().getClientProperty(FRAME_PERSISTENT_EXTENDED_STATE_MASK);
+        if (res instanceof Integer) {
+            return (Integer) res;
+        }
+        return Integer.MAX_VALUE;
+    }
+    
+    /**
+     * Sets {@code JFrame} extended state mask on this frame. Used to block
+     * certain extended state flags from being persisted. See {@code Frame} for
+     * known extended state constants. <p>For example, if you want to close an
+     * iconified application and have it open in the normal state, call
+     * <code>setPersistentExtendedStateMask(frame, ~Frame.ICONIFIED)</code>
+     * while initializing the application's frames.
+     *
+     * @param frame the frame, {@code JFrame}, who extended state mask is being
+     * set.
+     * @param persistentExtendedStateMask mask which will be bitwise and'ed to
+     * this frame's extended state immediately before persisting it.
+     */
+    public static void setPersistentExtendedStateMask(JFrame frame, int persistentExtendedStateMask) {
+        frame.getRootPane().putClientProperty(FRAME_PERSISTENT_EXTENDED_STATE_MASK, persistentExtendedStateMask);
     }
 }

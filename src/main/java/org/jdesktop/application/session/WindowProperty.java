@@ -80,8 +80,14 @@ public class WindowProperty implements PropertySupport {
          * retrieve the frame's normal (not maximized) bounds.  More info:
          * see FrameStateListener#windowStateChanged in FrameView.
          */
-        if ((c instanceof JFrame) && (0 != (frameState & Frame.MAXIMIZED_BOTH))) {
-            frameBounds = SwingHelper.getWindowNormalBounds((JFrame)c);
+        if (c instanceof JFrame) {
+            JFrame jFrame = (JFrame) c;
+            
+            if (0 != (frameState & Frame.MAXIMIZED_BOTH)) {
+                frameBounds = SwingHelper.getWindowNormalBounds(jFrame);
+            }
+            
+            frameState &= SwingHelper.getPersistentExtendedStateMask(jFrame);
         }
         if (frameBounds.isEmpty()) return null;
         return new WindowState(frameBounds, gcBounds, getScreenCount(), frameState);
