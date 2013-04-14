@@ -94,7 +94,7 @@ public class ApplicationContext extends AbstractBean {
      * call it directly.
      *
      * @param applicationClass
-     * @deprecated BSAF-47: Does nothing as {@link #getApplicationCass} now returns <code>getApplication().getClass()</code>.
+     * @deprecated BSAF-47: Does nothing as {@link #getApplicationClass} now returns <code>getApplication().getClass()</code>.
      * @see #getApplicationClass
      */
     @Deprecated
