@@ -36,7 +36,6 @@ public class ApplicationContext extends AbstractBean {
     private LocalStorage localStorage;
     private SessionStorage sessionStorage;
     private Application application = null;
-    private Class applicationClass = null;
     private JComponent focusOwner = null;
     private Clipboard clipboard = null;
     private TaskMonitor taskMonitor = null;
@@ -58,14 +57,16 @@ public class ApplicationContext extends AbstractBean {
      * method is the same as {@code getApplication().getClass()}.
      * 
      * @return the application's class or null
+     * @deprecated BSAF-47: Use getApplication().getClass()
      * @see #setApplicationClass
      * @see #getApplication
      */
+    @Deprecated
     public final synchronized Class getApplicationClass() {
-        return applicationClass;
+        return application == null ? null : application.getClass();
     }
 
-    /**
+   /**
      * Called by 
      * {@link Application#launch Application.launch()} to 
      * record the application's class.
@@ -75,13 +76,14 @@ public class ApplicationContext extends AbstractBean {
      * call it directly.
      *
      * @param applicationClass
+     * @deprecated BSAF-47: Does nothing as {@link #getApplicationCass} now returns <code>getApplication().getClass()</code>.
      * @see #getApplicationClass
      */
+    @Deprecated
     public final synchronized void setApplicationClass(Class applicationClass) {
         if (this.application != null) {
             throw new IllegalStateException("application has been launched");
         }
-        this.applicationClass = applicationClass;
     }
 
     /**
