@@ -22,6 +22,24 @@ import javax.swing.JComponent;
  * via {@link Application#getContext}, to access global values and services.
  * The majority of the Swing Application Framework API can be accessed through {@code
  * ApplicationContext}.
+ * <p>
+ * Applications needing to customize the ApplicationContext may do so as follows:
+ * <pre>
+ * public class MyApplicationContext extends ApplicationContext {
+ *    public MyApplicationContext() {
+ *        setActionManager(...);
+ *        setLocalStorage(...);
+ *        setResourceManager(...);
+ *        setSessionStorage(...);
+ *    }
+ * }
+ *
+ * public class MyApplication extends Application {
+ *     protected MyApplication() {
+ *         super(new MyApplicationContext());
+ *     }
+ * }
+ * </pre>
  * 
  * @see Application
  * @author Hans Muller (Hans.Muller@Sun.COM)

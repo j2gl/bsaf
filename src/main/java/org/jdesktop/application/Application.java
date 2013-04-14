@@ -5,8 +5,6 @@
  */
 package org.jdesktop.application;
 
-import org.jdesktop.application.utils.AppHelper;
-
 import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -26,8 +24,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import org.jdesktop.application.utils.AppHelper;
 import org.jdesktop.application.utils.OSXAdapter;
-
 import org.jdesktop.application.utils.PlatformType;
 
 /**
@@ -119,6 +117,24 @@ import org.jdesktop.application.utils.PlatformType;
  * <li>{@code nimbus} - use the modern cross platform look and feel Nimbus
  * <li>a LookAndFeel class name - use the specified class
  * </ul>
+ * <p>
+ * Applications needing to customize the ApplicationContext may do so as follows:
+ * <pre>
+ * public class MyApplicationContext extends ApplicationContext {
+ *    public MyApplicationContext() {
+ *        setActionManager(...);
+ *        setLocalStorage(...);
+ *        setResourceManager(...);
+ *        setSessionStorage(...);
+ *    }
+ * }
+ *
+ * public class MyApplication extends Application {
+ *     protected MyApplication() {
+ *         super(new MyApplicationContext());
+ *     }
+ * }
+ * </pre>
  * 
  * @see SingleFrameApplication
  * @see ApplicationContext
@@ -149,8 +165,21 @@ public abstract class Application extends AbstractBean {
      * method.  
      */
     protected Application() {
+        this(new ApplicationContext());
+    }
+
+    /**
+     * Not to be called directly, see {@link #launch launch}.
+     * <p>
+     * Subclasses can provide a custom ApplicationContext
+     * to initialize private final state however GUI
+     * initialization, and anything else that might refer to 
+     * public API, should be done in the {@link #startup startup}
+     * method.
+     */
+    protected Application(ApplicationContext context) {
         exitListeners = new CopyOnWriteArrayList<ExitListener>();
-        context = new ApplicationContext();
+        this.context = context;
     }
 
     /**
@@ -241,7 +270,6 @@ public abstract class Application extends AbstractBean {
         /* Initialize the ApplicationContext application properties
          */
         ApplicationContext ctx = application.getContext();
-        ctx.setApplicationClass(applicationClass);
         ctx.setApplication(application);
 
         /* Load the application resource map, notably the
@@ -735,7 +763,7 @@ public abstract class Application extends AbstractBean {
 
         protected DesignTimeApplication() {
             ApplicationContext ctx = getContext();
-            ctx.setApplicationClass(getClass());
+//KJG            ctx.setApplicationClass(getClass());
             ctx.setApplication(this);
             ResourceMap appResourceMap = ctx.getResourceMap();
             appResourceMap.setPlatform(PlatformType.DEFAULT);
