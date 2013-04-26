@@ -13,6 +13,13 @@ package org.jdesktop.application;
 public class WaitForStartupApplication extends Application {
     private static Object lock = new Object(); // static: Application is a singleton
     private boolean started = false;
+
+    public WaitForStartupApplication() {
+    }
+
+    public WaitForStartupApplication(ApplicationContext context) {
+        super(context);
+    }
     
     /**
      * Unblock the launchAndWait() method.
